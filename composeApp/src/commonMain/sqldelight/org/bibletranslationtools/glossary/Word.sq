@@ -1,0 +1,22 @@
+CREATE TABLE WordEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    word TEXT NOT NULL,
+    reference TEXT NOT NULL,
+    description TEXT NOT NULL,
+    glossaryId INTEGER NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+getAll:
+SELECT * FROM WordEntity WHERE glossaryId = :glossaryId;
+
+getByWord:
+SELECT * FROM WordEntity WHERE word = :word;
+
+insert:
+INSERT OR REPLACE INTO WordEntity(word, reference, description, glossaryId, updatedAt)
+VALUES (?, ?, ?, ?, ?);
+
+delete:
+DELETE FROM WordEntity WHERE id = :id;

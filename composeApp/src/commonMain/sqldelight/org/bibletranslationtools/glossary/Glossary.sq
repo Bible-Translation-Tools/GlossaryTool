@@ -1,0 +1,20 @@
+CREATE TABLE GlossaryEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT NOT NULL,
+    author TEXT NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+getAll:
+SELECT * FROM GlossaryEntity;
+
+getByCode:
+SELECT * FROM GlossaryEntity WHERE code = :code;
+
+insert:
+INSERT OR REPLACE INTO GlossaryEntity(code, author, updatedAt)
+VALUES (?, ?, ?);
+
+delete:
+DELETE FROM GlossaryEntity WHERE id = :id;
