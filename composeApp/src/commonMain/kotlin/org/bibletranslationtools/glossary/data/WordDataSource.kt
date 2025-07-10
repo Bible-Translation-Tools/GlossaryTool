@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.persistence
+package org.bibletranslationtools.glossary.data
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList

@@ -21,10 +21,8 @@ actual fun applyLocale(iso: String) {
     Locale.setDefault(locale)
 }
 
-actual class DatabaseDriverFactory {
-    actual fun create(): SqlDriver {
-        val databasePath = File(appDirPath, "glossary.db")
-        val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}")
-        return driver
-    }
+actual fun createSqlDriver(): SqlDriver {
+    val databasePath = File(appDirPath, "glossary.db")
+    val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}")
+    return driver
 }

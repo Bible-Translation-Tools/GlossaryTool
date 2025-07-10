@@ -2,7 +2,6 @@ package org.bibletranslationtools.glossary.platform
 
 import android.content.Context
 import android.os.LocaleList
-import app.cash.sqldelight.async.coroutines.synchronous
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import org.bibletranslationtools.glossary.GlossaryDatabase
@@ -18,17 +17,15 @@ actual val appDirPath: String
 
 actual fun applyLocale(iso: String) {
     val context: Context = getKoin().get()
-    val locale = Locale(iso)
+    val locale = Locale.forLanguageTag(iso)
     Locale.setDefault(locale)
     val config = context.resources.configuration
     config.setLocales(LocaleList(locale))
 }
 
-actual class DatabaseDriverFactory(private val context: Context) {
-    actual fun create(): SqlDriver =
-        AndroidSqliteDriver(
-            GlossaryDatabase.Schema.synchronous(),
-            context,
-            "glossary.db"
-        )
-}
+actual fun createSqlDriver(): SqlDriver =
+    AndroidSqliteDriver(
+        GlossaryDatabase.Schema,
+        getKoin().get(),
+        "glossary.db"
+    )

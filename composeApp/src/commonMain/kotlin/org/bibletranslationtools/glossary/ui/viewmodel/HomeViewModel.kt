@@ -6,22 +6,11 @@ import glossary.composeapp.generated.resources.Res
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
-import org.bibletranslationtools.glossary.persistence.GlossaryDataSource
-
-import app.cash.sqldelight.async.coroutines.awaitCreate
-import org.bibletranslationtools.glossary.GlossaryDatabase
-import app.cash.sqldelight.db.SqlDriver
+import org.bibletranslationtools.glossary.data.GlossaryDataSource
 
 class HomeViewModel(
-    private val glossaryDataSource: GlossaryDataSource,
-    private val driver: SqlDriver
+    private val glossaryDataSource: GlossaryDataSource
 ) : ScreenModel {
-
-    init {
-        screenModelScope.launch {
-            GlossaryDatabase.Schema.awaitCreate(driver)
-        }
-    }
 
     fun insert() {
         screenModelScope.launch {

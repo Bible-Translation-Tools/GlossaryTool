@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.persistence
+package org.bibletranslationtools.glossary.data
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
@@ -10,7 +10,7 @@ import org.bibletranslationtools.glossary.GlossaryEntity
 interface GlossaryDataSource {
     suspend fun insert(code: String, author: String, updatedAt: Long)
     fun getAll(): Flow<List<GlossaryEntity>>
-    fun getByCode(code: String): GlossaryEntity?
+    suspend fun getByCode(code: String): GlossaryEntity?
     suspend fun delete(id: Long)
 }
 
@@ -18,21 +18,12 @@ class GlossaryDataSourceImpl(db: GlossaryDatabase): GlossaryDataSource {
     private val queries = db.glossaryQueries
 
     override suspend fun insert(code: String, author: String, updatedAt: Long) {
-        println("GlossaryDataSourceImpl: Inserting record: $code")
-        try {
-            queries.insert(code, author, updatedAt)
-            println("GlossaryDataSourceImpl: Inserted record: $code")
-        } catch (e: Exception) {
-            println("GlossaryDataSourceImpl: Error inserting record: $code - ${e.message}")
-            e.printStackTrace()
-        }
+        queries.insert(code, author, updatedAt)
     }
 
-    override fun getAll() = queries.getAll().asFlow().mapToList(Dispatchers.Default).also {
-        println("GlossaryDataSourceImpl: getAll() called.")
-    }
+    override fun getAll() = queries.getAll().asFlow().mapToList(Dispatchers.Default)
 
-    override fun getByCode(code: String): GlossaryEntity? {
+    override suspend fun getByCode(code: String): GlossaryEntity? {
         return queries.getByCode(code).executeAsOneOrNull()
     }
 
