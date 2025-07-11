@@ -1,0 +1,17 @@
+CREATE TABLE SettingsEntity (
+    name TEXT NOT NULL,
+    value TEXT NOT NULL
+);
+
+insert:
+INSERT OR REPLACE INTO SettingsEntity (name, value)
+VALUES (?, ?);
+
+delete:
+DELETE FROM SettingsEntity WHERE name = :name;
+
+getAll:
+SELECT * FROM SettingsEntity;
+
+getByName:
+SELECT * FROM SettingsEntity WHERE name = :name;

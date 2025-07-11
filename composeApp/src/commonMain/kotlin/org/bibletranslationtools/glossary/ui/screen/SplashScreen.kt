@@ -7,23 +7,31 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.logo
 import glossary.composeapp.generated.resources.wa
-import kotlinx.coroutines.delay
+import org.bibletranslationtools.glossary.ui.viewmodel.SplashEvent
+import org.bibletranslationtools.glossary.ui.viewmodel.SplashViewModel
 import org.jetbrains.compose.resources.painterResource
 
 class SplashScreen : Screen {
 
     @Composable
     override fun Content() {
+        val viewModel = koinScreenModel<SplashViewModel>()
         val navigator = LocalNavigator.currentOrThrow
+
+        val state by viewModel.state.collectAsStateWithLifecycle()
+        val event by viewModel.event.collectAsStateWithLifecycle(SplashEvent.Idle)
 
         val gradient = Brush.verticalGradient(
             0.0f to MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
@@ -32,16 +40,20 @@ class SplashScreen : Screen {
             endY = 3000.0f
         )
 
-        LaunchedEffect(null) {
-            delay(1000)
-            navigator.push(HomeScreen())
+        LaunchedEffect(state.initDone) {
+            if (state.initDone) {
+                navigator.push(HomeScreen())
+            } else {
+                viewModel.onEvent(SplashEvent.InitApp)
+            }
         }
 
-        Scaffold {
+        Scaffold { paddingValues ->
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
                     .background(gradient)
+                    .padding(paddingValues)
             ) {
                 Column (
                     horizontalAlignment = Alignment.CenterHorizontally,

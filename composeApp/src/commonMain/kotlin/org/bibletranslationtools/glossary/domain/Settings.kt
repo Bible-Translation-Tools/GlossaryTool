@@ -1,5 +1,9 @@
 package org.bibletranslationtools.glossary.domain
 
+enum class DbSettings(val value: String) {
+    INIT("init")
+}
+
 enum class Settings {
     THEME,
     LOCALE
