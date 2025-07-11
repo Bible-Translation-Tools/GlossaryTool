@@ -12,6 +12,7 @@ import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
 import org.bibletranslationtools.glossary.domain.InitApp
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
+import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.ui.viewmodel.HomeViewModel
 import org.bibletranslationtools.glossary.ui.viewmodel.SplashViewModel
@@ -22,6 +23,8 @@ import org.koin.dsl.module
 
 val sharedModule = module {
     single { GlossaryDatabase(createSqlDriver()) }
+    single { ResourceContainerAccessor(get()) }
+
     singleOf(::GlossaryDataSourceImpl).bind<GlossaryDataSource>()
     singleOf(::WordDataSourceImpl).bind<WordDataSource>()
     singleOf(::SettingsDataSourceImpl).bind<SettingsDataSource>()
