@@ -19,13 +19,10 @@ import java.io.File
 actual class ResourceContainerAccessor actual constructor(
     private val directoryProvider: DirectoryProvider
 ) {
-    actual fun read(
-        language: String,
-        resource: String
-    ): List<Workbook> {
+    actual fun read(resource: String): List<Workbook> {
         val resource = Path(
             directoryProvider.sources,
-            "${language}_$resource.zip"
+            "$resource.zip"
         )
 
         if (SystemFileSystem.exists(resource)) {
@@ -67,7 +64,7 @@ actual class ResourceContainerAccessor actual constructor(
             val document = parser.parseFromString(usfm)
             val chapters = document.getChildMarkers(CMarker::class.java)
                 .map { chapter ->
-                    Chapter(chapter.number.toString()) {
+                    Chapter(chapter.number) {
                         readVerses(chapter)
                     }
                 }

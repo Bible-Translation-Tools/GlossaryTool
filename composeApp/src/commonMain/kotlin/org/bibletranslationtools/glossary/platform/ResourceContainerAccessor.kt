@@ -5,5 +5,5 @@ import org.bibletranslationtools.glossary.domain.DirectoryProvider
 
 expect class ResourceContainerAccessor {
     constructor(directoryProvider: DirectoryProvider)
-    fun read(language: String, resource: String): List<Workbook>
+    fun read(resource: String): List<Workbook>
 }

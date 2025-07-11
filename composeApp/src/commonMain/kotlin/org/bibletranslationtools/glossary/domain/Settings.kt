@@ -6,7 +6,10 @@ enum class DbSettings(val value: String) {
 
 enum class Settings {
     THEME,
-    LOCALE
+    LOCALE,
+    RESOURCE,
+    BOOK,
+    CHAPTER
 }
 
 enum class Theme {

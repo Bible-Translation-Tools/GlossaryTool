@@ -14,19 +14,26 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
+import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 
 data class HomeState(
     val books: List<Workbook> = emptyList(),
-    val activeBook: Workbook? = null
+    val activeBook: Workbook? = null,
+    val activeChapter: Chapter? = null
 )
 
 sealed class HomeEvent {
     data object Idle : HomeEvent()
-    data object LoadBooks : HomeEvent()
-    data class LoadBook(val book: Workbook) : HomeEvent()
+    data class LoadBooks(val resource: String) : HomeEvent()
+    data object BooksLoaded : HomeEvent()
+    data class LoadBook(val book: String) : HomeEvent()
+    data object BookLoaded : HomeEvent()
+    data class LoadChapter(val chapter: Int) : HomeEvent()
+    data object NextChapter : HomeEvent()
+    data object PrevChapter : HomeEvent()
 }
 
 class HomeViewModel(
@@ -47,8 +54,11 @@ class HomeViewModel(
 
     fun onEvent(event: HomeEvent) {
         when (event) {
-            is HomeEvent.LoadBooks -> loadBooks()
+            is HomeEvent.LoadBooks -> loadBooks(event.resource)
             is HomeEvent.LoadBook -> loadBook(event.book)
+            is HomeEvent.LoadChapter -> loadChapter(event.chapter)
+            is HomeEvent.NextChapter -> nextChapter()
+            is HomeEvent.PrevChapter -> prevChapter()
             else -> resetChannel()
         }
     }
@@ -70,22 +80,56 @@ class HomeViewModel(
         }
     }
 
-    private fun loadBooks() {
+    private fun loadBooks(resource: String) {
         screenModelScope.launch {
             val books = withContext(Dispatchers.IO) {
-                workbookDataSource.read("en", "ulb")
+                workbookDataSource.read(resource)
             }
             updateBooks(books)
+            _event.send(HomeEvent.BooksLoaded)
             println("Loaded ${books.size} books.")
         }
     }
 
-    private fun loadBook(book: Workbook) {
+    private fun loadBook(book: String) {
         screenModelScope.launch {
-            updateActiveBook(book)
-            println(book.sort)
-            println(book.slug)
-            println(book.title)
+            state.value.books.singleOrNull { it.slug == book }?.let {
+                updateActiveBook(it)
+                _event.send(HomeEvent.BookLoaded)
+                println(it.sort)
+                println(it.slug)
+                println(it.title)
+            }
+        }
+    }
+
+    private fun loadChapter(chapter: Int) {
+        screenModelScope.launch {
+            navigateChapter(chapter)
+        }
+    }
+
+    private fun nextChapter() {
+        state.value.activeChapter?.let { chapter ->
+            val current = chapter.number
+            val next = current + 1
+            navigateChapter(next)
+        }
+    }
+
+    private fun prevChapter() {
+        state.value.activeChapter?.let { chapter ->
+            val current = chapter.number
+            val prev = current - 1
+            navigateChapter(prev)
+        }
+    }
+
+    private fun navigateChapter(chapter: Int) {
+        state.value.activeBook?.let { book ->
+            book.chapters.singleOrNull { it.number == chapter }?.let {
+                updateActiveChapter(it)
+            }
         }
     }
 
@@ -98,6 +142,12 @@ class HomeViewModel(
     private fun updateActiveBook(book: Workbook) {
         _state.update {
             it.copy(activeBook = book)
+        }
+    }
+
+    private fun updateActiveChapter(chapter: Chapter) {
+        _state.update {
+            it.copy(activeChapter = chapter)
         }
     }
 

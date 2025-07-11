@@ -1,27 +1,43 @@
 package org.bibletranslationtools.glossary.ui.screen
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.burnoo.compose.remembersetting.rememberIntSetting
+import dev.burnoo.compose.remembersetting.rememberStringSetting
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.book
+import org.bibletranslationtools.glossary.domain.Settings
+import org.bibletranslationtools.glossary.ui.components.BottomNavBar
+import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.viewmodel.HomeEvent
 import org.bibletranslationtools.glossary.ui.viewmodel.HomeViewModel
-import org.bibletranslationtools.glossary.ui.viewmodel.SplashEvent
+import org.jetbrains.compose.resources.painterResource
 
 class HomeScreen : Screen {
 
@@ -35,48 +51,109 @@ class HomeScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val coroutine = rememberCoroutineScope()
 
-        val bookScrollState = rememberScrollState()
+        val scrollState = rememberScrollState()
 
-        Scaffold { paddingValues ->
-            Box(
-                contentAlignment = Alignment.TopCenter,
-                modifier = Modifier.fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                Column {
-                    Text("Home")
-                    Button(onClick = { viewModel.insert() }) {
-                        Text("Insert")
-                    }
-                    Button(onClick = { viewModel.getAll() }) {
-                        Text("Get All")
-                    }
-                    Button(onClick = { viewModel.onEvent(HomeEvent.LoadBooks) }) {
-                        Text("Load Books")
-                    }
-                    Button(onClick = {
-                        state.books.singleOrNull { it.slug == "jas" }?.let {
-                            viewModel.onEvent(HomeEvent.LoadBook(it))
-                        }
-                    }) {
-                        Text("Load James")
-                    }
+        val selectedResource by rememberStringSetting(
+            Settings.RESOURCE.name,
+            "en_ulb"
+        )
+        val selectedBook by rememberStringSetting(
+            Settings.BOOK.name,
+            "mat"
+        )
+        val selectedChapter by rememberIntSetting(
+            Settings.CHAPTER.name,
+            1
+        )
+
+        val title = state.activeBook?.let { book ->
+            state.activeChapter?.let { chapter ->
+                "${book.title} ${chapter.number}"
+            }
+        } ?: "Loading..."
+
+        LaunchedEffect(selectedResource) {
+            viewModel.onEvent(HomeEvent.LoadBooks(selectedResource))
+        }
+
+        LaunchedEffect(event) {
+            when (event) {
+                is HomeEvent.BooksLoaded -> {
+                    viewModel.onEvent(HomeEvent.LoadBook(selectedBook))
+                }
+                is HomeEvent.BookLoaded -> {
                     state.activeBook?.let { book ->
-                        val stringBuilder = StringBuilder()
-                        stringBuilder.append("\n")
-                        book.chapters.forEach { chapter ->
-                            stringBuilder.append("Chapter ${chapter.name}\n\n")
-                            chapter.verses.forEach { verse ->
-                                stringBuilder.append("${verse.name}. ${verse.text}\n")
-                            }
-                            stringBuilder.append("\n")
+                        book.chapters.singleOrNull { it.number == selectedChapter }?.let {
+                            viewModel.onEvent(HomeEvent.LoadChapter(it.number))
                         }
-                        Text(
-                            text = stringBuilder.toString(),
-                            modifier = Modifier.verticalScroll(bookScrollState)
-                        )
                     }
                 }
+                else -> {}
+            }
+        }
+
+        Scaffold(
+            bottomBar = { BottomNavBar() }
+        ) { paddingValues ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(16.dp)
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Image(
+                        painter = painterResource(Res.drawable.book),
+                        contentDescription = "book",
+                        modifier = Modifier
+                            .height(150.dp)
+                            .clip(MaterialTheme.shapes.medium),
+                        contentScale = ContentScale.Crop
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    val chapterText = state.activeChapter?.let { chapter ->
+                        val stringBuilder = StringBuilder()
+                        chapter.verses.forEach { verse ->
+                            stringBuilder.append("${verse.name}. ${verse.text}\n")
+                        }
+                        stringBuilder.append("\n")
+                        stringBuilder.toString()
+                    } ?: "Loading..."
+
+                    Text(
+                        text = chapterText,
+                        style = MaterialTheme.typography.bodyLarge,
+                        lineHeight = 24.sp
+                    )
+                }
+
+                ChapterNavigation(
+                    title = title,
+                    onPrevClick = {
+                        viewModel.onEvent(HomeEvent.PrevChapter)
+                    },
+                    onNextClick = {
+                        viewModel.onEvent(HomeEvent.NextChapter)
+                    }
+                )
             }
         }
     }
