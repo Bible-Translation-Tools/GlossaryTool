@@ -5,12 +5,10 @@ import glossary.composeapp.generated.resources.Res
 import kotlinx.coroutines.runBlocking
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.platform.createSqlDriver
-import org.bibletranslationtools.glossary.platform.extractZip
 
 class InitApp(
     private val settings: SettingsDataSource,
-    private val directoryProvider: DirectoryProvider,
-    private val database: GlossaryDatabase
+    private val directoryProvider: DirectoryProvider
 ) {
     suspend operator fun invoke() {
         val driver = createSqlDriver()
@@ -35,6 +33,6 @@ class InitApp(
 
     private suspend fun initResources() {
         val bytes = Res.readBytes("files/en_ulb.zip")
-        extractZip(bytes, directoryProvider.sources)
+        directoryProvider.saveSource(bytes, "en_ulb.zip")
     }
 }

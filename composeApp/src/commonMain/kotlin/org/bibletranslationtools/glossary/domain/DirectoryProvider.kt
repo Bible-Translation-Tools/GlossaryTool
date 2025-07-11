@@ -14,6 +14,7 @@ interface DirectoryProvider {
     val sources: Path
     val tempDir: Path
 
+    suspend fun saveSource(bytes: ByteArray, fileName: String): Path
     suspend fun saveSource(file: Path, fileName: String = file.name): Path
     suspend fun readFile(fileName: String): String?
     suspend fun readFile(file: Path): String?
@@ -45,13 +46,25 @@ class DirectoryProviderImpl : DirectoryProvider {
             return dir
         }
 
+    override suspend fun saveSource(bytes: ByteArray, fileName: String): Path {
+        return writeFile(bytes, sources, fileName)
+    }
+
     override suspend fun saveSource(file: Path, fileName: String): Path {
         return withContext(Dispatchers.IO) {
-            saveFile(file, sources, fileName)
+            writeFile(file, sources, fileName)
         }
     }
 
-    private fun saveFile(file: Path, dir: Path, fileName: String): Path {
+    private fun writeFile(bytes: ByteArray, dir: Path, fileName: String): Path {
+        val file = Path(dir, fileName)
+        SystemFileSystem.sink(file).buffered().use { sink ->
+            sink.write(bytes)
+        }
+        return file
+    }
+
+    private fun writeFile(file: Path, dir: Path, fileName: String): Path {
         val targetFile = Path(dir, fileName)
         SystemFileSystem.source(file).buffered().use { inputSource ->
             SystemFileSystem.sink(targetFile).buffered().use { outputSink ->
