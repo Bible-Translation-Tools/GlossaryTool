@@ -19,15 +19,15 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.logo
 import glossary.composeapp.generated.resources.wa
-import org.bibletranslationtools.glossary.ui.viewmodel.SplashEvent
-import org.bibletranslationtools.glossary.ui.viewmodel.SplashViewModel
+import org.bibletranslationtools.glossary.ui.screenmodel.SplashEvent
+import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.jetbrains.compose.resources.painterResource
 
 class SplashScreen : Screen {
 
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<SplashViewModel>()
+        val viewModel = koinScreenModel<SplashScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
 
         val state by viewModel.state.collectAsStateWithLifecycle()

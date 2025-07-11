@@ -15,7 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,24 +32,24 @@ import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.book
+import kotlinx.coroutines.channels.actor
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
-import org.bibletranslationtools.glossary.ui.viewmodel.HomeEvent
-import org.bibletranslationtools.glossary.ui.viewmodel.HomeViewModel
+import org.bibletranslationtools.glossary.ui.screenmodel.HomeEvent
+import org.bibletranslationtools.glossary.ui.screenmodel.WorkbookScreenModel
 import org.jetbrains.compose.resources.painterResource
 
 class HomeScreen : Screen {
 
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<HomeViewModel>()
+        val viewModel = koinScreenModel<WorkbookScreenModel>()
 
         val state by viewModel.state.collectAsStateWithLifecycle()
         val event by viewModel.event.collectAsStateWithLifecycle(HomeEvent.Idle)
 
         val navigator = LocalNavigator.currentOrThrow
-        val coroutine = rememberCoroutineScope()
 
         val scrollState = rememberScrollState()
 
@@ -61,7 +61,7 @@ class HomeScreen : Screen {
             Settings.BOOK.name,
             "mat"
         )
-        val selectedChapter by rememberIntSetting(
+        var selectedChapter by rememberIntSetting(
             Settings.CHAPTER.name,
             1
         )
@@ -74,6 +74,13 @@ class HomeScreen : Screen {
 
         LaunchedEffect(selectedResource) {
             viewModel.onEvent(HomeEvent.LoadBooks(selectedResource))
+        }
+
+        LaunchedEffect(state.activeChapter) {
+            state.activeChapter?.let { chapter ->
+                selectedChapter = chapter.number
+                scrollState.animateScrollTo(0)
+            }
         }
 
         LaunchedEffect(event) {
@@ -147,6 +154,9 @@ class HomeScreen : Screen {
 
                 ChapterNavigation(
                     title = title,
+                    onBookChange = {
+                        navigator.push(BrowseScreen())
+                    },
                     onPrevClick = {
                         viewModel.onEvent(HomeEvent.PrevChapter)
                     },

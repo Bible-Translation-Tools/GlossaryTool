@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.viewmodel
+package org.bibletranslationtools.glossary.ui.screenmodel
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -25,7 +25,7 @@ sealed class SplashEvent {
     data object InitApp : SplashEvent()
 }
 
-class SplashViewModel(
+class SplashScreenModel(
     private val initApp: InitApp
 ) : ScreenModel {
 

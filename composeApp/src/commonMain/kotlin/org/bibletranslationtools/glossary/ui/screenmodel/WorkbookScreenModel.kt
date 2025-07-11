@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.viewmodel
+package org.bibletranslationtools.glossary.ui.screenmodel
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
@@ -36,7 +36,7 @@ sealed class HomeEvent {
     data object PrevChapter : HomeEvent()
 }
 
-class HomeViewModel(
+class WorkbookScreenModel(
     private val glossaryDataSource: GlossaryDataSource,
     private val workbookDataSource: WorkbookDataSource
 ) : ScreenModel {
@@ -87,7 +87,6 @@ class HomeViewModel(
             }
             updateBooks(books)
             _event.send(HomeEvent.BooksLoaded)
-            println("Loaded ${books.size} books.")
         }
     }
 
@@ -96,9 +95,6 @@ class HomeViewModel(
             state.value.books.singleOrNull { it.slug == book }?.let {
                 updateActiveBook(it)
                 _event.send(HomeEvent.BookLoaded)
-                println(it.sort)
-                println(it.slug)
-                println(it.title)
             }
         }
     }
