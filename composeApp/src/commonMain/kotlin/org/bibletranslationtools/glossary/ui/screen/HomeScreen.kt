@@ -32,7 +32,6 @@ import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.book
-import kotlinx.coroutines.channels.actor
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
@@ -57,7 +56,7 @@ class HomeScreen : Screen {
             Settings.RESOURCE.name,
             "en_ulb"
         )
-        val selectedBook by rememberStringSetting(
+        var selectedBook by rememberStringSetting(
             Settings.BOOK.name,
             "mat"
         )
@@ -76,24 +75,31 @@ class HomeScreen : Screen {
             viewModel.onEvent(HomeEvent.LoadBooks(selectedResource))
         }
 
-        LaunchedEffect(state.activeChapter) {
-            state.activeChapter?.let { chapter ->
-                selectedChapter = chapter.number
-                scrollState.animateScrollTo(0)
-            }
-        }
-
         LaunchedEffect(event) {
             when (event) {
                 is HomeEvent.BooksLoaded -> {
                     viewModel.onEvent(HomeEvent.LoadBook(selectedBook))
                 }
                 is HomeEvent.BookLoaded -> {
-                    state.activeBook?.let { book ->
-                        book.chapters.singleOrNull { it.number == selectedChapter }?.let {
-                            viewModel.onEvent(HomeEvent.LoadChapter(it.number))
+                    val book = (event as HomeEvent.BookLoaded).book
+                    val withChapter = (event as HomeEvent.BookLoaded).withChapter
+
+                    println(book)
+
+                    selectedBook = book
+
+                    if (withChapter) {
+                        state.activeBook?.let { book ->
+                            book.chapters.singleOrNull { it.number == selectedChapter }?.let {
+                                viewModel.onEvent(HomeEvent.LoadChapter(it.number))
+                            }
                         }
                     }
+                }
+                is HomeEvent.ChapterLoaded -> {
+                    selectedChapter = (event as HomeEvent.ChapterLoaded).chapter
+                    scrollState.animateScrollTo(0)
+                    println((event as HomeEvent.ChapterLoaded).chapter)
                 }
                 else -> {}
             }
