@@ -1,5 +1,7 @@
 package org.bibletranslationtools.glossary.ui.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -28,18 +30,32 @@ fun ChapterNavigation(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                shape = MaterialTheme.shapes.medium
+            )
+            .background(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
+                shape = MaterialTheme.shapes.medium
+            ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onPrevClick) {
             Icon(Icons.Default.ChevronLeft, contentDescription = "Previous Chapter")
         }
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.clickable(onClick = onBrowse)
-        )
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier.weight(1.0f)
+                .clickable(onClick = onBrowse)
+        ) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+            )
+        }
         IconButton(onClick = onNextClick) {
             Icon(Icons.Default.ChevronRight, contentDescription = "Next Chapter")
         }

@@ -19,6 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.browse
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -26,7 +29,12 @@ fun BrowseTopBar(
     onBackClick: () -> Unit = {},
 ) {
     TopAppBar(
-        title = { Text("Browse", fontWeight = FontWeight.Bold) },
+        title = {
+            Text(
+                text = stringResource(Res.string.browse),
+                fontWeight = FontWeight.Bold
+            )
+        },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
