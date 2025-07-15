@@ -2,7 +2,12 @@ package org.bibletranslationtools.glossary.ui.screen
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -29,9 +34,7 @@ class SplashScreen : Screen {
     override fun Content() {
         val viewModel = koinScreenModel<SplashScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
-
         val state by viewModel.state.collectAsStateWithLifecycle()
-        val event by viewModel.event.collectAsStateWithLifecycle(SplashEvent.Idle)
 
         val gradient = Brush.verticalGradient(
             0.0f to MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
@@ -42,7 +45,7 @@ class SplashScreen : Screen {
 
         LaunchedEffect(state.initDone) {
             if (state.initDone) {
-                navigator.push(HomeScreen())
+                navigator.replaceAll(TabbedScreen())
             } else {
                 viewModel.onEvent(SplashEvent.InitApp)
             }

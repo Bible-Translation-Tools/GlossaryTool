@@ -14,7 +14,7 @@ import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
-import org.bibletranslationtools.glossary.ui.screenmodel.WorkbookScreenModel
+import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -31,6 +31,6 @@ val sharedModule = module {
     singleOf(::WorkbookDataSourceImpl).bind<WorkbookDataSource>()
     singleOf(::InitApp)
 
-    singleOf(::WorkbookScreenModel)
+    singleOf(::ReadScreenModel)
     singleOf(::SplashScreenModel)
 }

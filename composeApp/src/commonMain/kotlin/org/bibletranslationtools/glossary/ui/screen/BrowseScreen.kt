@@ -16,31 +16,27 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import dev.burnoo.compose.remembersetting.rememberIntSetting
-import dev.burnoo.compose.remembersetting.rememberStringSetting
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.bibletranslationtools.glossary.domain.Settings
+import org.bibletranslationtools.glossary.data.Chapter
+import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.components.BookItem
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
 import org.bibletranslationtools.glossary.ui.components.ChapterGrid
-import org.bibletranslationtools.glossary.ui.screenmodel.HomeEvent
-import org.bibletranslationtools.glossary.ui.screenmodel.WorkbookScreenModel
 
-class BrowseScreen() : Screen {
+class BrowseScreen(
+    private val books: List<Workbook>?,
+    private val activeBook: Workbook?,
+    private val activeChapter: Chapter?,
+    private val onBack: (Int, String?) -> Unit
+) : Screen {
 
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<WorkbookScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
-
-        val state by viewModel.state.collectAsStateWithLifecycle()
-        val event by viewModel.event.collectAsStateWithLifecycle(HomeEvent.Idle)
 
         val lazyListState = rememberLazyListState()
         val coroutineScope = rememberCoroutineScope()
@@ -48,17 +44,8 @@ class BrowseScreen() : Screen {
         var firstLoaded by rememberSaveable { mutableStateOf(false) }
 
         var expandedBookIndex by rememberSaveable {
-            mutableIntStateOf(state.books.indexOf(state.activeBook))
+            mutableIntStateOf(books?.indexOf(activeBook) ?: -1)
         }
-
-        var selectedBook by rememberStringSetting(
-            Settings.BOOK.name,
-            "mat"
-        )
-        var selectedChapter by rememberIntSetting(
-            Settings.CHAPTER.name,
-            1
-        )
 
         LaunchedEffect(expandedBookIndex) {
             if (expandedBookIndex != -1) {
@@ -85,7 +72,7 @@ class BrowseScreen() : Screen {
                     .padding(paddingValues),
                 state = lazyListState
             ) {
-                itemsIndexed(state.books) { index, book ->
+                itemsIndexed(books ?: emptyList()) { index, book ->
                     BookItem(
                         book = book,
                         isExpanded = expandedBookIndex == index,
@@ -95,11 +82,10 @@ class BrowseScreen() : Screen {
                     )
                     if (expandedBookIndex == index) {
                         ChapterGrid(chapters = book.chapters.size) { chapter ->
-                            if (state.activeBook != book) {
-                                selectedBook = book.slug
-                            }
-                            if (state.activeChapter?.number != chapter) {
-                                selectedChapter = chapter
+                            if (activeBook != book) {
+                                onBack(chapter, book.slug)
+                            } else if (activeChapter?.number != chapter) {
+                                onBack(chapter, null)
                             }
                             navigator.pop()
                         }
