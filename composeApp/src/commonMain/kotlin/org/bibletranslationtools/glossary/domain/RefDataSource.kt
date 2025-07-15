@@ -1,9 +1,5 @@
 package org.bibletranslationtools.glossary.domain
 
-import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.RefEntity
 
@@ -15,8 +11,8 @@ interface RefDataSource {
         verse: String,
         phraseId: Long
     )
-    fun getForPhrase(phraseId: Long): Flow<List<RefEntity>>
-    fun getForChapter(resource: String, book: String, chapter: String): Flow<List<RefEntity>>
+    fun getForPhrase(phraseId: Long): List<RefEntity>
+    fun getForChapter(resource: String, book: String, chapter: String): List<RefEntity>
     suspend fun delete(id: Long)
 }
 
@@ -34,18 +30,13 @@ class RefDataSourceImpl(db: GlossaryDatabase): RefDataSource {
     }
 
     override fun getForPhrase(phraseId: Long) = queries.getForPhrase(phraseId)
-        .asFlow()
-        .mapToList(Dispatchers.Default)
+        .executeAsList()
 
     override fun getForChapter(
         resource: String,
         book: String,
         chapter: String
-    ): Flow<List<RefEntity>> {
-        return queries.getForChapter(resource, book, chapter)
-            .asFlow()
-            .mapToList(Dispatchers.Default)
-    }
+    ) = queries.getForChapter(resource, book, chapter).executeAsList()
 
     override suspend fun delete(id: Long) {
         queries.delete(id)

@@ -1,9 +1,5 @@
 package org.bibletranslationtools.glossary.domain
 
-import app.cash.sqldelight.coroutines.asFlow
-import app.cash.sqldelight.coroutines.mapToList
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.PhraseEntity
 
@@ -16,9 +12,9 @@ interface PhraseDataSource {
         glossaryId: Long,
         updatedAt: Long
     )
-    fun getAll(glossaryId: Long): Flow<List<PhraseEntity>>
+    fun getAll(glossaryId: Long): List<PhraseEntity>
     fun getByPhrase(phrase: String): PhraseEntity?
-    fun getForChapter(resource: String, book: String, chapter: String): Flow<List<PhraseEntity>>
+    fun getForChapter(resource: String, book: String, chapter: String): List<PhraseEntity>
     suspend fun delete(id: Long)
 }
 
@@ -36,9 +32,7 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
         queries.insert(phrase, spelling, description, audio, glossaryId, updatedAt)
     }
 
-    override fun getAll(glossaryId: Long) = queries.getAll(glossaryId)
-        .asFlow()
-        .mapToList(Dispatchers.IO)
+    override fun getAll(glossaryId: Long) = queries.getAll(glossaryId).executeAsList()
 
     override fun getByPhrase(phrase: String): PhraseEntity? {
         return queries.getByPhrase(phrase).executeAsOneOrNull()
@@ -49,8 +43,7 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
         book: String,
         chapter: String
     ) = queries.getForChapter(resource, book, chapter)
-        .asFlow()
-        .mapToList(Dispatchers.IO)
+        .executeAsList()
 
     override suspend fun delete(id: Long) {
         queries.delete(id)

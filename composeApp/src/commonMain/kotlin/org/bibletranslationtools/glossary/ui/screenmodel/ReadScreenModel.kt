@@ -14,9 +14,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.datetime.Clock
 import org.bibletranslationtools.glossary.data.Chapter
+import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Workbook
+import org.bibletranslationtools.glossary.data.toPhrase
+import org.bibletranslationtools.glossary.data.toRef
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
+import org.bibletranslationtools.glossary.domain.PhraseDataSource
+import org.bibletranslationtools.glossary.domain.RefDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 
 sealed class NavigationResult {
@@ -29,7 +35,8 @@ data class HomeState(
     val isLoading: Boolean = false,
     val activeResource: Resource? = null,
     val activeBook: Workbook? = null,
-    val activeChapter: Chapter? = null
+    val activeChapter: Chapter? = null,
+    val phrases: List<Phrase> = emptyList()
 )
 
 sealed class HomeEvent {
@@ -44,7 +51,9 @@ sealed class HomeEvent {
 
 class ReadScreenModel(
     private val glossaryDataSource: GlossaryDataSource,
-    private val workbookDataSource: WorkbookDataSource
+    private val workbookDataSource: WorkbookDataSource,
+    private val phraseDataSource: PhraseDataSource,
+    private val refDataSource: RefDataSource
 ) : ScreenModel {
 
     private var _state = MutableStateFlow(HomeState())
@@ -119,6 +128,7 @@ class ReadScreenModel(
                             activeBook = selectedBook,
                             activeChapter = selectedChapter
                         )
+                        loadPhrases()
                     }
                 }
             }
@@ -159,6 +169,7 @@ class ReadScreenModel(
         _state.value.activeBook?.let { book ->
             book.chapters.singleOrNull { it.number == chapter }?.let {
                 _state.value = _state.value.copy(activeChapter = it)
+                loadPhrases()
                 return NavigationResult.ChapterChanged(chapter)
             }
         }
@@ -211,10 +222,35 @@ class ReadScreenModel(
             activeBook = book,
             activeChapter = chapter
         )
+        loadPhrases()
         return NavigationResult.BookChanged(
             book = book.slug,
             chapter = chapter.number
         )
+    }
+
+    private fun loadPhrases() {
+        screenModelScope.launch {
+            _state.value.activeChapter?.let { chapter ->
+                val phrases = withContext(Dispatchers.IO) {
+                    phraseDataSource.getForChapter(
+                        _state.value.activeResource!!.slug,
+                        _state.value.activeBook!!.slug,
+                        chapter.number.toString()
+                    )
+                }
+                _state.value = _state.value.copy(
+                    phrases = phrases.map {
+                        it.toPhrase { loadRefs(it.id) }
+                    }
+                )
+            }
+        }
+    }
+
+    private fun loadRefs(phraseId: Long): List<Ref> {
+        return refDataSource.getForPhrase(phraseId)
+            .map { it.toRef() }
     }
 
     private fun resetChannel() {
