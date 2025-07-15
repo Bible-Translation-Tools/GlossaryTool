@@ -2,6 +2,7 @@ package org.bibletranslationtools.glossary
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
@@ -13,6 +14,7 @@ import org.bibletranslationtools.glossary.platform.applyLocale
 import org.bibletranslationtools.glossary.ui.DarkColorScheme
 import org.bibletranslationtools.glossary.ui.LightColorScheme
 import org.bibletranslationtools.glossary.ui.MainAppTheme
+import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.screen.SplashScreen
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
@@ -32,7 +34,9 @@ fun App() {
 
     MainAppTheme(colorScheme) {
         Navigator(SplashScreen()) { navigator ->
-            SlideTransition(navigator)
+            CompositionLocalProvider(LocalRootNavigator provides navigator) {
+                SlideTransition(navigator)
+            }
         }
     }
 }

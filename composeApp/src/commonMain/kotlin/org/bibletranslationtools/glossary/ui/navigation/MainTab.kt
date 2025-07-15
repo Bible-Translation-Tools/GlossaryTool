@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.components
+package org.bibletranslationtools.glossary.ui.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List

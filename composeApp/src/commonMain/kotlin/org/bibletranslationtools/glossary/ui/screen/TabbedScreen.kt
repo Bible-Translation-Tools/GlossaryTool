@@ -10,7 +10,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
-import org.bibletranslationtools.glossary.ui.components.MainTab
+import org.bibletranslationtools.glossary.ui.navigation.MainTab
 
 class TabbedScreen : Screen {
     @Composable

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ChapterNavigation(
     title: String,
-    onBookChange: () -> Unit,
+    onBrowse: () -> Unit,
     onPrevClick: () -> Unit,
     onNextClick: () -> Unit
 ) {
@@ -38,7 +38,7 @@ fun ChapterNavigation(
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.clickable(onClick = onBookChange)
+            modifier = Modifier.clickable(onClick = onBrowse)
         )
         IconButton(onClick = onNextClick) {
             Icon(Icons.Default.ChevronRight, contentDescription = "Next Chapter")

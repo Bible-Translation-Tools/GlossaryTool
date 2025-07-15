@@ -34,6 +34,7 @@ import glossary.composeapp.generated.resources.book
 import glossary.composeapp.generated.resources.loading
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
+import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.screenmodel.HomeEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.NavigationResult
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
@@ -49,7 +50,7 @@ class ReadScreen : Screen {
         val state by viewModel.state.collectAsStateWithLifecycle()
         val event by viewModel.event.collectAsStateWithLifecycle(HomeEvent.Idle)
 
-        val navigator = LocalNavigator.currentOrThrow
+        val navigator = LocalRootNavigator.currentOrThrow
         val scrollState = rememberScrollState()
 
         val selectedResource by rememberStringSetting(
@@ -148,7 +149,7 @@ class ReadScreen : Screen {
 
             ChapterNavigation(
                 title = title,
-                onBookChange = {
+                onBrowse = {
                     navigator.push(
                         BrowseScreen(
                             state.activeResource?.books,
