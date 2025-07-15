@@ -102,7 +102,7 @@ class ReadScreen : Screen {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 0.dp)
+                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
         ) {
             Column(
                 modifier = Modifier
@@ -146,6 +146,8 @@ class ReadScreen : Screen {
                     lineHeight = 24.sp
                 )
             }
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             ChapterNavigation(
                 title = title,

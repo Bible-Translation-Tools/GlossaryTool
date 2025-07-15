@@ -21,11 +21,11 @@ fun ChapterButton(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+            containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
+            contentColor = MaterialTheme.colorScheme.onBackground
         ),
         contentPadding = PaddingValues(0.dp),
-        modifier = modifier.aspectRatio(1f) // Make button square
+        modifier = modifier.aspectRatio(1.5f)
     ) {
         Text(text = chapter.toString())
     }
