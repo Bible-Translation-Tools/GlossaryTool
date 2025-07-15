@@ -26,6 +26,8 @@ sealed interface MainTab : Tab {
     override fun Content()
 
     data object Read : MainTab {
+        private fun readResolve(): Any = Read
+
         @Composable
         override fun Content() {
             Navigator(screen = ReadScreen())
@@ -41,6 +43,8 @@ sealed interface MainTab : Tab {
     }
 
     data object Glossary : MainTab {
+        private fun readResolve(): Any = Glossary
+
         @Composable
         override fun Content() {
             Navigator(screen = GlossaryScreen())
@@ -56,6 +60,8 @@ sealed interface MainTab : Tab {
     }
 
     data object Resources : MainTab {
+        private fun readResolve(): Any = Resources
+
         @Composable
         override fun Content() {
             Navigator(screen = ResourcesScreen())
@@ -71,6 +77,8 @@ sealed interface MainTab : Tab {
     }
 
     data object Settings : MainTab {
+        private fun readResolve(): Any = Settings
+
         @Composable
         override fun Content() {
             Navigator(screen = SettingsScreen())
