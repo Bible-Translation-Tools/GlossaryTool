@@ -5,11 +5,13 @@ import org.bibletranslationtools.glossary.domain.GlossaryDataSource
 import org.bibletranslationtools.glossary.domain.GlossaryDataSourceImpl
 import org.bibletranslationtools.glossary.domain.SettingsDataSource
 import org.bibletranslationtools.glossary.domain.SettingsDataSourceImpl
-import org.bibletranslationtools.glossary.domain.WordDataSource
-import org.bibletranslationtools.glossary.domain.WordDataSourceImpl
+import org.bibletranslationtools.glossary.domain.PhraseDataSource
+import org.bibletranslationtools.glossary.domain.PhraseDataSourceImpl
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
 import org.bibletranslationtools.glossary.domain.InitApp
+import org.bibletranslationtools.glossary.domain.RefDataSource
+import org.bibletranslationtools.glossary.domain.RefDataSourceImpl
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
@@ -25,7 +27,8 @@ val sharedModule = module {
     single { ResourceContainerAccessor(get()) }
 
     singleOf(::GlossaryDataSourceImpl).bind<GlossaryDataSource>()
-    singleOf(::WordDataSourceImpl).bind<WordDataSource>()
+    singleOf(::PhraseDataSourceImpl).bind<PhraseDataSource>()
+    singleOf(::RefDataSourceImpl).bind<RefDataSource>()
     singleOf(::SettingsDataSourceImpl).bind<SettingsDataSource>()
     singleOf(::DirectoryProviderImpl).bind<DirectoryProvider>()
     singleOf(::WorkbookDataSourceImpl).bind<WorkbookDataSource>()

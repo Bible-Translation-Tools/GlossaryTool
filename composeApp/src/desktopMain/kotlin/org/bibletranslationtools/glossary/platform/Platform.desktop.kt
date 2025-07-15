@@ -2,8 +2,10 @@ package org.bibletranslationtools.glossary.platform
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import org.bibletranslationtools.glossary.GlossaryDatabase
 import java.io.File
 import java.util.Locale
+import java.util.Properties
 
 actual val appDirPath: String
     get() {
@@ -23,6 +25,10 @@ actual fun applyLocale(iso: String) {
 
 actual fun createSqlDriver(): SqlDriver {
     val databasePath = File(appDirPath, "glossary.db")
-    val driver: SqlDriver = JdbcSqliteDriver("jdbc:sqlite:${databasePath.absolutePath}")
+    val driver: SqlDriver = JdbcSqliteDriver(
+        url = "jdbc:sqlite:${databasePath.absolutePath}",
+        properties = Properties(),
+        schema = GlossaryDatabase.Schema
+    )
     return driver
 }

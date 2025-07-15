@@ -16,9 +16,9 @@ class InitApp(
             driver = driver,
             oldVersion = 0,
             newVersion = GlossaryDatabase.Schema.version,
-            AfterVersion(0) {
+            AfterVersion(1) {
                 runBlocking {
-                    settings.insert(DbSettings.INIT.value, false.toString())
+                    // run migrations here
                 }
             }
         )

@@ -1,4 +1,4 @@
-CREATE TABLE SettingsEntity (
+CREATE TABLE IF NOT EXISTS SettingsEntity (
     name TEXT NOT NULL,
     value TEXT NOT NULL
 );
