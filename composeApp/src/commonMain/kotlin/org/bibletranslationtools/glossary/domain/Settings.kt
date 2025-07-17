@@ -9,7 +9,8 @@ enum class Settings {
     LOCALE,
     RESOURCE,
     BOOK,
-    CHAPTER
+    CHAPTER,
+    GLOSSARY
 }
 
 enum class Theme {

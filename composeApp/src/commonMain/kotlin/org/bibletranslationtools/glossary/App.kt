@@ -1,9 +1,11 @@
 package org.bibletranslationtools.glossary
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
 import dev.burnoo.compose.remembersetting.rememberStringSetting
@@ -15,11 +17,10 @@ import org.bibletranslationtools.glossary.ui.DarkColorScheme
 import org.bibletranslationtools.glossary.ui.LightColorScheme
 import org.bibletranslationtools.glossary.ui.MainAppTheme
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
+import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.screen.SplashScreen
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
-@Preview
 fun App() {
     val theme by rememberStringSetting(Settings.THEME.name, Theme.SYSTEM.name)
     val colorScheme = when (theme) {
@@ -32,10 +33,14 @@ fun App() {
     val locale by rememberStringSetting(Settings.LOCALE.name, Locales.EN.name)
     applyLocale(locale.lowercase())
 
+    val snackBarHostState = remember { SnackbarHostState() }
+
     MainAppTheme(colorScheme) {
         Navigator(SplashScreen()) { navigator ->
             CompositionLocalProvider(LocalRootNavigator provides navigator) {
-                SlideTransition(navigator)
+                CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
+                    SlideTransition(navigator)
+                }
             }
         }
     }

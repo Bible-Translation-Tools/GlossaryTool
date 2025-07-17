@@ -1,3 +1,4 @@
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package org.bibletranslationtools.glossary.ui.screen
 
 import androidx.compose.foundation.Image
@@ -8,41 +9,50 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
+import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.book
 import glossary.composeapp.generated.resources.loading
+import glossary.composeapp.generated.resources.save
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
+import org.bibletranslationtools.glossary.ui.components.SelectableText
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
+import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.screenmodel.HomeEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.NavigationResult
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 class ReadScreen : Screen {
 
+    @OptIn(InternalTextApi::class)
     @Composable
     override fun Content() {
         val viewModel = koinScreenModel<ReadScreenModel>()
@@ -51,6 +61,7 @@ class ReadScreen : Screen {
         val event by viewModel.event.collectAsStateWithLifecycle(HomeEvent.Idle)
 
         val navigator = LocalRootNavigator.currentOrThrow
+        val snackBarHostState = LocalSnackBarHostState.currentOrThrow
         val scrollState = rememberScrollState()
 
         val selectedResource by rememberStringSetting(
@@ -65,6 +76,9 @@ class ReadScreen : Screen {
             Settings.CHAPTER.name,
             1
         )
+        var selectedGlossary by rememberStringSettingOrNull(
+            Settings.GLOSSARY.name
+        )
 
         val title = state.activeBook?.let { book ->
             state.activeChapter?.let { chapter ->
@@ -72,9 +86,16 @@ class ReadScreen : Screen {
             }
         } ?: stringResource(Res.string.loading)
 
+        var selectedText by remember { mutableStateOf("") }
+
         LaunchedEffect(Unit) {
             viewModel.onEvent(
-                HomeEvent.InitLoad(selectedResource, selectedBook, selectedChapter)
+                HomeEvent.InitLoad(
+                    selectedResource,
+                    selectedBook,
+                    selectedChapter,
+                    selectedGlossary
+                )
             )
         }
 
@@ -95,7 +116,27 @@ class ReadScreen : Screen {
                         else -> {}
                     }
                 }
+                is HomeEvent.SavePhrase -> {
+                    val phrase = (event as HomeEvent.SavePhrase).phrase
+                    navigator.push(
+                        EditPhraseScreen(phrase, state.activeResource!!)
+                    )
+                }
                 else -> {}
+            }
+        }
+
+        LaunchedEffect(selectedText) {
+            if (selectedText.isNotBlank()) {
+                val result = snackBarHostState.showSnackbar(
+                    message = selectedText,
+                    actionLabel = getString(Res.string.save),
+                    duration = SnackbarDuration.Indefinite
+                )
+                if (result == SnackbarResult.ActionPerformed) {
+                    viewModel.onEvent(HomeEvent.OnSavePhrase(selectedText))
+                }
+                selectedText = ""
             }
         }
 
@@ -134,19 +175,24 @@ class ReadScreen : Screen {
                 val chapterText = state.activeChapter?.let { chapter ->
                     val stringBuilder = StringBuilder()
                     chapter.verses.forEach { verse ->
-                        stringBuilder.append("${verse.name}. ${verse.text}\n")
+                        stringBuilder.append("${verse.number}. ${verse.text} ")
                     }
-                    stringBuilder.append("\n")
                     stringBuilder.toString()
                 } ?: stringResource(Res.string.loading)
 
-                SelectionContainer {
-                    Text(
-                        text = chapterText,
-                        style = MaterialTheme.typography.bodyLarge,
-                        lineHeight = 24.sp
-                    )
-                }
+                SelectableText(
+                    text = chapterText,
+                    phrases = state.chapterPhrases,
+                    selectedText = selectedText,
+                    onSelectedTextChanged = {
+                        selectedText = it
+                    },
+                    onPhraseClick = {
+                        navigator.push(
+                            ViewPhraseScreen(it, state.activeResource!!)
+                        )
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(8.dp))

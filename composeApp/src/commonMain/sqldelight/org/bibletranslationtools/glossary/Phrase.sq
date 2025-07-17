@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS PhraseEntity (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT PRIMARY KEY,
     phrase TEXT NOT NULL,
     spelling TEXT NOT NULL,
     description TEXT NOT NULL,
     audio TEXT NOT NULL,
-    glossaryId INTEGER NOT NULL,
+    glossaryId TEXT NOT NULL,
     createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
 );
@@ -12,22 +12,15 @@ CREATE TABLE IF NOT EXISTS PhraseEntity (
 CREATE INDEX IF NOT EXISTS idx_phraseentity_glossaryid ON PhraseEntity(glossaryId);
 CREATE INDEX IF NOT EXISTS idx_phraseentity_phrase ON PhraseEntity(phrase);
 
-getAll:
+getByGlossary:
 SELECT * FROM PhraseEntity WHERE glossaryId = :glossaryId;
 
 getByPhrase:
-SELECT * FROM PhraseEntity WHERE phrase = :phrase;
-
-getForChapter:
-SELECT p.* FROM PhraseEntity AS p
-INNER JOIN RefEntity AS r ON r.phraseId = p.id
-WHERE r.resource = :resource
-AND r.book = :book
-AND r.chapter = :chapter;
+SELECT * FROM PhraseEntity WHERE LOWER(phrase) = LOWER(:phrase) AND glossaryId = :glossaryId;
 
 insert:
-INSERT OR REPLACE INTO PhraseEntity(phrase, spelling, description, audio, glossaryId, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO PhraseEntity(id, phrase, spelling, description, audio, glossaryId, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 delete:
 DELETE FROM PhraseEntity WHERE id = :id;

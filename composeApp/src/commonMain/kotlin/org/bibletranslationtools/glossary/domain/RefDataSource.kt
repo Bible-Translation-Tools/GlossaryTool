@@ -4,41 +4,33 @@ import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.RefEntity
 
 interface RefDataSource {
-    suspend fun insert(
-        resource: String,
-        book: String,
-        chapter: String,
-        verse: String,
-        phraseId: Long
-    )
-    fun getForPhrase(phraseId: Long): List<RefEntity>
-    fun getForChapter(resource: String, book: String, chapter: String): List<RefEntity>
-    suspend fun delete(id: Long)
+    suspend fun getByPhrase(phraseId: String): List<RefEntity>
+    suspend fun insert(refEntity: RefEntity): String?
+    suspend fun delete(id: String): Long
 }
 
 class RefDataSourceImpl(db: GlossaryDatabase): RefDataSource {
     private val queries = db.refQueries
 
-    override suspend fun insert(
-        resource: String,
-        book: String,
-        chapter: String,
-        verse: String,
-        phraseId: Long
-    ) {
-        queries.insert(resource, book, chapter, verse, phraseId)
-    }
-
-    override fun getForPhrase(phraseId: Long) = queries.getForPhrase(phraseId)
+    override suspend fun getByPhrase(phraseId: String) = queries.getByPhrase(phraseId)
         .executeAsList()
 
-    override fun getForChapter(
-        resource: String,
-        book: String,
-        chapter: String
-    ) = queries.getForChapter(resource, book, chapter).executeAsList()
+    override suspend fun insert(refEntity: RefEntity): String? {
+        val result = queries.insert(
+            id = refEntity.id,
+            resource = refEntity.resource,
+            book = refEntity.book,
+            chapter = refEntity.chapter,
+            verse = refEntity.verse,
+            phraseId = refEntity.phraseId
+        )
+        if (result.await() > 0) {
+            return refEntity.id
+        }
+        return null
+    }
 
-    override suspend fun delete(id: Long) {
-        queries.delete(id)
+    override suspend fun delete(id: String): Long {
+        return queries.delete(id).await()
     }
 }

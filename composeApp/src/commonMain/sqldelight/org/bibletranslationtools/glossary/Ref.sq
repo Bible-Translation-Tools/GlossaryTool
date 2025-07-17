@@ -1,26 +1,21 @@
 CREATE TABLE IF NOT EXISTS RefEntity (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id TEXT PRIMARY KEY,
     resource TEXT NOT NULL,
     book TEXT NOT NULL,
     chapter TEXT NOT NULL,
     verse TEXT NOT NULL,
-    phraseId INTEGER NOT NULL
+    phraseId TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_refentity_phraseid ON RefEntity(phraseId);
 CREATE INDEX IF NOT EXISTS idx_refentity_resource_book_chapter ON RefEntity(resource, book, chapter);
 
-getForPhrase:
+getByPhrase:
 SELECT * FROM RefEntity WHERE phraseId = :phraseId;
 
-getForChapter:
-SELECT * FROM RefEntity WHERE resource = :resource
-AND book = :book
-AND chapter = :chapter;
-
 insert:
-INSERT OR REPLACE INTO RefEntity(resource, book, chapter, verse, phraseId)
-VALUES (?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO RefEntity(id, resource, book, chapter, verse, phraseId)
+VALUES (?, ?, ?, ?, ?, ?);
 
 delete:
 DELETE FROM RefEntity WHERE id = :id;

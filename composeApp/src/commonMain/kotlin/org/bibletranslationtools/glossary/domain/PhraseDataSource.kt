@@ -4,48 +4,39 @@ import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.PhraseEntity
 
 interface PhraseDataSource {
-    suspend fun insert(
-        phrase: String,
-        spelling: String,
-        description: String,
-        audio: String,
-        glossaryId: Long,
-        updatedAt: Long
-    )
-    fun getAll(glossaryId: Long): List<PhraseEntity>
-    fun getByPhrase(phrase: String): PhraseEntity?
-    fun getForChapter(resource: String, book: String, chapter: String): List<PhraseEntity>
-    suspend fun delete(id: Long)
+    suspend fun getByGlossary(glossaryId: String): List<PhraseEntity>
+    suspend fun getByPhrase(phrase: String, glossaryId: String): PhraseEntity?
+    suspend fun insert(phrase: PhraseEntity): String?
+    suspend fun delete(id: String): Long
 }
 
 class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
     private val queries = db.phraseQueries
 
-    override suspend fun insert(
-        phrase: String,
-        spelling: String,
-        description: String,
-        audio: String,
-        glossaryId: Long,
-        updatedAt: Long
-    ) {
-        queries.insert(phrase, spelling, description, audio, glossaryId, updatedAt)
+    override suspend fun getByGlossary(glossaryId: String) =
+        queries.getByGlossary(glossaryId).executeAsList()
+
+    override suspend fun getByPhrase(phrase: String, glossaryId: String): PhraseEntity? {
+        return queries.getByPhrase(phrase, glossaryId).executeAsOneOrNull()
     }
 
-    override fun getAll(glossaryId: Long) = queries.getAll(glossaryId).executeAsList()
-
-    override fun getByPhrase(phrase: String): PhraseEntity? {
-        return queries.getByPhrase(phrase).executeAsOneOrNull()
+    override suspend fun insert(phrase: PhraseEntity): String? {
+        val result = queries.insert(
+            id = phrase.id,
+            phrase = phrase.phrase,
+            spelling = phrase.spelling,
+            description = phrase.description,
+            audio = phrase.audio,
+            glossaryId = phrase.glossaryId,
+            updatedAt = phrase.updatedAt
+        )
+        if (result.await() > 0) {
+            return phrase.id
+        }
+        return null
     }
 
-    override fun getForChapter(
-        resource: String,
-        book: String,
-        chapter: String
-    ) = queries.getForChapter(resource, book, chapter)
-        .executeAsList()
-
-    override suspend fun delete(id: Long) {
-        queries.delete(id)
+    override suspend fun delete(id: String): Long {
+        return queries.delete(id).await()
     }
 }

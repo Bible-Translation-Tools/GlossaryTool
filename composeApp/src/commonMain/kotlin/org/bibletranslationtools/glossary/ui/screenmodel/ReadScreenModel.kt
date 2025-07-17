@@ -7,19 +7,20 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Clock
+import org.bibletranslationtools.glossary.Utils.randomCode
 import org.bibletranslationtools.glossary.data.Chapter
+import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.data.toPhrase
-import org.bibletranslationtools.glossary.data.toRef
+import org.bibletranslationtools.glossary.data.toData
+import org.bibletranslationtools.glossary.data.toEntity
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
 import org.bibletranslationtools.glossary.domain.PhraseDataSource
 import org.bibletranslationtools.glossary.domain.RefDataSource
@@ -36,17 +37,27 @@ data class HomeState(
     val activeResource: Resource? = null,
     val activeBook: Workbook? = null,
     val activeChapter: Chapter? = null,
-    val phrases: List<Phrase> = emptyList()
+    val activeGlossary: Glossary? = null,
+    val chapterPhrases: List<Phrase> = emptyList()
 )
 
 sealed class HomeEvent {
     data object Idle : HomeEvent()
-    data class InitLoad(val resource: String, val book: String, val chapter: Int) : HomeEvent()
+    data class InitLoad(
+        val resource: String,
+        val book: String,
+        val chapter: Int,
+        val glossary: String?
+    ) : HomeEvent()
+    data class LoadGlossary(val code: String) : HomeEvent()
+    data class LoadResource(val resource: String, val book: String, val chapter: Int) : HomeEvent()
     data class NavigateBook(val book: String, val chapter: Int) : HomeEvent()
     data class NavigateChapter(val chapter: Int) : HomeEvent()
     data object NextChapter : HomeEvent()
     data object PrevChapter : HomeEvent()
     data class OnNavigation(val result: NavigationResult): HomeEvent()
+    data class OnSavePhrase(val phrase: String): HomeEvent()
+    data class SavePhrase(val phrase: Phrase): HomeEvent()
 }
 
 class ReadScreenModel(
@@ -72,7 +83,8 @@ class ReadScreenModel(
             is HomeEvent.InitLoad -> initLoad(
                 event.resource,
                 event.book,
-                event.chapter
+                event.chapter,
+                event.glossary
             )
             is HomeEvent.NavigateBook -> {
                 val result = navigateBook(event.book, event.chapter)
@@ -88,49 +100,64 @@ class ReadScreenModel(
             }
             is HomeEvent.NextChapter -> nextChapter()
             is HomeEvent.PrevChapter -> prevChapter()
+            is HomeEvent.OnSavePhrase -> onSavePhrase(event.phrase)
             else -> resetChannel()
         }
     }
 
-    fun insert() {
+    private fun initLoad(
+        resource: String,
+        bookSlug: String,
+        chapter: Int,
+        glossary: String?
+    ) {
         screenModelScope.launch {
-            val date = Clock.System.now()
-            glossaryDataSource.insert("test", "test", date.epochSeconds)
+            _state.value = _state.value.copy(isLoading = true)
+
+            loadGlossary(glossary)
+            loadResource(resource, bookSlug, chapter)
+
+            _state.value = _state.value.copy(isLoading = false)
         }
     }
 
-    fun getAll() {
-        screenModelScope.launch {
-            glossaryDataSource.getAll().collectLatest { records ->
-                records.forEach {
-                    println(it.code)
+
+    private suspend fun loadResource(resource: String, bookSlug: String, chapter: Int) {
+        if (_state.value.activeResource?.slug != resource) {
+            val books = withContext(Dispatchers.IO) {
+                workbookDataSource.read(resource)
+            }
+            val book = books.find { it.slug == bookSlug } ?: books.firstOrNull()
+            book?.let { selectedBook ->
+                val chapter = selectedBook.chapters.find { it.number == chapter }
+                    ?: selectedBook.chapters.firstOrNull()
+
+                chapter?.let { selectedChapter ->
+                    _state.value = _state.value.copy(
+                        activeResource = Resource(resource, books),
+                        activeBook = selectedBook,
+                        activeChapter = selectedChapter
+                    )
+                    loadChapterPhrases()
                 }
             }
         }
     }
 
-    private fun initLoad(resource: String, bookSlug: String, chapter: Int) {
-        screenModelScope.launch {
-            if (_state.value.activeResource?.slug != resource) {
-                _state.value = _state.value.copy(isLoading = true)
-
-                val books = withContext(Dispatchers.IO) {
-                    workbookDataSource.read(resource)
-                }
-                val book = books.find { it.slug == bookSlug } ?: books.firstOrNull()
-                book?.let { selectedBook ->
-                    val chapter = selectedBook.chapters.find { it.number == chapter }
-                        ?: selectedBook.chapters.firstOrNull()
-
-                    chapter?.let { selectedChapter ->
-                        _state.value = _state.value.copy(
-                            activeResource = Resource(resource, books),
-                            activeBook = selectedBook,
-                            activeChapter = selectedChapter
-                        )
-                        loadPhrases()
+    private suspend fun loadGlossary(code: String?) {
+        code?.let {
+            val glossary = withContext(Dispatchers.IO) {
+                glossaryDataSource.getByCode(it)
+            }
+            if (glossary != null) {
+                val id = glossary.id
+                _state.value = _state.value.copy(
+                    activeGlossary = glossary.toData {
+                        runBlocking {
+                            loadPhrases(id)
+                        }
                     }
-                }
+                )
             }
         }
     }
@@ -169,7 +196,7 @@ class ReadScreenModel(
         _state.value.activeBook?.let { book ->
             book.chapters.singleOrNull { it.number == chapter }?.let {
                 _state.value = _state.value.copy(activeChapter = it)
-                loadPhrases()
+                loadChapterPhrases()
                 return NavigationResult.ChapterChanged(chapter)
             }
         }
@@ -222,35 +249,64 @@ class ReadScreenModel(
             activeBook = book,
             activeChapter = chapter
         )
-        loadPhrases()
+        loadChapterPhrases()
         return NavigationResult.BookChanged(
             book = book.slug,
             chapter = chapter.number
         )
     }
 
-    private fun loadPhrases() {
+    private fun loadChapterPhrases() {
         screenModelScope.launch {
-            _state.value.activeChapter?.let { chapter ->
-                val phrases = withContext(Dispatchers.IO) {
-                    phraseDataSource.getForChapter(
-                        _state.value.activeResource!!.slug,
-                        _state.value.activeBook!!.slug,
-                        chapter.number.toString()
-                    )
-                }
-                _state.value = _state.value.copy(
-                    phrases = phrases.map {
-                        it.toPhrase { loadRefs(it.id) }
+            _state.value.activeGlossary?.let { glossary ->
+                _state.value.activeResource?.let { resource ->
+                    _state.value.activeBook?.let { book ->
+                        _state.value.activeChapter?.let { chapter ->
+                            val phrases = glossary.phrases.filter { phrase ->
+                                phrase.refs.any { ref ->
+                                    ref.resource == resource.slug
+                                            && ref.book == book.slug
+                                            && ref.chapter == chapter.number.toString()
+                                }
+                            }
+                            _state.value = _state.value.copy(chapterPhrases = phrases)
+                        }
                     }
-                )
+                }
             }
         }
     }
 
-    private fun loadRefs(phraseId: Long): List<Ref> {
-        return refDataSource.getForPhrase(phraseId)
-            .map { it.toRef() }
+    private suspend fun loadPhrases(glossaryId: String): List<Phrase> {
+        return phraseDataSource.getByGlossary(glossaryId)
+            .map {
+                it.toData {
+                    runBlocking { loadRefs(it.id) }
+                }
+            }
+    }
+
+    private suspend fun loadRefs(phraseId: String): List<Ref> {
+        return refDataSource.getByPhrase(phraseId)
+            .map { it.toData() }
+    }
+
+    private fun onSavePhrase(phrase: String) {
+        screenModelScope.launch {
+            (_state.value.activeGlossary ?: run {
+                val code = randomCode()
+                val glossary = Glossary(code, "user")
+                val id = glossaryDataSource.insert(glossary.toEntity())
+                id?.let { glossary.copy(id = id) }
+            })?.let { glossary ->
+                val phrase = phraseDataSource.getByPhrase(phrase, glossary.id!!)
+                    ?.toData { emptyList() } ?: Phrase(
+                    phrase = phrase,
+                    glossaryId = glossary.id
+                )
+                _event.send(HomeEvent.SavePhrase(phrase))
+            }
+        }
     }
 
     private fun resetChannel() {

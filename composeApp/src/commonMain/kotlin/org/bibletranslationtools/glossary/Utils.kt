@@ -1,6 +1,11 @@
 package org.bibletranslationtools.glossary
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 import kotlin.random.Random
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 object Utils {
     fun randomString(length: Int): String {
@@ -30,4 +35,14 @@ object Utils {
             .map(charPool::get)
             .joinToString("")
     }
+
+    @OptIn(ExperimentalUuidApi::class)
+    fun generateUUID(): String {
+        return Uuid.random().toString()
+    }
+
+    fun getCurrentTime() =
+        Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+
+    fun getCurrentTimestamp() = Clock.System.now().epochSeconds
 }

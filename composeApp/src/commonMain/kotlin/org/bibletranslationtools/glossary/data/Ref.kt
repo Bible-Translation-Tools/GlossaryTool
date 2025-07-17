@@ -1,19 +1,35 @@
 package org.bibletranslationtools.glossary.data
 
 import org.bibletranslationtools.glossary.RefEntity
+import org.bibletranslationtools.glossary.Utils.generateUUID
 
 data class Ref(
     val resource: String,
     val book: String,
     val chapter: String,
-    val verse: String
+    val verse: String,
+    val phraseId: String? = null,
+    val id: String? = null,
 )
 
-fun RefEntity.toRef(): Ref {
+fun RefEntity.toData(): Ref {
     return Ref(
         resource = this.resource,
         book = this.book,
         chapter = this.chapter,
-        verse = this.verse
+        verse = this.verse,
+        phraseId = this.phraseId,
+        id = this.id
+    )
+}
+
+fun Ref.toEntity(): RefEntity {
+    return RefEntity(
+        resource = this.resource,
+        book = this.book,
+        chapter = this.chapter,
+        verse = this.verse,
+        phraseId = phraseId!!,
+        id = this.id ?: generateUUID(),
     )
 }
