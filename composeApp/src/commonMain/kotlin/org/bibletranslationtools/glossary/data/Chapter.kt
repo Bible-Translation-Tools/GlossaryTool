@@ -2,7 +2,7 @@ package org.bibletranslationtools.glossary.data
 
 data class Chapter(
     val number: Int,
-    private val readVerses: () -> List<Verse>
+    private val getVerses: () -> List<Verse>
 ) {
-    val verses: List<Verse> by lazy(readVerses)
+    val verses: List<Verse> by lazy(getVerses)
 }

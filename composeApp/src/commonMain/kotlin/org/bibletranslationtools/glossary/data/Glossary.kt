@@ -13,18 +13,17 @@ data class Glossary(
     val createdAt: LocalDateTime = getCurrentTime(),
     val updatedAt: LocalDateTime = getCurrentTime(),
     val id: String? = null,
-    private val readPhrases: () -> List<Phrase> = { emptyList() }
+    private val getPhrases: () -> List<Phrase> = { emptyList() }
 ) {
-    val phrases: List<Phrase> by lazy(readPhrases)
+    val phrases: List<Phrase> by lazy(getPhrases)
 }
 
-fun GlossaryEntity.toData(readPhrases: () -> List<Phrase>): Glossary {
+fun GlossaryEntity.toModel(): Glossary {
     return Glossary(
         code = code,
         author = author,
         createdAt = createdAt.toLocalDateTime(),
         updatedAt = updatedAt.toLocalDateTime(),
-        readPhrases = readPhrases,
         id = id
     )
 }

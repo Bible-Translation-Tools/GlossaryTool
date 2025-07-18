@@ -60,13 +60,13 @@ fun SelectableText(
 
     var selection by remember { mutableStateOf<Selection?>(null) }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var text by remember { mutableStateOf("") }
+    var text by remember(chapter, phrases) { mutableStateOf("") }
 
     val annotatedString = remember(chapter, phrases) {
         buildAnnotatedString {
             var lastIndex = 0
             chapter.verses.forEach { verse ->
-                val verseText = "${verse.number}. ${verse.text} "
+                val verseText = "${verse.number} ${verse.text} "
                 append(verseText)
                 text += verseText
 
@@ -131,7 +131,7 @@ fun SelectableText(
             ) {
                 Text(
                     text = annotatedString,
-                    style = LocalTextStyle.current.copy(lineHeight = 24.sp),
+                    style = LocalTextStyle.current.copy(lineHeight = 32.sp),
                     onTextLayout = { textLayoutResult = it },
                     modifier = Modifier
                         .fillMaxWidth()

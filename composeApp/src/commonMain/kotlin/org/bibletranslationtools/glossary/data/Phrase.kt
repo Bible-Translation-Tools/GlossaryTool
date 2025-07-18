@@ -16,12 +16,12 @@ data class Phrase(
     val updatedAt: LocalDateTime = getCurrentTime(),
     val glossaryId: String? = null,
     val id: String? = null,
-    private val readRefs: () -> List<Ref> = { emptyList() }
+    private val getRefs: () -> List<Ref> = { emptyList() }
 ) {
-    val refs: List<Ref> by lazy(readRefs)
+    val refs: List<Ref> by lazy(getRefs)
 }
 
-fun PhraseEntity.toData(readRefs: () -> List<Ref>): Phrase {
+fun PhraseEntity.toModel(): Phrase {
     return Phrase(
         phrase = phrase,
         spelling = spelling,
@@ -29,7 +29,6 @@ fun PhraseEntity.toData(readRefs: () -> List<Ref>): Phrase {
         audio = audio,
         createdAt = createdAt.toLocalDateTime(),
         updatedAt = updatedAt.toLocalDateTime(),
-        readRefs = readRefs,
         glossaryId = glossaryId,
         id = this.id
     )

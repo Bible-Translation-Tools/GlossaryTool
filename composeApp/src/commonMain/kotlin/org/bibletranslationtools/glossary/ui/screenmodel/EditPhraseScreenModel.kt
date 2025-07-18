@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.bibletranslationtools.glossary.Utils.generateUUID
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
@@ -69,7 +68,14 @@ class EditPhraseScreenModel(
                     updatedAt = getCurrentTime(),
                     id = phraseDetails.phrase.id
                 )
-                val refs = findRefs(phrase)
+                val dbRefs = phraseDetails.phrase.id?.let {
+                    glossaryRepository.getRefs(it)
+                } ?: emptyList()
+
+                val refs = (dbRefs + findRefs(phrase)).distinctBy {
+                    listOf(it.resource, it.book, it.chapter, it.verse)
+                }
+
                 if (refs.isNotEmpty()) {
                     glossaryRepository.addPhrase(phrase)?.let { phraseId ->
                         glossaryRepository.addRefs(
@@ -104,8 +110,7 @@ class EditPhraseScreenModel(
                                 book = book.slug,
                                 chapter = chapter.number.toString(),
                                 verse = verse.number,
-                                phraseId = phrase.id,
-                                id = generateUUID()
+                                phraseId = phrase.id
                             )
                             refs.add(ref)
                         }

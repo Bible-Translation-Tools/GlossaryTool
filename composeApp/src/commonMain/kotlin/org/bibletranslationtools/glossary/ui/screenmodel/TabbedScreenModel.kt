@@ -16,10 +16,11 @@ import org.bibletranslationtools.glossary.data.Workbook
 
 data class PhraseDetails(
     val phrase: Phrase,
+    val phrases: List<Phrase>,
     val resource: Resource,
     val book: Workbook,
     val chapter: Chapter,
-    val verse: String
+    val verse: String = ""
 )
 
 data class TabbedState(

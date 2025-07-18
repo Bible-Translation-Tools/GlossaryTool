@@ -16,7 +16,7 @@ data class Ref(
     }
 }
 
-fun RefEntity.toData(): Ref {
+fun RefEntity.toModel(): Ref {
     return Ref(
         resource = this.resource,
         book = this.book,

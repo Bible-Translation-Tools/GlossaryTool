@@ -19,11 +19,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.data.toData
-import org.bibletranslationtools.glossary.data.toEntity
-import org.bibletranslationtools.glossary.domain.GlossaryDataSource
-import org.bibletranslationtools.glossary.domain.PhraseDataSource
-import org.bibletranslationtools.glossary.domain.RefDataSource
+import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 
 sealed class NavigationResult {
@@ -62,10 +58,8 @@ sealed class HomeEvent {
 }
 
 class ReadScreenModel(
-    private val glossaryDataSource: GlossaryDataSource,
-    private val workbookDataSource: WorkbookDataSource,
-    private val phraseDataSource: PhraseDataSource,
-    private val refDataSource: RefDataSource
+    private val glossaryRepository: GlossaryRepository,
+    private val workbookDataSource: WorkbookDataSource
 ) : ScreenModel {
 
     private var _state = MutableStateFlow(HomeState())
@@ -133,7 +127,6 @@ class ReadScreenModel(
         }
     }
 
-
     private suspend fun loadResource(resource: String, bookSlug: String, chapter: Int) {
         if (_state.value.activeResource?.slug != resource) {
             val books = withContext(Dispatchers.IO) {
@@ -159,16 +152,15 @@ class ReadScreenModel(
     private suspend fun loadGlossary(code: String?) {
         code?.let {
             val glossary = withContext(Dispatchers.IO) {
-                glossaryDataSource.getByCode(it)
+                glossaryRepository.getGlossary(it)
             }
             if (glossary != null) {
-                val id = glossary.id
                 _state.value = _state.value.copy(
-                    activeGlossary = glossary.toData {
+                    activeGlossary = glossary.copy(getPhrases = {
                         runBlocking {
-                            loadPhrases(id)
+                            loadPhrases(glossary.id!!)
                         }
-                    }
+                    })
                 )
             }
         }
@@ -280,7 +272,16 @@ class ReadScreenModel(
                                             && ref.book == book.slug
                                             && ref.chapter == chapter.number.toString()
                                 }
-                            }
+                            }.sortedWith(
+                                compareBy {
+                                    it.refs.first { ref ->
+                                        ref.resource == resource.slug
+                                                && ref.book == book.slug
+                                                && ref.chapter == chapter.number.toString()
+                                    }.verse.toIntOrNull() ?: Int.MAX_VALUE
+                                }
+                            )
+
                             _state.value = _state.value.copy(chapterPhrases = phrases)
                         }
                     }
@@ -290,17 +291,20 @@ class ReadScreenModel(
     }
 
     private suspend fun loadPhrases(glossaryId: String): List<Phrase> {
-        return phraseDataSource.getByGlossary(glossaryId)
-            .map {
-                it.toData {
-                    runBlocking { loadRefs(it.id) }
+        return withContext(Dispatchers.IO) {
+            glossaryRepository.getPhrases(glossaryId)
+                .map {
+                    it.copy(getRefs = {
+                        runBlocking { loadRefs(it.id!!) }
+                    })
                 }
-            }
+        }
     }
 
     private suspend fun loadRefs(phraseId: String): List<Ref> {
-        return refDataSource.getByPhrase(phraseId)
-            .map { it.toData() }
+        return withContext(Dispatchers.IO) {
+            glossaryRepository.getRefs(phraseId)
+        }
     }
 
     private fun onSavePhrase(phrase: String) {
@@ -308,14 +312,14 @@ class ReadScreenModel(
             (_state.value.activeGlossary ?: run {
                 val code = randomCode()
                 val glossary = Glossary(code, "user")
-                val id = glossaryDataSource.insert(glossary.toEntity())
+                val id = glossaryRepository.addGlossary(glossary)
                 id?.let { glossary.copy(id = id) }
             })?.let { glossary ->
-                val phrase = phraseDataSource.getByPhrase(phrase, glossary.id!!)
-                    ?.toData { emptyList() } ?: Phrase(
-                    phrase = phrase,
-                    glossaryId = glossary.id
-                )
+                val phrase = glossaryRepository.getPhrase(phrase, glossary.id!!)
+                    ?: Phrase(
+                        phrase = phrase,
+                        glossaryId = glossary.id
+                    )
                 _event.send(HomeEvent.SavePhrase(phrase))
             }
         }

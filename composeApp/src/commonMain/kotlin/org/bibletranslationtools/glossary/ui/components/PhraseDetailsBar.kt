@@ -43,58 +43,106 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.learn_more
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.bibletranslationtools.glossary.ui.semiTransparent
 import org.jetbrains.compose.resources.stringResource
 
+private data class VerseData(
+    val book: String,
+    val chapter: String,
+    val verse: String
+)
+
+private fun Ref.toVerseData(): VerseData {
+    return VerseData(
+        book = book,
+        chapter = chapter,
+        verse = verse
+    )
+}
+
+private fun PhraseDetails.toVerseData(): VerseData {
+    return VerseData(
+        book = book.slug,
+        chapter = chapter.number.toString(),
+        verse = verse
+    )
+}
+
 @Composable
 fun PhraseDetailsBar(
     details: PhraseDetails,
-    onViewDetails: () -> Unit,
+    onViewDetails: (Phrase) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var currentRef by remember {
-        mutableStateOf(
-            details.phrase.refs.first {
-                it.resource == details.resource.slug
-                        && it.book == details.book.slug
-                        && it.chapter == details.chapter.number.toString()
-                        && it.verse == details.verse
-            }
-        )
-    }
-    var currentVerse by remember {
-        mutableStateOf(
-            details.resource.books
-                .single { it.slug == details.book.slug }
-                .chapters.single { it.number == details.chapter.number }
-                .verses.single { it.number == details.verse }
-                .text
-        )
-    }
-
-    val loadVerse: (Ref) -> Unit = { ref ->
-        currentVerse = details.resource.books
-            .single { it.slug == ref.book }
-            .chapters.single { it.number.toString() == ref.chapter }
-            .verses.single { it.number == ref.verse }
+    val loadVerse: (VerseData) -> String = { verseData ->
+        details.resource.books
+            .single { it.slug == verseData.book }
+            .chapters.single { it.number.toString() == verseData.chapter }
+            .verses.single { it.number == verseData.verse }
             .text
     }
 
+    val loadRef: (Phrase, String?) -> Ref? = { phrase, verse ->
+        phrase.refs.firstOrNull {
+            it.resource == details.resource.slug
+                    && it.book == details.book.slug
+                    && it.chapter == details.chapter.number.toString()
+                    && (verse == null || it.verse == verse)
+        }
+    }
+
+    var currentPhrase by remember {
+        mutableStateOf(details.phrase)
+    }
+
+    var currentRef by remember {
+        mutableStateOf(loadRef(currentPhrase, details.verse))
+    }
+
+    var currentVerse by remember {
+        mutableStateOf(loadVerse(details.toVerseData()))
+    }
+
+    val nextPhrase: () -> Unit = {
+        details.phrases.getOrNull(
+            details.phrases.indexOf(currentPhrase) + 1
+        )?.let { phrase ->
+            currentPhrase = phrase
+            currentRef = loadRef(phrase, null)
+            currentVerse = loadVerse(
+                currentRef?.toVerseData() ?: details.toVerseData()
+            )
+        }
+    }
+
+    val prevPhrase: () -> Unit = {
+        details.phrases.getOrNull(
+            details.phrases.indexOf(currentPhrase) - 1
+        )?.let { phrase ->
+            currentPhrase = phrase
+            currentRef = loadRef(phrase, null)
+            currentVerse = loadVerse(
+                currentRef?.toVerseData() ?: details.toVerseData()
+            )
+        }
+    }
+
     val nextRef: () -> Unit = {
-        details.phrase.refs
-            .getOrNull(details.phrase.refs.indexOf(currentRef) + 1)?.let { ref ->
+        currentPhrase.refs
+            .getOrNull(currentPhrase.refs.indexOf(currentRef) + 1)?.let { ref ->
                 currentRef = ref
-                loadVerse(ref)
+                currentVerse = loadVerse(ref.toVerseData())
             }
     }
 
     val prevRef: () -> Unit = {
-        details.phrase.refs
-            .getOrNull(details.phrase.refs.indexOf(currentRef) - 1)?.let { ref ->
+        currentPhrase.refs
+            .getOrNull(currentPhrase.refs.indexOf(currentRef) - 1)?.let { ref ->
                 currentRef = ref
-                loadVerse(ref)
+                currentVerse = loadVerse(ref.toVerseData())
             }
     }
 
@@ -133,7 +181,7 @@ fun PhraseDetailsBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { prevPhrase() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                             contentDescription = "Previous"
@@ -143,7 +191,7 @@ fun PhraseDetailsBar(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = details.phrase.phrase,
+                            text = currentPhrase.phrase,
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
                         )
@@ -152,7 +200,7 @@ fun PhraseDetailsBar(
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(
-                                text = details.phrase.spelling,
+                                text = currentPhrase.spelling,
                                 style = MaterialTheme.typography.headlineLarge,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
@@ -164,7 +212,7 @@ fun PhraseDetailsBar(
                             )
                         }
                     }
-                    IconButton(onClick = {}) {
+                    IconButton(onClick = { nextPhrase() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = "Next"
@@ -178,7 +226,7 @@ fun PhraseDetailsBar(
                     append(currentVerse)
 
                     val regex = Regex(
-                        pattern = "\\b${Regex.escape(details.phrase.phrase)}\\b",
+                        pattern = "\\b${Regex.escape(currentPhrase.phrase)}\\b",
                         option = RegexOption.IGNORE_CASE
                     )
                     regex.findAll(currentVerse).forEach { matchResult ->
@@ -197,6 +245,8 @@ fun PhraseDetailsBar(
                     text = annotatedVerse,
                     textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.bodyLarge,
+                    minLines = 3,
+                    maxLines = 3,
                     modifier = Modifier.padding(horizontal = 8.dp)
                 )
 
@@ -242,7 +292,7 @@ fun PhraseDetailsBar(
                     Button(
                         onClick = {
                             onDismiss()
-                            onViewDetails()
+                            onViewDetails(currentPhrase)
                         },
                         shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.height(48.dp)

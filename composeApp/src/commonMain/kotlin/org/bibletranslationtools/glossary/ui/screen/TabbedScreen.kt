@@ -53,8 +53,10 @@ class TabbedScreen : Screen {
                 state.phraseDetails?.let { phraseDetails ->
                     PhraseDetailsBar(
                         details = phraseDetails,
-                        onViewDetails = {
-                            navigator.push(ViewPhraseScreen(phraseDetails))
+                        onViewDetails = { phrase ->
+                            navigator.push(ViewPhraseScreen(
+                                phraseDetails.copy(phrase = phrase)
+                            ))
                         },
                         onDismiss = {
                             screenModel.onEvent(

@@ -121,10 +121,10 @@ class ReadScreen : Screen {
                         EditPhraseScreen(
                             PhraseDetails(
                                 phrase = phrase,
+                                phrases = state.chapterPhrases,
                                 resource = state.activeResource!!,
                                 book = state.activeBook!!,
-                                chapter = state.activeChapter!!,
-                                verse = "1"
+                                chapter = state.activeChapter!!
                             )
                         )
                     )
@@ -181,6 +181,7 @@ class ReadScreen : Screen {
                                 TabbedEvent.LoadPhrase(
                                     PhraseDetails(
                                         phrase = phrase,
+                                        phrases = state.chapterPhrases,
                                         resource = state.activeResource!!,
                                         book = state.activeBook!!,
                                         chapter = state.activeChapter!!,
