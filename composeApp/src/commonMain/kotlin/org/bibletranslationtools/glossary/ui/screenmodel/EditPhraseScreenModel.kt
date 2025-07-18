@@ -2,6 +2,8 @@ package org.bibletranslationtools.glossary.ui.screenmodel
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.no_refs_found
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,6 +19,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.jetbrains.compose.resources.getString
 
 sealed class EditPhraseEvent {
     data object Idle : EditPhraseEvent()
@@ -25,7 +28,8 @@ sealed class EditPhraseEvent {
 }
 
 data class EditPhraseState(
-    val isSaving: Boolean = false
+    val isSaving: Boolean = false,
+    val error: String? = null
 )
 
 class EditPhraseScreenModel(
@@ -58,6 +62,8 @@ class EditPhraseScreenModel(
     private fun savePhrase(spelling: String, description: String) {
         screenModelScope.launch {
             _state.value = _state.value.copy(isSaving = true)
+            _state.value = _state.value.copy(error = null)
+
             withContext(Dispatchers.IO) {
                 val phrase = phrase.copy(
                     spelling = spelling,
@@ -74,10 +80,11 @@ class EditPhraseScreenModel(
                     }
                     _event.send(EditPhraseEvent.OnPhraseSaved)
                 } else {
-                    println("No refs found")
+                    _state.value = _state.value.copy(
+                        error = getString(Res.string.no_refs_found)
+                    )
                 }
             }
-            println("Saved!!!")
             _state.value = _state.value.copy(isSaving = false)
         }
     }

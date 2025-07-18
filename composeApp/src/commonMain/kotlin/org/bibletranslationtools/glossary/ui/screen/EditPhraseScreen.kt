@@ -3,6 +3,7 @@ package org.bibletranslationtools.glossary.ui.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +40,7 @@ import glossary.composeapp.generated.resources.cancel
 import glossary.composeapp.generated.resources.description
 import glossary.composeapp.generated.resources.editing_phrase
 import glossary.composeapp.generated.resources.save_exit
+import glossary.composeapp.generated.resources.saving
 import glossary.composeapp.generated.resources.spelling
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Resource
@@ -203,6 +205,19 @@ class EditPhraseScreen(
 
                     Spacer(modifier = Modifier.height(24.dp))
 
+                    state.error?.let { error ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+                    }
+
                     if (state.isSaving) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -210,7 +225,7 @@ class EditPhraseScreen(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             CircularProgressIndicator()
-                            Text("Saving... Please wait.")
+                            Text(stringResource(Res.string.saving))
                         }
                     }
                 }
