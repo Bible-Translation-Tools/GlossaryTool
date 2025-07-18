@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,16 +35,13 @@ import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.book
 import glossary.composeapp.generated.resources.loading
-import glossary.composeapp.generated.resources.save
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.components.SelectableText
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
-import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.screenmodel.HomeEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.NavigationResult
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
-import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -61,7 +56,6 @@ class ReadScreen : Screen {
         val event by viewModel.event.collectAsStateWithLifecycle(HomeEvent.Idle)
 
         val navigator = LocalRootNavigator.currentOrThrow
-        val snackBarHostState = LocalSnackBarHostState.currentOrThrow
         val scrollState = rememberScrollState()
 
         val selectedResource by rememberStringSetting(
@@ -127,20 +121,6 @@ class ReadScreen : Screen {
             }
         }
 
-        LaunchedEffect(selectedText) {
-            if (selectedText.isNotBlank()) {
-                val result = snackBarHostState.showSnackbar(
-                    message = selectedText,
-                    actionLabel = getString(Res.string.save),
-                    duration = SnackbarDuration.Indefinite
-                )
-                if (result == SnackbarResult.ActionPerformed) {
-                    viewModel.onEvent(HomeEvent.OnSavePhrase(selectedText))
-                }
-                selectedText = ""
-            }
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -187,6 +167,9 @@ class ReadScreen : Screen {
                     selectedText = selectedText,
                     onSelectedTextChanged = {
                         selectedText = it
+                    },
+                    onSaveSelection = {
+                        viewModel.onEvent(HomeEvent.OnSavePhrase(it))
                     },
                     onPhraseClick = {
                         navigator.push(

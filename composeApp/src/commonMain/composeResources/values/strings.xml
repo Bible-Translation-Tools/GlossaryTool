@@ -18,4 +18,5 @@
     <string name="cancel">Cancel</string>
     <string name="saving">Saving... Please wait.</string>
     <string name="no_refs_found">No references found</string>
+    <string name="add_to_glossary">Add to Glossary</string>
 </resources>

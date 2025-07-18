@@ -3,27 +3,41 @@
 package org.bibletranslationtools.glossary.ui.components
 
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.text.selection.Selection
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.add_to_glossary
 import org.bibletranslationtools.glossary.data.Phrase
+import org.jetbrains.compose.resources.stringResource
+import kotlin.math.max
+import kotlin.math.min
 
 private const val HIGHLIGHT_TAG = "highlight"
 
@@ -35,11 +49,14 @@ fun SelectableText(
     phrases: List<Phrase>,
     selectedText: String,
     onSelectedTextChanged: (String) -> Unit,
+    onSaveSelection: (String) -> Unit,
     onPhraseClick: (Phrase) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selection by remember { mutableStateOf<Selection?>(null) }
     val highlightColor = MaterialTheme.colorScheme.onBackground
+
+    var selection by remember { mutableStateOf<Selection?>(null) }
+    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
     val annotatedString = remember(text, phrases) {
         buildAnnotatedString {
@@ -78,39 +95,80 @@ fun SelectableText(
         }
     }
 
-    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-
-    SelectionContainer(
-        selection = selection,
-        onSelectionChange = { newSelection ->
-            selection = newSelection
-            val newSelectedText = newSelection?.let {
-                text.substring(it.start.offset, it.end.offset)
-            } ?: ""
-            onSelectedTextChanged(newSelectedText)
-        },
-        modifier = modifier
-    ) {
-        Text(
-            text = annotatedString,
-            style = LocalTextStyle.current.copy(lineHeight = 24.sp),
-            onTextLayout = { textLayoutResult = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .pointerInput(Unit) {
-                    detectTapGestures { offset ->
-                        textLayoutResult?.let { layoutResult ->
-                            val position = layoutResult.getOffsetForPosition(offset)
-                            annotatedString
-                                .getStringAnnotations(tag = HIGHLIGHT_TAG, start = position, end = position)
-                                .firstOrNull()
-                                ?.let { annotation ->
-                                    onSelectedTextChanged("")
-                                    onPhraseClick(phrases.single { it.phrase == annotation.item })
+    Box(modifier = modifier) {
+        CompositionLocalProvider(LocalTextToolbar provides EmptyTextToolbar) {
+            SelectionContainer(
+                selection = selection,
+                onSelectionChange = { newSelection ->
+                    selection = newSelection
+                    val newSelectedText = newSelection?.let { sel ->
+                        val start = min(sel.start.offset, sel.end.offset)
+                        val end = max(sel.start.offset, sel.end.offset)
+                        text.substring(start, end)
+                    } ?: ""
+                    onSelectedTextChanged(newSelectedText)
+                },
+                modifier = modifier
+            ) {
+                Text(
+                    text = annotatedString,
+                    style = LocalTextStyle.current.copy(lineHeight = 24.sp),
+                    onTextLayout = { textLayoutResult = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .pointerInput(Unit) {
+                            detectTapGestures { offset ->
+                                textLayoutResult?.let { layoutResult ->
+                                    val position = layoutResult.getOffsetForPosition(offset)
+                                    annotatedString
+                                        .getStringAnnotations(tag = HIGHLIGHT_TAG, start = position, end = position)
+                                        .firstOrNull()
+                                        ?.let { annotation ->
+                                            onSelectedTextChanged("")
+                                            onPhraseClick(phrases.single { it.phrase == annotation.item })
+                                        }
                                 }
+                            }
                         }
-                    }
+                )
+            }
+        }
+
+        selection?.let { sel ->
+            textLayoutResult?.let { layoutResult ->
+                val selectionBoundingBox = layoutResult.getPathForRange(
+                    start = min(sel.start.offset, sel.end.offset),
+                    end = max(sel.start.offset, sel.end.offset)
+                ).getBounds()
+
+                val density = LocalDensity.current
+                val offsetX = with(density) { selectionBoundingBox.center.x.toDp() }
+                val offsetY = with(density) { selectionBoundingBox.top.toDp() }
+
+                Button(
+                    onClick = {
+                        onSaveSelection(selectedText)
+                        onSelectedTextChanged("")
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.onBackground,
+                        contentColor = MaterialTheme.colorScheme.background
+                    ),
+                    shape = MaterialTheme.shapes.medium,
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 6.dp,
+                        pressedElevation = 8.dp
+                    ),
+                    modifier = Modifier
+                        .offset(x = offsetX, y = offsetY)
+                        .graphicsLayer {
+                            translationY = -size.height - 8.dp.toPx()
+                            translationX = -size.width / 2
+                        }
+                ) {
+                    Text(stringResource(Res.string.add_to_glossary))
                 }
-        )
+            }
+        }
     }
 }
