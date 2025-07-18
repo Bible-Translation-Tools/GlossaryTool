@@ -97,6 +97,7 @@ class ReadScreen : Screen {
                     selectedGlossary
                 )
             )
+            viewModel.onEvent(HomeEvent.LoadPhrases)
         }
 
         LaunchedEffect(event) {

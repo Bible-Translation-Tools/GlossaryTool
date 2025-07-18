@@ -2,9 +2,11 @@ package org.bibletranslationtools.glossary.ui.screenmodel
 
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.Utils.generateUUID
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
@@ -39,22 +41,24 @@ class EditPhraseScreenModel(
 
     private fun savePhrase(spelling: String, description: String) {
         screenModelScope.launch {
-            val phrase = phrase.copy(
-                spelling = spelling,
-                description = description,
-                updatedAt = getCurrentTime(),
-                id = phrase.id
-            )
-            val refs = findRefs(phrase)
-            if (refs.isNotEmpty()) {
-                glossaryRepository.addPhrase(phrase)?.let { phraseId ->
-                    glossaryRepository.addRefs(
-                        refs.map { ref -> ref.copy(phraseId = phraseId) }
-                    )
+            withContext(Dispatchers.IO) {
+                val phrase = phrase.copy(
+                    spelling = spelling,
+                    description = description,
+                    updatedAt = getCurrentTime(),
+                    id = phrase.id
+                )
+                val refs = findRefs(phrase)
+                if (refs.isNotEmpty()) {
+                    glossaryRepository.addPhrase(phrase)?.let { phraseId ->
+                        glossaryRepository.addRefs(
+                            refs.map { ref -> ref.copy(phraseId = phraseId) }
+                        )
+                    }
+                    _event.send(EditPhraseEvent.OnPhraseSaved)
+                } else {
+                    println("No refs found")
                 }
-                _event.send(EditPhraseEvent.OnPhraseSaved)
-            } else {
-                println("No refs found")
             }
         }
     }

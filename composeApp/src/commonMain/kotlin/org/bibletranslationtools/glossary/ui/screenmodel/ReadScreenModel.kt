@@ -50,6 +50,7 @@ sealed class HomeEvent {
         val glossary: String?
     ) : HomeEvent()
     data class LoadGlossary(val code: String) : HomeEvent()
+    data object LoadPhrases : HomeEvent()
     data class LoadResource(val resource: String, val book: String, val chapter: Int) : HomeEvent()
     data class NavigateBook(val book: String, val chapter: Int) : HomeEvent()
     data class NavigateChapter(val chapter: Int) : HomeEvent()
@@ -101,6 +102,17 @@ class ReadScreenModel(
             is HomeEvent.NextChapter -> nextChapter()
             is HomeEvent.PrevChapter -> prevChapter()
             is HomeEvent.OnSavePhrase -> onSavePhrase(event.phrase)
+            is HomeEvent.LoadGlossary -> screenModelScope.launch {
+                loadGlossary(event.code)
+            }
+            is HomeEvent.LoadPhrases -> loadChapterPhrases()
+            is HomeEvent.LoadResource -> screenModelScope.launch {
+                loadResource(
+                    event.resource,
+                    event.book,
+                    event.chapter
+                )
+            }
             else -> resetChannel()
         }
     }
