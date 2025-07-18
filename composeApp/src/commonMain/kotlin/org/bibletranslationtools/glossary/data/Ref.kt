@@ -10,7 +10,11 @@ data class Ref(
     val verse: String,
     val phraseId: String? = null,
     val id: String? = null,
-)
+) {
+    override fun toString(): String {
+        return "${book.uppercase()} $chapter:$verse"
+    }
+}
 
 fun RefEntity.toData(): Ref {
     return Ref(

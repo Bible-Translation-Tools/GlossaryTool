@@ -1,0 +1,266 @@
+package org.bibletranslationtools.glossary.ui.components
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize.Companion.StepBased
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.learn_more
+import org.bibletranslationtools.glossary.data.Ref
+import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
+import org.bibletranslationtools.glossary.ui.semiTransparent
+import org.jetbrains.compose.resources.stringResource
+
+@Composable
+fun PhraseDetailsBar(
+    details: PhraseDetails,
+    onViewDetails: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    var currentRef by remember {
+        mutableStateOf(
+            details.phrase.refs.first {
+                it.resource == details.resource.slug
+                        && it.book == details.book.slug
+                        && it.chapter == details.chapter.number.toString()
+                        && it.verse == details.verse
+            }
+        )
+    }
+    var currentVerse by remember {
+        mutableStateOf(
+            details.resource.books
+                .single { it.slug == details.book.slug }
+                .chapters.single { it.number == details.chapter.number }
+                .verses.single { it.number == details.verse }
+                .text
+        )
+    }
+
+    val loadVerse: (Ref) -> Unit = { ref ->
+        currentVerse = details.resource.books
+            .single { it.slug == ref.book }
+            .chapters.single { it.number.toString() == ref.chapter }
+            .verses.single { it.number == ref.verse }
+            .text
+    }
+
+    val nextRef: () -> Unit = {
+        details.phrase.refs
+            .getOrNull(details.phrase.refs.indexOf(currentRef) + 1)?.let { ref ->
+                currentRef = ref
+                loadVerse(ref)
+            }
+    }
+
+    val prevRef: () -> Unit = {
+        details.phrase.refs
+            .getOrNull(details.phrase.refs.indexOf(currentRef) - 1)?.let { ref ->
+                currentRef = ref
+                loadVerse(ref)
+            }
+    }
+
+    Box(
+        contentAlignment = Alignment.BottomCenter,
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.semiTransparent)
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onDismiss
+            )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .shadow(
+                    elevation = 16.dp,
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                )
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                )
+                .clickable(enabled = false, onClick = {})
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(vertical = 24.dp, horizontal = 16.dp)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                            contentDescription = "Previous"
+                        )
+                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = details.phrase.phrase,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f)
+                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = details.phrase.spelling,
+                                style = MaterialTheme.typography.headlineLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                contentDescription = "Play pronunciation",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = "Next"
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                val annotatedVerse = buildAnnotatedString {
+                    append(currentVerse)
+
+                    val regex = Regex(
+                        pattern = "\\b${Regex.escape(details.phrase.phrase)}\\b",
+                        option = RegexOption.IGNORE_CASE
+                    )
+                    regex.findAll(currentVerse).forEach { matchResult ->
+                        val startIndex = matchResult.range.first
+                        val endIndex = matchResult.range.last + 1
+                        addStyle(
+                            style = SpanStyle(
+                                fontWeight = FontWeight.Bold
+                            ),
+                            start = startIndex,
+                            end = endIndex
+                        )
+                    }
+                }
+                Text(
+                    text = annotatedVerse,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(horizontal = 8.dp)
+                )
+
+                Spacer(Modifier.height(24.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.weight(0.5f)
+                    ) {
+                        IconButton(onClick = { prevRef() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                                contentDescription = "Previous Ref"
+                            )
+                        }
+                        BasicText(
+                            text = currentRef.toString(),
+                            autoSize = StepBased(
+                                minFontSize = 12.sp,
+                                maxFontSize = 16.sp
+                            ),
+                            softWrap = false,
+                            style = TextStyle.Default.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            ),
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { nextRef() }) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                                contentDescription = "Next Ref"
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = {
+                            onDismiss()
+                            onViewDetails()
+                        },
+                        shape = MaterialTheme.shapes.medium,
+                        modifier = Modifier.height(48.dp)
+                            .width(180.dp)
+                            .weight(0.5f),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                            contentColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.learn_more),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.W600
+                        )
+                    }
+                }
+            }
+        }
+    }
+}

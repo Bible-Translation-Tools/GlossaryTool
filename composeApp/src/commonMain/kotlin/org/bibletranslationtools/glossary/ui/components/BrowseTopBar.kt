@@ -27,7 +27,9 @@ fun BrowseTopBar(
         },
         navigationIcon = {
             IconButton(onClick = onBackClick) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back"
+                )
             }
         },
         actions = actions

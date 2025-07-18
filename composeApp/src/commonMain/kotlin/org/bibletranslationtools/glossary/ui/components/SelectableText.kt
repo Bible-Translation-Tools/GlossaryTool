@@ -34,33 +34,52 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_to_glossary
+import glossary.composeapp.generated.resources.view_glossary
+import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
 import kotlin.math.min
 
 private const val HIGHLIGHT_TAG = "highlight"
+private const val VERSE_TAG = "verse"
 
 // Opt-in for onSelectionChange, which is an internal API.
 @OptIn(InternalTextApi::class)
 @Composable
 fun SelectableText(
-    text: String,
+    chapter: Chapter,
     phrases: List<Phrase>,
     selectedText: String,
     onSelectedTextChanged: (String) -> Unit,
     onSaveSelection: (String) -> Unit,
-    onPhraseClick: (Phrase) -> Unit,
+    onPhraseClick: (Phrase, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val highlightColor = MaterialTheme.colorScheme.onBackground
 
     var selection by remember { mutableStateOf<Selection?>(null) }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
+    var text by remember { mutableStateOf("") }
 
-    val annotatedString = remember(text, phrases) {
+    val annotatedString = remember(chapter, phrases) {
         buildAnnotatedString {
-            append(text)
+            var lastIndex = 0
+            chapter.verses.forEach { verse ->
+                val verseText = "${verse.number}. ${verse.text} "
+                append(verseText)
+                text += verseText
+
+                addStringAnnotation(
+                    tag = VERSE_TAG,
+                    annotation = verse.number,
+                    start = lastIndex,
+                    end = lastIndex + verseText.length
+                )
+
+                lastIndex += verseText.length
+            }
+
             phrases.forEach { phrase ->
                 val regex = Regex(
                     pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
@@ -120,13 +139,30 @@ fun SelectableText(
                             detectTapGestures { offset ->
                                 textLayoutResult?.let { layoutResult ->
                                     val position = layoutResult.getOffsetForPosition(offset)
-                                    annotatedString
-                                        .getStringAnnotations(tag = HIGHLIGHT_TAG, start = position, end = position)
+                                    val phrase = annotatedString
+                                        .getStringAnnotations(
+                                            tag = HIGHLIGHT_TAG,
+                                            start = position,
+                                            end = position
+                                        )
                                         .firstOrNull()
                                         ?.let { annotation ->
-                                            onSelectedTextChanged("")
-                                            onPhraseClick(phrases.single { it.phrase == annotation.item })
+                                            phrases.single { it.phrase == annotation.item }
                                         }
+                                    val verse = annotatedString
+                                        .getStringAnnotations(
+                                            tag = VERSE_TAG,
+                                            start = position,
+                                            end = position
+                                        )
+                                        .firstOrNull()?.item
+
+                                    phrase?.let { p ->
+                                        verse?.let { v ->
+                                            onSelectedTextChanged("")
+                                            onPhraseClick(p, v)
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -166,7 +202,14 @@ fun SelectableText(
                             translationX = -size.width / 2
                         }
                 ) {
-                    Text(stringResource(Res.string.add_to_glossary))
+                    val isView = phrases.any { it.phrase.lowercase() == selectedText.lowercase() }
+                            || selectedText.isEmpty()
+                    val text = if (isView) {
+                        stringResource(Res.string.view_glossary)
+                    } else {
+                        stringResource(Res.string.add_to_glossary)
+                    }
+                    Text(text)
                 }
             }
         }

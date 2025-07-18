@@ -15,10 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material.icons.filled.Speaker
-import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -36,14 +33,12 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_audio
 import glossary.composeapp.generated.resources.edit
-import org.bibletranslationtools.glossary.data.Phrase
-import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
+import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.jetbrains.compose.resources.stringResource
 
 class ViewPhraseScreen(
-    private val phrase: Phrase,
-    private val resource: Resource
+    private val phraseDetails: PhraseDetails
 ) : Screen {
 
     @Composable
@@ -53,7 +48,7 @@ class ViewPhraseScreen(
         Scaffold(
             topBar = {
                 BrowseTopBar(
-                    title = phrase.phrase
+                    title = phraseDetails.phrase.phrase
                 ) {
                     navigator.popUntil { it is ReadScreen }
                 }
@@ -76,7 +71,7 @@ class ViewPhraseScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = phrase.spelling,
+                            text = phraseDetails.phrase.spelling,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -89,7 +84,7 @@ class ViewPhraseScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(phrase.description)
+                    Text(phraseDetails.phrase.description)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -99,7 +94,7 @@ class ViewPhraseScreen(
                     ) {
                         Button(
                             onClick = {
-                                navigator.push(EditPhraseScreen(phrase, resource))
+                                navigator.push(EditPhraseScreen(phraseDetails))
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),

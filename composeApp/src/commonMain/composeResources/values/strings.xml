@@ -19,4 +19,6 @@
     <string name="saving">Saving... Please wait.</string>
     <string name="no_refs_found">No references found</string>
     <string name="add_to_glossary">Add to Glossary</string>
+    <string name="view_glossary">View Glossary</string>
+    <string name="learn_more">Learn More</string>
 </resources>
