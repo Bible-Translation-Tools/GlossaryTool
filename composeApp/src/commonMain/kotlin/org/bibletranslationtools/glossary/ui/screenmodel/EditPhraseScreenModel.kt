@@ -4,7 +4,11 @@ import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.Utils.generateUUID
@@ -20,11 +24,23 @@ sealed class EditPhraseEvent {
     data object OnPhraseSaved: EditPhraseEvent()
 }
 
+data class EditPhraseState(
+    val isSaving: Boolean = false
+)
+
 class EditPhraseScreenModel(
     private val phrase: Phrase,
     private val resource: Resource,
     private val glossaryRepository: GlossaryRepository
 ) : ScreenModel {
+
+    private var _state = MutableStateFlow(EditPhraseState())
+    val state: StateFlow<EditPhraseState> = _state
+        .stateIn(
+            scope = screenModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = EditPhraseState()
+        )
 
     private val _event: Channel<EditPhraseEvent> = Channel()
     val event = _event.receiveAsFlow()
@@ -41,6 +57,7 @@ class EditPhraseScreenModel(
 
     private fun savePhrase(spelling: String, description: String) {
         screenModelScope.launch {
+            _state.value = _state.value.copy(isSaving = true)
             withContext(Dispatchers.IO) {
                 val phrase = phrase.copy(
                     spelling = spelling,
@@ -60,6 +77,8 @@ class EditPhraseScreenModel(
                     println("No refs found")
                 }
             }
+            println("Saved!!!")
+            _state.value = _state.value.copy(isSaving = false)
         }
     }
 
