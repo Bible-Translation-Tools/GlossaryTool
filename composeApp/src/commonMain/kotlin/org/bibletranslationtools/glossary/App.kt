@@ -19,6 +19,7 @@ import org.bibletranslationtools.glossary.ui.MainAppTheme
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.screen.SplashScreen
+import org.bibletranslationtools.glossary.ui.screen.TabbedScreen
 
 @Composable
 fun App() {
@@ -36,7 +37,10 @@ fun App() {
     val snackBarHostState = remember { SnackbarHostState() }
 
     MainAppTheme(colorScheme) {
-        Navigator(SplashScreen()) { navigator ->
+        Navigator(
+            screen = SplashScreen(),
+            onBackPressed = { it !is TabbedScreen }
+        ) { navigator ->
             CompositionLocalProvider(LocalRootNavigator provides navigator) {
                 CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
                     SlideTransition(navigator)
