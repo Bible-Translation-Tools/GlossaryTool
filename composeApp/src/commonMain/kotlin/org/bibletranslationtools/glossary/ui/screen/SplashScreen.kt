@@ -45,7 +45,7 @@ class SplashScreen : Screen {
 
         LaunchedEffect(state.initDone) {
             if (state.initDone) {
-                navigator.replaceAll(TabbedScreen())
+                navigator.push(TabbedScreen())
             } else {
                 viewModel.onEvent(SplashEvent.InitApp)
             }

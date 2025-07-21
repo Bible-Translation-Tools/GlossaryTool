@@ -2,7 +2,6 @@
 
 package org.bibletranslationtools.glossary.ui.components
 
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
@@ -23,14 +22,16 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.text.InternalTextApi
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withLink
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
@@ -41,9 +42,6 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
 import kotlin.math.min
-
-private const val HIGHLIGHT_TAG = "highlight"
-private const val VERSE_TAG = "verse"
 
 // Opt-in for onSelectionChange, which is an internal API.
 @OptIn(InternalTextApi::class)
@@ -64,8 +62,6 @@ fun SelectableText(
 
     var selection by remember { mutableStateOf<Selection?>(null) }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var text by remember(currentChapter, currentPhrases) { mutableStateOf("") }
-
     var annotatedString by remember { mutableStateOf(buildAnnotatedString{}) }
 
     LaunchedEffect(selectedText) {
@@ -76,45 +72,45 @@ fun SelectableText(
 
     LaunchedEffect(currentChapter, currentPhrases) {
         annotatedString = buildAnnotatedString {
-            var lastIndex = 0
             currentChapter.verses.forEach { verse ->
                 val verseText = "${verse.number} ${verse.text} "
-                append(verseText)
-                text += verseText
-
-                addStringAnnotation(
-                    tag = VERSE_TAG,
-                    annotation = verse.number,
-                    start = lastIndex,
-                    end = lastIndex + verseText.length
-                )
-
-                lastIndex += verseText.length
-            }
-
-            currentPhrases.forEach { phrase ->
+                val phrasesToFind = currentPhrases
+                    .map { "\\b${Regex.escape(it.phrase)}\\b" }
                 val regex = Regex(
-                    pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
-                    option = RegexOption.IGNORE_CASE
+                    phrasesToFind.joinToString("|"),
+                    RegexOption.IGNORE_CASE
                 )
-                regex.findAll(text).forEach { matchResult ->
-                    val startIndex = matchResult.range.first
-                    val endIndex = matchResult.range.last + 1
+                var lastIndex = 0
+                regex.findAll(verseText).forEach { match ->
+                    append(verseText.substring(lastIndex, match.range.first))
 
-                    addStyle(
-                        style = SpanStyle(
-                            color = highlightColor,
-                            fontWeight = FontWeight.Bold
-                        ),
-                        start = startIndex,
-                        end = endIndex
-                    )
-                    addStringAnnotation(
-                        tag = HIGHLIGHT_TAG,
-                        annotation = phrase.phrase,
-                        start = startIndex,
-                        end = endIndex
-                    )
+                    withLink(
+                        link = LinkAnnotation.Clickable(
+                            tag = match.value,
+                            linkInteractionListener = {
+                                currentPhrases.firstOrNull {
+                                    it.phrase.lowercase() == match.value.lowercase()
+                                }?.let {
+                                    onSelectedTextChanged("")
+                                    onPhraseClick(it, verse.number)
+                                }
+                            }
+                        )
+                    ) {
+                        withStyle(
+                            style = SpanStyle(
+                                color = highlightColor,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append(match.value)
+                        }
+                    }
+                    lastIndex = match.range.last + 1
+                }
+
+                if (lastIndex < verseText.length) {
+                    append(verseText.substring(lastIndex))
                 }
             }
         }
@@ -129,7 +125,7 @@ fun SelectableText(
                     val newSelectedText = newSelection?.let { sel ->
                         val start = min(sel.start.offset, sel.end.offset)
                         val end = max(sel.start.offset, sel.end.offset)
-                        text.substring(start, end)
+                        annotatedString.substring(start, end)
                     } ?: ""
                     onSelectedTextChanged(newSelectedText)
                 },
@@ -139,39 +135,7 @@ fun SelectableText(
                     text = annotatedString,
                     style = LocalTextStyle.current.copy(lineHeight = 32.sp),
                     onTextLayout = { textLayoutResult = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .pointerInput(Unit) {
-                            detectTapGestures { offset ->
-                                textLayoutResult?.let { layoutResult ->
-                                    val position = layoutResult.getOffsetForPosition(offset)
-                                    val phrase = annotatedString
-                                        .getStringAnnotations(
-                                            tag = HIGHLIGHT_TAG,
-                                            start = position,
-                                            end = position
-                                        )
-                                        .firstOrNull()
-                                        ?.let { annotation ->
-                                            currentPhrases.single { it.phrase == annotation.item }
-                                        }
-                                    val verse = annotatedString
-                                        .getStringAnnotations(
-                                            tag = VERSE_TAG,
-                                            start = position,
-                                            end = position
-                                        )
-                                        .firstOrNull()?.item
-
-                                    phrase?.let { p ->
-                                        verse?.let { v ->
-                                            onSelectedTextChanged("")
-                                            onPhraseClick(p, v)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
