@@ -19,6 +19,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -58,14 +59,25 @@ fun SelectableText(
 ) {
     val highlightColor = MaterialTheme.colorScheme.onBackground
 
+    val currentChapter by rememberUpdatedState(newValue = chapter)
+    val currentPhrases by rememberUpdatedState(newValue = phrases)
+
     var selection by remember { mutableStateOf<Selection?>(null) }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var text by remember(chapter, phrases) { mutableStateOf("") }
+    var text by remember(currentChapter, currentPhrases) { mutableStateOf("") }
 
-    val annotatedString = remember(chapter, phrases) {
-        buildAnnotatedString {
+    var annotatedString by remember { mutableStateOf(buildAnnotatedString{}) }
+
+    LaunchedEffect(selectedText) {
+        if (selectedText.isEmpty()) {
+            selection = null
+        }
+    }
+
+    LaunchedEffect(currentChapter, currentPhrases) {
+        annotatedString = buildAnnotatedString {
             var lastIndex = 0
-            chapter.verses.forEach { verse ->
+            currentChapter.verses.forEach { verse ->
                 val verseText = "${verse.number} ${verse.text} "
                 append(verseText)
                 text += verseText
@@ -80,7 +92,7 @@ fun SelectableText(
                 lastIndex += verseText.length
             }
 
-            phrases.forEach { phrase ->
+            currentPhrases.forEach { phrase ->
                 val regex = Regex(
                     pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
                     option = RegexOption.IGNORE_CASE
@@ -105,12 +117,6 @@ fun SelectableText(
                     )
                 }
             }
-        }
-    }
-
-    LaunchedEffect(selectedText) {
-        if (selectedText.isEmpty()) {
-            selection = null
         }
     }
 
@@ -147,7 +153,7 @@ fun SelectableText(
                                         )
                                         .firstOrNull()
                                         ?.let { annotation ->
-                                            phrases.single { it.phrase == annotation.item }
+                                            currentPhrases.single { it.phrase == annotation.item }
                                         }
                                     val verse = annotatedString
                                         .getStringAnnotations(
@@ -202,8 +208,10 @@ fun SelectableText(
                             translationX = -size.width / 2
                         }
                 ) {
-                    val isView = phrases.any { it.phrase.lowercase() == selectedText.lowercase() }
-                            || selectedText.isEmpty()
+                    val isView = currentPhrases.any {
+                        it.phrase.lowercase() == selectedText.lowercase()
+                    } || selectedText.isEmpty()
+
                     val text = if (isView) {
                         stringResource(Res.string.view_glossary)
                     } else {

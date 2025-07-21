@@ -330,9 +330,6 @@ private fun findRef(
 private fun shortenVerseText(text: String, phrase: Phrase): String {
     val index = text.lowercase().indexOf(phrase.phrase.lowercase())
 
-    println(phrase.phrase)
-    println(index)
-
     if (index > 50) {
         val start = index - 50
         val end = text.length

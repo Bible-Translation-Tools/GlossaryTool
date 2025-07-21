@@ -44,7 +44,7 @@ import glossary.composeapp.generated.resources.spelling
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.HomeEvent
+import org.bibletranslationtools.glossary.ui.screenmodel.ReadEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
@@ -68,7 +68,7 @@ class EditPhraseScreen(
             mutableStateOf(TextFieldValue(phraseDetails.phrase.description))
         }
 
-        val event by viewModel.event.collectAsStateWithLifecycle(HomeEvent.Idle)
+        val event by viewModel.event.collectAsStateWithLifecycle(ReadEvent.Idle)
 
         LaunchedEffect(event) {
             when (event) {

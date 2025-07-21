@@ -35,9 +35,9 @@ import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.components.SelectableText
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
-import org.bibletranslationtools.glossary.ui.screenmodel.HomeEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.NavigationResult
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
+import org.bibletranslationtools.glossary.ui.screenmodel.ReadEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
@@ -52,7 +52,7 @@ class ReadScreen : Screen {
         val tabbedScreenModel = koinScreenModel<TabbedScreenModel>()
 
         val state by screenModel.state.collectAsStateWithLifecycle()
-        val event by screenModel.event.collectAsStateWithLifecycle(HomeEvent.Idle)
+        val event by screenModel.event.collectAsStateWithLifecycle(ReadEvent.Idle)
 
         val navigator = LocalRootNavigator.currentOrThrow
         val scrollState = rememberScrollState()
@@ -83,20 +83,19 @@ class ReadScreen : Screen {
 
         LaunchedEffect(Unit) {
             screenModel.onEvent(
-                HomeEvent.InitLoad(
+                ReadEvent.InitLoad(
                     selectedResource,
                     selectedBook,
                     selectedChapter,
                     selectedGlossary
                 )
             )
-            screenModel.onEvent(HomeEvent.LoadPhrases)
         }
 
         LaunchedEffect(event) {
             when (event) {
-                is HomeEvent.OnNavigation -> {
-                    val result = (event as HomeEvent.OnNavigation).result
+                is ReadEvent.OnNavigation -> {
+                    val result = (event as ReadEvent.OnNavigation).result
                     when (result) {
                         is NavigationResult.ChapterChanged -> {
                             selectedChapter = result.chapter
@@ -110,8 +109,8 @@ class ReadScreen : Screen {
                         else -> {}
                     }
                 }
-                is HomeEvent.SavePhrase -> {
-                    val phrase = (event as HomeEvent.SavePhrase).phrase
+                is ReadEvent.SavePhrase -> {
+                    val phrase = (event as ReadEvent.SavePhrase).phrase
                     navigator.push(
                         EditPhraseScreen(
                             PhraseDetails(
@@ -123,6 +122,9 @@ class ReadScreen : Screen {
                             )
                         )
                     )
+                }
+                is ReadEvent.GlossaryChanged -> {
+                    selectedGlossary = (event as ReadEvent.GlossaryChanged).glossary.code
                 }
                 else -> {}
             }
@@ -156,11 +158,9 @@ class ReadScreen : Screen {
                         chapter = chapter,
                         phrases = state.chapterPhrases,
                         selectedText = selectedText,
-                        onSelectedTextChanged = {
-                            selectedText = it
-                        },
+                        onSelectedTextChanged = { selectedText = it },
                         onSaveSelection = {
-                            screenModel.onEvent(HomeEvent.OnSavePhrase(it))
+                            screenModel.onEvent(ReadEvent.OnSavePhrase(it))
                         },
                         onPhraseClick = { phrase, verse ->
                             tabbedScreenModel.onEvent(
@@ -196,19 +196,19 @@ class ReadScreen : Screen {
                         ) { chapter, book ->
                             book?.let {
                                 screenModel.onEvent(
-                                    HomeEvent.NavigateBook(it, chapter)
+                                    ReadEvent.NavigateBook(it, chapter)
                                 )
                             } ?: run {
-                                screenModel.onEvent(HomeEvent.NavigateChapter(chapter))
+                                screenModel.onEvent(ReadEvent.NavigateChapter(chapter))
                             }
                         }
                     )
                 },
                 onPrevClick = {
-                    screenModel.onEvent(HomeEvent.PrevChapter)
+                    screenModel.onEvent(ReadEvent.PrevChapter)
                 },
                 onNextClick = {
-                    screenModel.onEvent(HomeEvent.NextChapter)
+                    screenModel.onEvent(ReadEvent.NextChapter)
                 }
             )
         }
