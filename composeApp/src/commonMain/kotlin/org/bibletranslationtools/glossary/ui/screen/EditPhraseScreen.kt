@@ -73,7 +73,7 @@ class EditPhraseScreen(
         LaunchedEffect(event) {
             when (event) {
                 is EditPhraseEvent.OnPhraseSaved -> {
-                    navigator.popUntil { it is ReadScreen }
+                    navigator.popUntil { it is TabbedScreen }
                 }
                 else -> {}
             }
@@ -87,7 +87,7 @@ class EditPhraseScreen(
                         phraseDetails.phrase.phrase
                     )
                 ) {
-                    navigator.popUntil { it is ReadScreen }
+                    navigator.popUntil { it is TabbedScreen }
                 }
             }
         ) { paddingValues ->
@@ -188,7 +188,7 @@ class EditPhraseScreen(
                             Text(stringResource(Res.string.save_exit))
                         }
                         Button(
-                            onClick = { navigator.popUntil { it is ReadScreen } },
+                            onClick = { navigator.popUntil { it is TabbedScreen } },
                             shape = MaterialTheme.shapes.medium,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(

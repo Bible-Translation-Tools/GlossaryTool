@@ -50,7 +50,7 @@ class ViewPhraseScreen(
                 BrowseTopBar(
                     title = phraseDetails.phrase.phrase
                 ) {
-                    navigator.popUntil { it is ReadScreen }
+                    navigator.popUntil { it is TabbedScreen }
                 }
             }
         ) { paddingValues ->
