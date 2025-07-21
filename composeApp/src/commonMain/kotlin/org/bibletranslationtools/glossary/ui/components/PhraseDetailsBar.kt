@@ -27,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,95 +56,35 @@ private data class VerseData(
     val verse: String
 )
 
-private fun Ref.toVerseData(): VerseData {
-    return VerseData(
-        book = book,
-        chapter = chapter,
-        verse = verse
-    )
-}
-
-private fun PhraseDetails.toVerseData(): VerseData {
-    return VerseData(
-        book = book.slug,
-        chapter = chapter.number.toString(),
-        verse = verse
-    )
-}
-
 @Composable
 fun PhraseDetailsBar(
     details: PhraseDetails,
     onViewDetails: (Phrase) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val loadVerse: (VerseData) -> String = { verseData ->
-        details.resource.books
-            .single { it.slug == verseData.book }
-            .chapters.single { it.number.toString() == verseData.chapter }
-            .verses.single { it.number == verseData.verse }
-            .text
+    var currentPhrase by remember { mutableStateOf(details.phrase) }
+    var currentRef by remember { mutableStateOf<Ref?>(null) }
+    var initialVerse by remember { mutableStateOf<String?>(details.verse) }
+    var currentVerseText by remember { mutableStateOf("") }
+
+    LaunchedEffect(currentPhrase) {
+        currentRef = findRef(
+            details,
+            currentPhrase,
+            initialVerse
+        )
     }
 
-    val loadRef: (Phrase, String?) -> Ref? = { phrase, verse ->
-        phrase.refs.firstOrNull {
-            it.resource == details.resource.slug
-                    && it.book == details.book.slug
-                    && it.chapter == details.chapter.number.toString()
-                    && (verse == null || it.verse == verse)
-        }
+    LaunchedEffect(currentPhrase, currentRef) {
+        val text = findVerseText(
+            details,
+            currentRef?.toVerseData() ?: details.toVerseData()
+        )
+        currentVerseText = shortenVerseText(text, currentPhrase)
     }
 
-    var currentPhrase by remember {
-        mutableStateOf(details.phrase)
-    }
-
-    var currentRef by remember {
-        mutableStateOf(loadRef(currentPhrase, details.verse))
-    }
-
-    var currentVerse by remember {
-        mutableStateOf(loadVerse(details.toVerseData()))
-    }
-
-    val nextPhrase: () -> Unit = {
-        details.phrases.getOrNull(
-            details.phrases.indexOf(currentPhrase) + 1
-        )?.let { phrase ->
-            currentPhrase = phrase
-            currentRef = loadRef(phrase, null)
-            currentVerse = loadVerse(
-                currentRef?.toVerseData() ?: details.toVerseData()
-            )
-        }
-    }
-
-    val prevPhrase: () -> Unit = {
-        details.phrases.getOrNull(
-            details.phrases.indexOf(currentPhrase) - 1
-        )?.let { phrase ->
-            currentPhrase = phrase
-            currentRef = loadRef(phrase, null)
-            currentVerse = loadVerse(
-                currentRef?.toVerseData() ?: details.toVerseData()
-            )
-        }
-    }
-
-    val nextRef: () -> Unit = {
-        currentPhrase.refs
-            .getOrNull(currentPhrase.refs.indexOf(currentRef) + 1)?.let { ref ->
-                currentRef = ref
-                currentVerse = loadVerse(ref.toVerseData())
-            }
-    }
-
-    val prevRef: () -> Unit = {
-        currentPhrase.refs
-            .getOrNull(currentPhrase.refs.indexOf(currentRef) - 1)?.let { ref ->
-                currentRef = ref
-                currentVerse = loadVerse(ref.toVerseData())
-            }
+    LaunchedEffect(Unit) {
+        initialVerse = null
     }
 
     Box(
@@ -181,7 +122,10 @@ fun PhraseDetailsBar(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = { prevPhrase() }) {
+                    IconButton(onClick = {
+                        findPhrase(details, currentPhrase, -1)
+                            ?.let { currentPhrase = it }
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                             contentDescription = "Previous"
@@ -212,7 +156,10 @@ fun PhraseDetailsBar(
                             )
                         }
                     }
-                    IconButton(onClick = { nextPhrase() }) {
+                    IconButton(onClick = {
+                        findPhrase(details, currentPhrase, 1)
+                            ?.let { currentPhrase = it }
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                             contentDescription = "Next"
@@ -223,13 +170,13 @@ fun PhraseDetailsBar(
                 Spacer(Modifier.height(16.dp))
 
                 val annotatedVerse = buildAnnotatedString {
-                    append(currentVerse)
+                    append(currentVerseText)
 
                     val regex = Regex(
                         pattern = "\\b${Regex.escape(currentPhrase.phrase)}\\b",
                         option = RegexOption.IGNORE_CASE
                     )
-                    regex.findAll(currentVerse).forEach { matchResult ->
+                    regex.findAll(currentVerseText).forEach { matchResult ->
                         val startIndex = matchResult.range.first
                         val endIndex = matchResult.range.last + 1
                         addStyle(
@@ -263,7 +210,10 @@ fun PhraseDetailsBar(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier.weight(0.5f)
                     ) {
-                        IconButton(onClick = { prevRef() }) {
+                        IconButton(onClick = {
+                            findRef(currentPhrase, currentRef, -1)
+                                ?.let { currentRef = it }
+                        }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
                                 contentDescription = "Previous Ref"
@@ -282,7 +232,10 @@ fun PhraseDetailsBar(
                             ),
                             modifier = Modifier.weight(1f)
                         )
-                        IconButton(onClick = { nextRef() }) {
+                        IconButton(onClick = {
+                            findRef(currentPhrase, currentRef, 1)
+                                ?.let { currentRef = it }
+                        }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                                 contentDescription = "Next Ref"
@@ -313,4 +266,77 @@ fun PhraseDetailsBar(
             }
         }
     }
+}
+
+private fun Ref.toVerseData(): VerseData {
+    return VerseData(
+        book = book,
+        chapter = chapter,
+        verse = verse
+    )
+}
+
+private fun PhraseDetails.toVerseData(): VerseData {
+    return VerseData(
+        book = book.slug,
+        chapter = chapter.number.toString(),
+        verse = verse
+    )
+}
+
+private fun findVerseText(
+    details: PhraseDetails,
+    verseData: VerseData
+): String {
+    return details.resource.books
+        .single { it.slug == verseData.book }
+        .chapters.single { it.number.toString() == verseData.chapter }
+        .verses.single { it.number == verseData.verse }
+        .text
+}
+
+private fun findPhrase(
+    details: PhraseDetails,
+    phrase: Phrase,
+    incr: Int
+): Phrase? {
+    return details.phrases.getOrNull(
+        details.phrases.indexOf(phrase) + incr
+    )
+}
+
+private fun findRef(
+    details: PhraseDetails,
+    phrase: Phrase,
+    verse: String?
+): Ref? {
+    return phrase.refs.firstOrNull {
+        it.resource == details.resource.slug
+                && it.book == details.book.slug
+                && it.chapter == details.chapter.number.toString()
+                && (verse == null || it.verse == verse)
+    }
+}
+
+private fun findRef(
+    phrase: Phrase,
+    ref: Ref?,
+    incr: Int
+): Ref? {
+    return phrase.refs
+        .getOrNull(phrase.refs.indexOf(ref) + incr)
+}
+
+private fun shortenVerseText(text: String, phrase: Phrase): String {
+    val index = text.lowercase().indexOf(phrase.phrase.lowercase())
+
+    println(phrase.phrase)
+    println(index)
+
+    if (index > 50) {
+        val start = index - 50
+        val end = text.length
+        return "...${text.substring(start, end)}"
+    }
+    return text
 }
