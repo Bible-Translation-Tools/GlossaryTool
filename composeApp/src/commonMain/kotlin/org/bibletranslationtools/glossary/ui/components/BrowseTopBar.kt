@@ -9,12 +9,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BrowseTopBar(
     title: String,
+    modifier: Modifier = Modifier,
     actions: @Composable RowScope.() -> Unit = {},
     onBackClick: () -> Unit = {},
 ) {
@@ -28,10 +30,12 @@ fun BrowseTopBar(
         navigationIcon = {
             IconButton(onClick = onBackClick) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back"
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
                 )
             }
         },
-        actions = actions
+        actions = actions,
+        modifier = modifier
     )
 }
