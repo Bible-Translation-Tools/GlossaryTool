@@ -1,6 +1,7 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package org.bibletranslationtools.glossary.ui.screen
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -73,13 +75,18 @@ class ReadScreen : Screen {
             Settings.GLOSSARY.name
         )
 
-        val title = state.activeBook?.let { book ->
-            state.activeChapter?.let { chapter ->
-                "${book.title} ${chapter.number}"
+        val title by remember(state.activeBook, state.activeChapter) {
+            derivedStateOf {
+                state.activeBook?.let { book ->
+                    state.activeChapter?.let { chapter ->
+                        "${book.title} ${chapter.number}"
+                    }
+                } ?: ""
             }
-        } ?: stringResource(Res.string.loading)
+        }
 
         var selectedText by remember { mutableStateOf("") }
+        var textIsReady by remember { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             screenModel.onEvent(
@@ -130,87 +137,101 @@ class ReadScreen : Screen {
             }
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 16.dp, start = 16.dp, end = 16.dp, bottom = 8.dp)
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = 16.dp,
+                bottom = 8.dp
+            )
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(scrollState),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
+            Column {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold
+                        )
                     )
-                )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-                state.activeChapter?.let { chapter ->
-                    SelectableText(
-                        chapter = chapter,
-                        phrases = state.chapterPhrases,
-                        selectedText = selectedText,
-                        onSelectedTextChanged = { selectedText = it },
-                        onSaveSelection = {
-                            screenModel.onEvent(ReadEvent.OnSavePhrase(it))
-                        },
-                        onPhraseClick = { phrase, verse ->
-                            tabbedScreenModel.onEvent(
-                                TabbedEvent.LoadPhrase(
-                                    PhraseDetails(
-                                        phrase = phrase,
-                                        phrases = state.chapterPhrases,
-                                        resource = state.activeResource!!,
-                                        book = state.activeBook!!,
-                                        chapter = state.activeChapter!!,
-                                        verse = verse
+                    state.activeChapter?.let { chapter ->
+                        SelectableText(
+                            chapter = chapter,
+                            phrases = state.chapterPhrases,
+                            selectedText = selectedText,
+                            onSelectedTextChanged = { selectedText = it },
+                            onSaveSelection = {
+                                screenModel.onEvent(ReadEvent.OnSavePhrase(it))
+                            },
+                            onPhraseClick = { phrase, verse ->
+                                tabbedScreenModel.onEvent(
+                                    TabbedEvent.LoadPhrase(
+                                        PhraseDetails(
+                                            phrase = phrase,
+                                            phrases = state.chapterPhrases,
+                                            resource = state.activeResource!!,
+                                            book = state.activeBook!!,
+                                            chapter = state.activeChapter!!,
+                                            verse = verse
+                                        )
                                     )
                                 )
-                            )
-                        }
-                    )
-                } ?: Text(
-                    text = stringResource(Res.string.loading),
-                    style = MaterialTheme.typography.bodyLarge
+                            },
+                            onTextReady = { textIsReady = true }
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                ChapterNavigation(
+                    title = title,
+                    onBrowse = {
+                        navigator.push(
+                            BrowseScreen(
+                                state.activeResource?.books,
+                                state.activeBook,
+                                state.activeChapter
+                            ) { chapter, book ->
+                                book?.let {
+                                    screenModel.onEvent(
+                                        ReadEvent.NavigateBook(it, chapter)
+                                    )
+                                } ?: run {
+                                    screenModel.onEvent(ReadEvent.NavigateChapter(chapter))
+                                }
+                            }
+                        )
+                    },
+                    onPrevClick = {
+                        screenModel.onEvent(ReadEvent.PrevChapter)
+                    },
+                    onNextClick = {
+                        screenModel.onEvent(ReadEvent.NextChapter)
+                    }
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ChapterNavigation(
-                title = title,
-                onBrowse = {
-                    navigator.push(
-                        BrowseScreen(
-                            state.activeResource?.books,
-                            state.activeBook,
-                            state.activeChapter
-                        ) { chapter, book ->
-                            book?.let {
-                                screenModel.onEvent(
-                                    ReadEvent.NavigateBook(it, chapter)
-                                )
-                            } ?: run {
-                                screenModel.onEvent(ReadEvent.NavigateChapter(chapter))
-                            }
-                        }
+            if (!textIsReady) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Text(
+                        text = stringResource(Res.string.loading),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.align(Alignment.Center)
                     )
-                },
-                onPrevClick = {
-                    screenModel.onEvent(ReadEvent.PrevChapter)
-                },
-                onNextClick = {
-                    screenModel.onEvent(ReadEvent.NextChapter)
                 }
-            )
+            }
         }
     }
 }

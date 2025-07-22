@@ -53,6 +53,7 @@ fun SelectableText(
     onSelectedTextChanged: (String) -> Unit,
     onSaveSelection: (String) -> Unit,
     onPhraseClick: (Phrase, String) -> Unit,
+    onTextReady: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val highlightColor = MaterialTheme.colorScheme.onBackground
@@ -114,6 +115,7 @@ fun SelectableText(
                 }
             }
         }
+        onTextReady()
     }
 
     Box(modifier = modifier) {
@@ -128,8 +130,7 @@ fun SelectableText(
                         annotatedString.substring(start, end)
                     } ?: ""
                     onSelectedTextChanged(newSelectedText)
-                },
-                modifier = modifier
+                }
             ) {
                 Text(
                     text = annotatedString,
