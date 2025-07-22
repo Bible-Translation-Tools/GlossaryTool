@@ -22,7 +22,7 @@ fun BottomNavBar(currentTab: MainTab, onTabSelected: (MainTab) -> Unit) {
     val borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
 
     NavigationBar(
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.surface,
         modifier = Modifier.drawBehind {
             val strokeWidth = 1.dp.toPx()
             drawLine(

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize.Companion.StepBased
 import androidx.compose.material.icons.Icons
@@ -47,14 +46,7 @@ import glossary.composeapp.generated.resources.learn_more
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
-import org.bibletranslationtools.glossary.ui.semiTransparent
 import org.jetbrains.compose.resources.stringResource
-
-private data class VerseData(
-    val book: String,
-    val chapter: String,
-    val verse: String
-)
 
 @Composable
 fun PhraseDetailsBar(
@@ -76,10 +68,13 @@ fun PhraseDetailsBar(
     }
 
     LaunchedEffect(currentPhrase, currentRef) {
-        val text = findVerseText(
-            details,
-            currentRef?.toVerseData() ?: details.toVerseData()
+        val ref = currentRef ?: Ref(
+            resource = details.resource.slug,
+            book = details.book.slug,
+            chapter = details.chapter.number.toString(),
+            verse = details.verse
         )
+        val text = ref.getText(details.resource)
         currentVerseText = shortenVerseText(text, currentPhrase)
     }
 
@@ -91,7 +86,7 @@ fun PhraseDetailsBar(
         contentAlignment = Alignment.BottomCenter,
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.semiTransparent)
+            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.2f))
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -103,11 +98,11 @@ fun PhraseDetailsBar(
                 .fillMaxWidth()
                 .shadow(
                     elevation = 16.dp,
-                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                    shape = MaterialTheme.shapes.extraLarge
                 )
                 .background(
                     color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                    shape = MaterialTheme.shapes.extraLarge
                 )
                 .clickable(enabled = false, onClick = {})
         ) {
@@ -266,33 +261,6 @@ fun PhraseDetailsBar(
             }
         }
     }
-}
-
-private fun Ref.toVerseData(): VerseData {
-    return VerseData(
-        book = book,
-        chapter = chapter,
-        verse = verse
-    )
-}
-
-private fun PhraseDetails.toVerseData(): VerseData {
-    return VerseData(
-        book = book.slug,
-        chapter = chapter.number.toString(),
-        verse = verse
-    )
-}
-
-private fun findVerseText(
-    details: PhraseDetails,
-    verseData: VerseData
-): String {
-    return details.resource.books
-        .single { it.slug == verseData.book }
-        .chapters.single { it.number.toString() == verseData.chapter }
-        .verses.single { it.number == verseData.verse }
-        .text
 }
 
 private fun findPhrase(

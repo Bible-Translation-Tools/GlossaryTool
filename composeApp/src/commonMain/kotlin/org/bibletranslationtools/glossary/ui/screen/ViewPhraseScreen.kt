@@ -53,7 +53,10 @@ class ViewPhraseScreen(
 
         Scaffold(
             topBar = {
-                BrowseTopBar(title = phraseDetails.phrase.phrase) {
+                BrowseTopBar(
+                    title = phraseDetails.phrase.phrase,
+                    backgroundColor = MaterialTheme.colorScheme.background
+                ) {
                     navigator.popUntil { it is TabbedScreen }
                 }
             },
@@ -146,7 +149,7 @@ class ViewPhraseScreen(
                         modifier = Modifier.fillMaxSize()
                             .background(
                                 color = MaterialTheme.colorScheme.surface,
-                                shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                                shape = MaterialTheme.shapes.medium
                             )
                             .padding(16.dp)
                     ) {

@@ -3,14 +3,12 @@ package org.bibletranslationtools.glossary.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
@@ -31,7 +29,7 @@ fun VerseReference(reference: String, phrase: String, text: String) {
     val referenceTag = "reference"
     val referenceView = InlineTextContent(
         placeholder = Placeholder(
-            width = 90.sp,
+            width = (reference.length * 11).sp,
             height = style.lineHeight,
             placeholderVerticalAlign = PlaceholderVerticalAlign.Center
         )
@@ -39,8 +37,8 @@ fun VerseReference(reference: String, phrase: String, text: String) {
         Box(
             modifier = Modifier
                 .background(
-                    color = Color(0xFFE0E0E0),
-                    shape = RoundedCornerShape(8.dp)
+                    color = MaterialTheme.colorScheme.background,
+                    shape = MaterialTheme.shapes.small
                 )
                 .padding(horizontal = 8.dp, vertical = 2.dp)
         ) {
@@ -48,14 +46,13 @@ fun VerseReference(reference: String, phrase: String, text: String) {
                 text = reference,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
 
     val annotatedText = buildAnnotatedString {
         appendInlineContent(referenceTag, reference)
-        append(" ")
 
         var lastIndex = 0
         val regex = Regex(

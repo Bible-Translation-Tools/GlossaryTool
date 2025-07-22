@@ -11,7 +11,7 @@ data class Ref(
     val phraseId: String? = null,
     val id: String? = null
 ) {
-    fun getText(resource: Resource): String? {
+    fun getText(resource: Resource): String {
         return resource.books
             .single { it.slug == book }
             .chapters.single { it.number.toString() == chapter }
