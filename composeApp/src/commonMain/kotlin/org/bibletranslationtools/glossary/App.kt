@@ -18,8 +18,12 @@ import org.bibletranslationtools.glossary.ui.LightColorScheme
 import org.bibletranslationtools.glossary.ui.MainAppTheme
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
+import org.bibletranslationtools.glossary.ui.navigation.LocalTabScreenState
+import org.bibletranslationtools.glossary.ui.navigation.MainTab
 import org.bibletranslationtools.glossary.ui.screen.SplashScreen
 import org.bibletranslationtools.glossary.ui.screen.TabbedScreen
+import org.bibletranslationtools.glossary.ui.screen.TabbedScreenState
+import kotlin.system.exitProcess
 
 @Composable
 fun App() {
@@ -34,16 +38,29 @@ fun App() {
     val locale by rememberStringSetting(Settings.LOCALE.name, Locales.EN.name)
     applyLocale(locale.lowercase())
 
+    val defaultTab = MainTab.Read
     val snackBarHostState = remember { SnackbarHostState() }
+    val tabbedScreenState = remember { TabbedScreenState(defaultTab) }
 
     MainAppTheme(colorScheme) {
         Navigator(
             screen = SplashScreen(),
-            onBackPressed = { it !is TabbedScreen }
+            onBackPressed = {
+                if (it is TabbedScreen) {
+                    if (tabbedScreenState.tab == defaultTab) {
+                        exitProcess(0)
+                    } else {
+                        tabbedScreenState.tab = defaultTab
+                        false
+                    }
+                } else true
+            }
         ) { navigator ->
             CompositionLocalProvider(LocalRootNavigator provides navigator) {
                 CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
-                    SlideTransition(navigator)
+                    CompositionLocalProvider(LocalTabScreenState provides tabbedScreenState) {
+                        SlideTransition(navigator)
+                    }
                 }
             }
         }

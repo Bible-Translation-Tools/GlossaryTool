@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
@@ -18,9 +21,14 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
+import org.bibletranslationtools.glossary.ui.navigation.LocalTabScreenState
 import org.bibletranslationtools.glossary.ui.navigation.MainTab
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
+
+class TabbedScreenState(initialTab: MainTab) {
+    var tab by mutableStateOf(initialTab)
+}
 
 class TabbedScreen : Screen {
     @Composable
@@ -29,9 +37,17 @@ class TabbedScreen : Screen {
         val snackBarHostState = LocalSnackBarHostState.currentOrThrow
 
         val navigator = LocalNavigator.currentOrThrow
+        val screenState = LocalTabScreenState.currentOrThrow
         val state by screenModel.state.collectAsStateWithLifecycle()
 
-        TabNavigator(MainTab.Read) { tabNavigator ->
+        TabNavigator(screenState.tab) { tabNavigator ->
+            LaunchedEffect(tabNavigator.current) {
+                screenState.tab = tabNavigator.current as MainTab
+            }
+            LaunchedEffect(screenState.tab) {
+                tabNavigator.current = screenState.tab
+            }
+
             Box {
                 Scaffold(
                     snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
@@ -54,9 +70,11 @@ class TabbedScreen : Screen {
                     PhraseDetailsBar(
                         details = phraseDetails,
                         onViewDetails = { phrase ->
-                            navigator.push(ViewPhraseScreen(
-                                phraseDetails.copy(phrase = phrase)
-                            ))
+                            navigator.push(
+                                ViewPhraseScreen(
+                                    phraseDetails.copy(phrase = phrase)
+                                )
+                            )
                         },
                         onDismiss = {
                             screenModel.onEvent(
