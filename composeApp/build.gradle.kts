@@ -119,8 +119,8 @@ android {
         applicationId = "org.bibletranslationtools.glossary"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = libs.versions.glossary.version.get().toInt()
+        versionName = libs.versions.glossary.name.get()
     }
     packaging {
         resources {
@@ -149,7 +149,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.bibletranslationtools.glossary"
-            packageVersion = "1.0.0"
+            packageVersion = libs.versions.glossary.name.get()
         }
     }
 }
