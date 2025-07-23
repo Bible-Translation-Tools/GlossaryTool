@@ -87,6 +87,14 @@ class ReadScreen : Screen {
 
         var selectedText by remember { mutableStateOf("") }
         var textIsReady by remember { mutableStateOf(false) }
+        val isLoading by remember {
+            derivedStateOf {
+                state.activeResource == null
+                        || state.activeBook == null
+                        || state.activeChapter == null
+                        || !textIsReady
+            }
+        }
 
         LaunchedEffect(Unit) {
             screenModel.onEvent(
@@ -198,32 +206,43 @@ class ReadScreen : Screen {
                 ChapterNavigation(
                     title = title,
                     onBrowse = {
-                        navigator.push(
-                            BrowseScreen(
-                                state.activeResource?.books,
-                                state.activeBook,
-                                state.activeChapter
-                            ) { chapter, book ->
-                                book?.let {
-                                    screenModel.onEvent(
-                                        ReadEvent.NavigateBook(it, chapter)
+                        state.activeResource?.let { resource ->
+                            state.activeBook?.let { book ->
+                                state.activeChapter?.let { chapter ->
+                                    textIsReady = false
+                                    navigator.push(
+                                        BrowseScreen(
+                                            resource.books,
+                                            book,
+                                            chapter
+                                        ) { chapter, book ->
+                                            book?.let {
+                                                screenModel.onEvent(
+                                                    ReadEvent.NavigateBook(it, chapter)
+                                                )
+                                            } ?: run {
+                                                screenModel.onEvent(
+                                                    ReadEvent.NavigateChapter(chapter)
+                                                )
+                                            }
+                                        }
                                     )
-                                } ?: run {
-                                    screenModel.onEvent(ReadEvent.NavigateChapter(chapter))
                                 }
                             }
-                        )
+                        }
                     },
                     onPrevClick = {
+                        textIsReady = false
                         screenModel.onEvent(ReadEvent.PrevChapter)
                     },
                     onNextClick = {
+                        textIsReady = false
                         screenModel.onEvent(ReadEvent.NextChapter)
                     }
                 )
             }
 
-            if (!textIsReady) {
+            if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     Text(
                         text = stringResource(Res.string.loading),

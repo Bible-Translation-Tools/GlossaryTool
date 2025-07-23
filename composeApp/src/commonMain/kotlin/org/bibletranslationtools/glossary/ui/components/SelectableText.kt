@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextToolbar
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -63,7 +64,7 @@ fun SelectableText(
 
     var selection by remember { mutableStateOf<Selection?>(null) }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var annotatedString by remember { mutableStateOf(buildAnnotatedString{}) }
+    var annotatedString by remember { mutableStateOf<AnnotatedString?>(null) }
 
     LaunchedEffect(selectedText) {
         if (selectedText.isEmpty()) {
@@ -73,45 +74,55 @@ fun SelectableText(
 
     LaunchedEffect(currentChapter, currentPhrases) {
         annotatedString = buildAnnotatedString {
-            currentChapter.verses.forEach { verse ->
-                val verseText = "${verse.number} ${verse.text} "
+            val regex = if (currentPhrases.isNotEmpty()) {
                 val phrasesToFind = currentPhrases
                     .map { "\\b${Regex.escape(it.phrase)}\\b" }
-                val regex = Regex(
+                Regex(
                     phrasesToFind.joinToString("|"),
                     RegexOption.IGNORE_CASE
                 )
-                var lastIndex = 0
-                regex.findAll(verseText).forEach { match ->
-                    append(verseText.substring(lastIndex, match.range.first))
+            } else {
+                null
+            }
 
-                    withLink(
-                        link = LinkAnnotation.Clickable(
-                            tag = match.value,
-                            linkInteractionListener = {
-                                currentPhrases.firstOrNull {
-                                    it.phrase.lowercase() == match.value.lowercase()
-                                }?.let {
-                                    onSelectedTextChanged("")
-                                    onPhraseClick(it, verse.number)
+            currentChapter.verses.forEach { verse ->
+                val verseText = "${verse.number} ${verse.text} "
+
+                if (regex == null) {
+                    append(verseText)
+                } else {
+                    var lastIndex = 0
+                    regex.findAll(verseText).forEach { match ->
+                        append(verseText.substring(lastIndex, match.range.first))
+
+                        withLink(
+                            link = LinkAnnotation.Clickable(
+                                tag = match.value,
+                                linkInteractionListener = {
+                                    currentPhrases.firstOrNull {
+                                        it.phrase.lowercase() == match.value.lowercase()
+                                    }?.let {
+                                        onSelectedTextChanged("")
+                                        onPhraseClick(it, verse.number)
+                                    }
                                 }
-                            }
-                        )
-                    ) {
-                        withStyle(
-                            style = SpanStyle(
-                                color = highlightColor,
-                                fontWeight = FontWeight.Bold
                             )
                         ) {
-                            append(match.value)
+                            withStyle(
+                                style = SpanStyle(
+                                    color = highlightColor,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) {
+                                append(match.value)
+                            }
                         }
+                        lastIndex = match.range.last + 1
                     }
-                    lastIndex = match.range.last + 1
-                }
 
-                if (lastIndex < verseText.length) {
-                    append(verseText.substring(lastIndex))
+                    if (lastIndex < verseText.length) {
+                        append(verseText.substring(lastIndex))
+                    }
                 }
             }
         }
@@ -119,25 +130,27 @@ fun SelectableText(
     }
 
     Box(modifier = modifier) {
-        CompositionLocalProvider(LocalTextToolbar provides EmptyTextToolbar) {
-            SelectionContainer(
-                selection = selection,
-                onSelectionChange = { newSelection ->
-                    selection = newSelection
-                    val newSelectedText = newSelection?.let { sel ->
-                        val start = min(sel.start.offset, sel.end.offset)
-                        val end = max(sel.start.offset, sel.end.offset)
-                        annotatedString.substring(start, end)
-                    } ?: ""
-                    onSelectedTextChanged(newSelectedText)
+        annotatedString?.let { text ->
+            CompositionLocalProvider(LocalTextToolbar provides EmptyTextToolbar) {
+                SelectionContainer(
+                    selection = selection,
+                    onSelectionChange = { newSelection ->
+                        selection = newSelection
+                        val newSelectedText = newSelection?.let { sel ->
+                            val start = min(sel.start.offset, sel.end.offset)
+                            val end = max(sel.start.offset, sel.end.offset)
+                            text.substring(start, end)
+                        } ?: ""
+                        onSelectedTextChanged(newSelectedText)
+                    }
+                ) {
+                    Text(
+                        text = text,
+                        style = LocalTextStyle.current.copy(lineHeight = 32.sp),
+                        onTextLayout = { textLayoutResult = it },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
-            ) {
-                Text(
-                    text = annotatedString,
-                    style = LocalTextStyle.current.copy(lineHeight = 32.sp),
-                    onTextLayout = { textLayoutResult = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
 

@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ChapterButton(
     chapter: Int,
+    isActive: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -20,7 +21,9 @@ fun ChapterButton(
         onClick = onClick,
         shape = MaterialTheme.shapes.small,
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
+            containerColor = if (isActive) {
+                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+            } else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
             contentColor = MaterialTheme.colorScheme.onBackground
         ),
         contentPadding = PaddingValues(0.dp),

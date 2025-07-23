@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -13,6 +15,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ChapterGrid(
     chapters: Int,
+    activeChapter: Int?,
+    bringIntoViewRequester: BringIntoViewRequester,
     onChapterClick: (Int) -> Unit
 ) {
     val chapterNumbers = (1..chapters).toList()
@@ -28,10 +32,19 @@ fun ChapterGrid(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 rowChapters.forEach { chapter ->
+                    val isActive = chapter == activeChapter
+                    var buttonModifier = Modifier.weight(1f)
+
+                    if (isActive) {
+                        buttonModifier = buttonModifier
+                            .bringIntoViewRequester(bringIntoViewRequester)
+                    }
+
                     ChapterButton(
                         chapter = chapter,
+                        isActive = chapter == activeChapter,
                         onClick = { onChapterClick(chapter) },
-                        modifier = Modifier.weight(1f)
+                        modifier = buttonModifier
                     )
                 }
                 val remainingSpace = 5 - rowChapters.size
