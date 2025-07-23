@@ -123,7 +123,8 @@ fun PhraseDetailsBar(
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                            contentDescription = "Previous"
+                            contentDescription = "Previous",
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                     Column(
@@ -157,7 +158,8 @@ fun PhraseDetailsBar(
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                            contentDescription = "Next"
+                            contentDescription = "Next",
+                            tint = MaterialTheme.colorScheme.onBackground
                         )
                     }
                 }
@@ -185,11 +187,10 @@ fun PhraseDetailsBar(
                 }
                 Text(
                     text = annotatedVerse,
-                    textAlign = TextAlign.Center,
-                    style = MaterialTheme.typography.bodyLarge,
                     minLines = 3,
                     maxLines = 3,
-                    modifier = Modifier.padding(horizontal = 8.dp)
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                    color = MaterialTheme.colorScheme.onBackground
                 )
 
                 Spacer(Modifier.height(24.dp))
@@ -211,7 +212,8 @@ fun PhraseDetailsBar(
                         }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
-                                contentDescription = "Previous Ref"
+                                contentDescription = "Previous Ref",
+                                tint = MaterialTheme.colorScheme.onBackground
                             )
                         }
                         BasicText(
@@ -223,7 +225,8 @@ fun PhraseDetailsBar(
                             softWrap = false,
                             style = TextStyle.Default.copy(
                                 fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onBackground
                             ),
                             modifier = Modifier.weight(1f)
                         )
@@ -233,7 +236,8 @@ fun PhraseDetailsBar(
                         }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                contentDescription = "Next Ref"
+                                contentDescription = "Next Ref",
+                                tint = MaterialTheme.colorScheme.onBackground
                             )
                         }
                     }
