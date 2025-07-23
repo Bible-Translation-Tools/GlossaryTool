@@ -21,4 +21,8 @@
     <string name="add_to_glossary">Add to Glossary</string>
     <string name="view_glossary">View Glossary</string>
     <string name="learn_more">Learn More</string>
+    <string name="display">Display</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="language">Language</string>
+    <string name="typography">Typography</string>
 </resources>

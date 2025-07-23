@@ -28,10 +28,10 @@ import kotlin.system.exitProcess
 @Composable
 fun App() {
     val theme by rememberStringSetting(Settings.THEME.name, Theme.SYSTEM.name)
-    val colorScheme = when (theme) {
-        Theme.LIGHT.name -> LightColorScheme
-        Theme.DARK.name -> DarkColorScheme
-        Theme.SYSTEM.name if isSystemInDarkTheme() -> DarkColorScheme
+    val colorScheme = when {
+        theme == Theme.LIGHT.name -> LightColorScheme
+        theme == Theme.DARK.name -> DarkColorScheme
+        theme == Theme.SYSTEM.name && isSystemInDarkTheme() -> DarkColorScheme
         else -> LightColorScheme
     }
 

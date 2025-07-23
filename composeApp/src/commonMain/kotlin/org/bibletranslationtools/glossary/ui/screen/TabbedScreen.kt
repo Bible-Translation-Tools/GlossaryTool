@@ -1,11 +1,10 @@
 package org.bibletranslationtools.glossary.ui.screen
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -49,42 +48,40 @@ class TabbedScreen : Screen {
                 tabNavigator.current = screenState.tab
             }
 
-            Box {
-                Scaffold(
-                    snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
-                    content = { paddingValues ->
-                        Box(
-                            modifier = Modifier.fillMaxSize()
-                                .padding(paddingValues)
-                        ) {
-                            CurrentTab()
-                        }
-                    },
-                    bottomBar = {
-                        BottomNavBar(
-                            currentTab = tabNavigator.current as MainTab,
-                            onTabSelected = { tab -> tabNavigator.current = tab }
+            Scaffold(
+                snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
+                content = { paddingValues ->
+                    Surface(
+                        modifier = Modifier.fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        CurrentTab()
+                    }
+                },
+                bottomBar = {
+                    BottomNavBar(
+                        currentTab = tabNavigator.current as MainTab,
+                        onTabSelected = { tab -> tabNavigator.current = tab }
+                    )
+                },
+                //containerColor = MaterialTheme.colorScheme.surface
+            )
+            state.phraseDetails?.let { phraseDetails ->
+                PhraseDetailsBar(
+                    details = phraseDetails,
+                    onViewDetails = { phrase ->
+                        navigator.push(
+                            ViewPhraseScreen(
+                                phraseDetails.copy(phrase = phrase)
+                            )
                         )
                     },
-                    containerColor = MaterialTheme.colorScheme.surface
+                    onDismiss = {
+                        screenModel.onEvent(
+                            TabbedEvent.LoadPhrase(null)
+                        )
+                    }
                 )
-                state.phraseDetails?.let { phraseDetails ->
-                    PhraseDetailsBar(
-                        details = phraseDetails,
-                        onViewDetails = { phrase ->
-                            navigator.push(
-                                ViewPhraseScreen(
-                                    phraseDetails.copy(phrase = phrase)
-                                )
-                            )
-                        },
-                        onDismiss = {
-                            screenModel.onEvent(
-                                TabbedEvent.LoadPhrase(null)
-                            )
-                        }
-                    )
-                }
             }
         }
     }
