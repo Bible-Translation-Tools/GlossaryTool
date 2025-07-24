@@ -21,9 +21,12 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.logo
 import glossary.composeapp.generated.resources.wa
+import org.bibletranslationtools.glossary.domain.Settings
+import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.jetbrains.compose.resources.painterResource
@@ -34,7 +37,14 @@ class SplashScreen : Screen {
     override fun Content() {
         val viewModel = koinScreenModel<SplashScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
+        val appState = LocalAppState.currentOrThrow
+
         val state by viewModel.state.collectAsStateWithLifecycle()
+
+        val selectedResource by rememberStringSetting(
+            Settings.RESOURCE.name,
+            "en_ulb"
+        )
 
         val gradient = Brush.verticalGradient(
             0.0f to MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
@@ -45,9 +55,10 @@ class SplashScreen : Screen {
 
         LaunchedEffect(state.initDone) {
             if (state.initDone) {
+                appState.resource = state.resource
                 navigator.push(TabbedScreen())
             } else {
-                viewModel.onEvent(SplashEvent.InitApp)
+                viewModel.onEvent(SplashEvent.InitApp(selectedResource))
             }
         }
 

@@ -1,6 +1,8 @@
 package org.bibletranslationtools.glossary.di
 
 import org.bibletranslationtools.glossary.GlossaryDatabase
+import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
@@ -19,7 +21,7 @@ import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
+import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
@@ -40,10 +42,13 @@ val sharedModule = module {
     singleOf(::GlossaryRepositoryImpl).bind<GlossaryRepository>()
     singleOf(::InitApp)
 
-    singleOf(::ReadScreenModel)
     singleOf(::SplashScreenModel)
     singleOf(::TabbedScreenModel)
-    factory { (phraseDetails: PhraseDetails) ->
-        EditPhraseScreenModel(phraseDetails, get())
+    singleOf(::GlossaryScreenModel)
+    factory { (resource: Resource?) ->
+        ReadScreenModel(resource, get())
+    }
+    factory { (phrase: Phrase, resource: Resource?) ->
+        EditPhraseScreenModel(phrase, resource, get())
     }
 }

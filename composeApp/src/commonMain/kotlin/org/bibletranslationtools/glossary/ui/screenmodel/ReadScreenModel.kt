@@ -21,7 +21,6 @@ import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 
 sealed class NavigationResult {
     object NoChange : NavigationResult()
@@ -31,7 +30,6 @@ sealed class NavigationResult {
 
 data class HomeState(
     val isLoading: Boolean = false,
-    val activeResource: Resource? = null,
     val activeBook: Workbook? = null,
     val activeChapter: Chapter? = null,
     val activeGlossary: Glossary? = null,
@@ -40,15 +38,10 @@ data class HomeState(
 
 sealed class ReadEvent {
     data object Idle : ReadEvent()
-    data class InitLoad(
-        val resource: String,
-        val book: String,
-        val chapter: Int,
-        val glossary: String?
-    ) : ReadEvent()
+    data class InitLoad(val book: String, val chapter: Int, val glossary: String?) : ReadEvent()
     data class LoadGlossary(val code: String?) : ReadEvent()
     data class LoadResource(val resource: String, val book: String, val chapter: Int) : ReadEvent()
-    data class NavigateBook(val book: String, val chapter: Int) : ReadEvent()
+    data class NavigateBookChapter(val book: String, val chapter: Int) : ReadEvent()
     data class NavigateChapter(val chapter: Int) : ReadEvent()
     data object NextChapter : ReadEvent()
     data object PrevChapter : ReadEvent()
@@ -58,9 +51,14 @@ sealed class ReadEvent {
     data class SavePhrase(val phrase: Phrase): ReadEvent()
 }
 
+enum class NavDir(val incr: Int) {
+    NEXT(1),
+    PREV(-1)
+}
+
 class ReadScreenModel(
-    private val glossaryRepository: GlossaryRepository,
-    private val workbookDataSource: WorkbookDataSource
+    private val resource: Resource?,
+    private val glossaryRepository: GlossaryRepository
 ) : ScreenModel {
 
     private var _state = MutableStateFlow(HomeState())
@@ -74,16 +72,17 @@ class ReadScreenModel(
     private val _event: Channel<ReadEvent> = Channel()
     val event = _event.receiveAsFlow()
 
+    private var loaded = false
+
     fun onEvent(event: ReadEvent) {
         when (event) {
             is ReadEvent.InitLoad -> initLoad(
-                event.resource,
                 event.book,
                 event.chapter,
                 event.glossary
             )
-            is ReadEvent.NavigateBook -> screenModelScope.launch {
-                val result = navigateBook(event.book, event.chapter)
+            is ReadEvent.NavigateBookChapter -> screenModelScope.launch {
+                val result = navigateBookChapter(event.book, event.chapter)
                 _event.send(ReadEvent.OnNavigation(result))
             }
             is ReadEvent.NavigateChapter -> screenModelScope.launch {
@@ -97,28 +96,19 @@ class ReadScreenModel(
                 loadGlossary(event.code)
             }
             is ReadEvent.LoadResource -> screenModelScope.launch {
-                loadResource(
-                    event.resource,
-                    event.book,
-                    event.chapter
-                )
+                loadResource(event.book, event.chapter)
             }
             else -> resetChannel()
         }
     }
 
-    private fun initLoad(
-        resource: String,
-        bookSlug: String,
-        chapter: Int,
-        glossary: String?
-    ) {
+    private fun initLoad(bookSlug: String, chapter: Int, glossary: String?) {
         screenModelScope.launch {
             _state.value = _state.value.copy(isLoading = true)
 
             withContext(Dispatchers.IO) {
                 loadGlossary(glossary)
-                loadResource(resource, bookSlug, chapter)
+                loadResource(bookSlug, chapter)
                 loadChapterPhrases()
             }
 
@@ -126,24 +116,25 @@ class ReadScreenModel(
         }
     }
 
-    private suspend fun loadResource(resource: String, bookSlug: String, chapter: Int) {
-        if (_state.value.activeResource?.slug != resource) {
-            val books = withContext(Dispatchers.IO) {
-                workbookDataSource.read(resource)
-            }
-            val book = books.find { it.slug == bookSlug } ?: books.firstOrNull()
+    private fun loadResource(bookSlug: String, chapter: Int) {
+        if (loaded) return
+
+        resource?.let { activeResource ->
+            val book = activeResource.books.find { it.slug == bookSlug }
+                ?: activeResource.books.firstOrNull()
+
             book?.let { selectedBook ->
                 val chapter = selectedBook.chapters.find { it.number == chapter }
                     ?: selectedBook.chapters.firstOrNull()
 
                 chapter?.let { selectedChapter ->
                     _state.value = _state.value.copy(
-                        activeResource = Resource(resource, books),
                         activeBook = selectedBook,
                         activeChapter = selectedChapter
                     )
                 }
             }
+            loaded = true
         }
     }
 
@@ -166,32 +157,29 @@ class ReadScreenModel(
 
     private fun nextChapter() {
         screenModelScope.launch {
-            _state.value.activeChapter?.let { chapter ->
-                val current = chapter.number
-                val next = current + 1
-                val result = navigateChapter(next)
-                if (result is NavigationResult.NoChange) {
-                    nextBook()
-                } else {
-                    _event.send(ReadEvent.OnNavigation(result))
-                }
-            }
+            val result = navigateChapter(NavDir.NEXT)
+            _event.send(ReadEvent.OnNavigation(result))
         }
     }
 
     private fun prevChapter() {
         screenModelScope.launch {
-            _state.value.activeChapter?.let { chapter ->
-                val current = chapter.number
-                val prev = current - 1
-                val result = navigateChapter(prev)
-                if (result is NavigationResult.NoChange) {
-                    prevBook()
-                } else {
-                    _event.send(ReadEvent.OnNavigation(result))
-                }
-            }
+            val result = navigateChapter(NavDir.PREV)
+            _event.send(ReadEvent.OnNavigation(result))
         }
+    }
+
+    private fun navigateChapter(dir: NavDir): NavigationResult {
+        return _state.value.activeChapter?.let { chapter ->
+            val current = chapter.number
+            val chapter = current + dir.incr
+            val result = navigateChapter(chapter)
+            if (result is NavigationResult.NoChange) {
+                navigateBook(dir)
+            } else {
+                result
+            }
+        } ?: NavigationResult.NoChange
     }
 
     private fun navigateChapter(chapter: Int): NavigationResult {
@@ -205,48 +193,34 @@ class ReadScreenModel(
         return NavigationResult.NoChange
     }
 
-    private fun nextBook() {
-        _state.value.activeBook?.let { book ->
-            _state.value.activeResource?.books?.let { books ->
-                val index = books.indexOf(book) + 1
-                _state.value.activeResource?.books?.getOrNull(index)?.let { book ->
-                    book.chapters.firstOrNull()?.let { chapter ->
-                        val result = navigateBook(book, chapter)
-                        screenModelScope.launch {
-                            _event.send(ReadEvent.OnNavigation(result))
-                        }
+    private fun navigateBook(dir: NavDir): NavigationResult {
+        return resource?.books?.let { books ->
+            _state.value.activeBook?.let { book ->
+                val index = books.indexOf(book) + dir.incr
+                books.getOrNull(index)?.let { book ->
+                    val chapter = if (dir == NavDir.PREV) {
+                        book.chapters.lastOrNull()
+                    } else {
+                        book.chapters.firstOrNull()
+                    }
+                    chapter?.let { chapter ->
+                        navigateBookChapter(book, chapter)
                     }
                 }
             }
-        }
+        } ?: NavigationResult.NoChange
     }
 
-    private fun prevBook() {
-        _state.value.activeBook?.let { book ->
-            _state.value.activeResource?.books?.let { books ->
-                val index = books.indexOf(book) - 1
-                _state.value.activeResource?.books?.getOrNull(index)?.let { book ->
-                    book.chapters.lastOrNull()?.let { chapter ->
-                        val result = navigateBook(book, chapter)
-                        screenModelScope.launch {
-                            _event.send(ReadEvent.OnNavigation(result))
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun navigateBook(bookSlug: String, chapter: Int): NavigationResult {
-        _state.value.activeResource?.books?.find { it.slug == bookSlug }?.let { book ->
+    private fun navigateBookChapter(bookSlug: String, chapter: Int): NavigationResult {
+        resource?.books?.find { it.slug == bookSlug }?.let { book ->
             book.chapters.find { it.number == chapter }?.let { chapter ->
-                return navigateBook(book, chapter)
+                return navigateBookChapter(book, chapter)
             }
         }
         return NavigationResult.NoChange
     }
 
-    private fun navigateBook(book: Workbook, chapter: Chapter): NavigationResult {
+    private fun navigateBookChapter(book: Workbook, chapter: Chapter): NavigationResult {
         _state.value = _state.value.copy(
             activeBook = book,
             activeChapter = chapter
@@ -259,20 +233,20 @@ class ReadScreenModel(
     }
 
     private fun loadChapterPhrases() {
-        _state.value.activeGlossary?.let { glossary ->
-            _state.value.activeResource?.let { resource ->
+        resource?.let { res ->
+            _state.value.activeGlossary?.let { glossary ->
                 _state.value.activeBook?.let { book ->
                     _state.value.activeChapter?.let { chapter ->
                         val phrases = glossary.phrases.filter { phrase ->
                             phrase.refs.any { ref ->
-                                ref.resource == resource.slug
+                                ref.resource == res.slug
                                         && ref.book == book.slug
                                         && ref.chapter == chapter.number.toString()
                             }
                         }.sortedWith(
                             compareBy {
                                 it.refs.first { ref ->
-                                    ref.resource == resource.slug
+                                    ref.resource == res.slug
                                             && ref.book == book.slug
                                             && ref.chapter == chapter.number.toString()
                                 }.verse.toIntOrNull() ?: Int.MAX_VALUE

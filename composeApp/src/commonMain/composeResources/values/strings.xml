@@ -25,4 +25,6 @@
     <string name="dark_mode">Dark Mode</string>
     <string name="language">Language</string>
     <string name="typography">Typography</string>
+    <string name="glossary_code">Code: %1$s</string>
+    <string name="create_new_phrase">Create New Word</string>
 </resources>

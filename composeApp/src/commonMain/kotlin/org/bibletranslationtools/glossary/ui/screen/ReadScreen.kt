@@ -36,6 +36,7 @@ import glossary.composeapp.generated.resources.loading
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.components.SelectableText
+import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.screenmodel.NavigationResult
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
@@ -44,13 +45,18 @@ import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
 import org.jetbrains.compose.resources.stringResource
+import org.koin.core.parameter.parametersOf
 
 class ReadScreen : Screen {
 
     @OptIn(InternalTextApi::class)
     @Composable
     override fun Content() {
-        val screenModel = koinScreenModel<ReadScreenModel>()
+        val appState = LocalAppState.currentOrThrow
+
+        val screenModel = koinScreenModel<ReadScreenModel> {
+            parametersOf(appState.resource)
+        }
         val tabbedScreenModel = koinScreenModel<TabbedScreenModel>()
 
         val state by screenModel.state.collectAsStateWithLifecycle()
@@ -59,10 +65,6 @@ class ReadScreen : Screen {
         val navigator = LocalRootNavigator.currentOrThrow
         val scrollState = rememberScrollState()
 
-        val selectedResource by rememberStringSetting(
-            Settings.RESOURCE.name,
-            "en_ulb"
-        )
         var selectedBook by rememberStringSetting(
             Settings.BOOK.name,
             "mat"
@@ -89,8 +91,7 @@ class ReadScreen : Screen {
         var textIsReady by remember { mutableStateOf(false) }
         val isLoading by remember {
             derivedStateOf {
-                state.activeResource == null
-                        || state.activeBook == null
+                state.activeBook == null
                         || state.activeChapter == null
                         || !textIsReady
             }
@@ -99,7 +100,6 @@ class ReadScreen : Screen {
         LaunchedEffect(Unit) {
             screenModel.onEvent(
                 ReadEvent.InitLoad(
-                    selectedResource,
                     selectedBook,
                     selectedChapter,
                     selectedGlossary
@@ -127,15 +127,7 @@ class ReadScreen : Screen {
                 is ReadEvent.SavePhrase -> {
                     val phrase = (event as ReadEvent.SavePhrase).phrase
                     navigator.push(
-                        EditPhraseScreen(
-                            PhraseDetails(
-                                phrase = phrase,
-                                phrases = state.chapterPhrases,
-                                resource = state.activeResource!!,
-                                book = state.activeBook!!,
-                                chapter = state.activeChapter!!
-                            )
-                        )
+                        EditPhraseScreen(phrase)
                     )
                 }
                 is ReadEvent.GlossaryChanged -> {
@@ -188,7 +180,7 @@ class ReadScreen : Screen {
                                         PhraseDetails(
                                             phrase = phrase,
                                             phrases = state.chapterPhrases,
-                                            resource = state.activeResource!!,
+                                            resource = appState.resource!!,
                                             book = state.activeBook!!,
                                             chapter = state.activeChapter!!,
                                             verse = verse
@@ -206,7 +198,7 @@ class ReadScreen : Screen {
                 ChapterNavigation(
                     title = title,
                     onBrowse = {
-                        state.activeResource?.let { resource ->
+                        appState.resource?.let { resource ->
                             state.activeBook?.let { book ->
                                 state.activeChapter?.let { chapter ->
                                     textIsReady = false
@@ -218,7 +210,7 @@ class ReadScreen : Screen {
                                         ) { chapter, book ->
                                             book?.let {
                                                 screenModel.onEvent(
-                                                    ReadEvent.NavigateBook(it, chapter)
+                                                    ReadEvent.NavigateBookChapter(it, chapter)
                                                 )
                                             } ?: run {
                                                 screenModel.onEvent(

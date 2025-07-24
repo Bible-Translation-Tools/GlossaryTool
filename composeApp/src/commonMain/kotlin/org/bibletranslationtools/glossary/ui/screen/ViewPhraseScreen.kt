@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Edit
@@ -38,23 +37,25 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_audio
 import glossary.composeapp.generated.resources.edit
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
-import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
+import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
 import org.jetbrains.compose.resources.stringResource
 
 class ViewPhraseScreen(
-    private val phraseDetails: PhraseDetails
+    private val phrase: Phrase
 ) : Screen {
 
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val appState = LocalAppState.currentOrThrow
 
         Scaffold(
             topBar = {
                 BrowseTopBar(
-                    title = phraseDetails.phrase.phrase,
+                    title = phrase.phrase,
                     backgroundColor = MaterialTheme.colorScheme.background
                 ) {
                     navigator.popUntil { it is TabbedScreen }
@@ -77,7 +78,7 @@ class ViewPhraseScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = phraseDetails.phrase.spelling,
+                            text = phrase.spelling,
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -90,7 +91,7 @@ class ViewPhraseScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(phraseDetails.phrase.description)
+                    Text(phrase.description)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -100,7 +101,7 @@ class ViewPhraseScreen(
                     ) {
                         Button(
                             onClick = {
-                                navigator.push(EditPhraseScreen(phraseDetails))
+                                navigator.push(EditPhraseScreen(phrase))
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
@@ -153,14 +154,16 @@ class ViewPhraseScreen(
                             )
                             .padding(16.dp)
                     ) {
-                        items(phraseDetails.phrase.refs) {
-                            val reference = "${it.book.uppercase()} ${it.chapter}:${it.verse}"
-                            val text = it.getText(phraseDetails.resource)
-                            VerseReference(
-                                reference = reference,
-                                phrase = phraseDetails.phrase.phrase,
-                                text = text ?: ""
-                            )
+                        items(phrase.refs) {
+                            appState.resource?.let { resource ->
+                                val reference = "${it.book.uppercase()} ${it.chapter}:${it.verse}"
+                                val text = it.getText(resource)
+                                VerseReference(
+                                    reference = reference,
+                                    phrase = phrase.phrase,
+                                    text = text
+                                )
+                            }
                         }
                     }
                 }

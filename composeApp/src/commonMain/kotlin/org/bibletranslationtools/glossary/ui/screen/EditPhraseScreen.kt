@@ -41,31 +41,33 @@ import glossary.composeapp.generated.resources.editing_phrase
 import glossary.composeapp.generated.resources.save_exit
 import glossary.composeapp.generated.resources.saving
 import glossary.composeapp.generated.resources.spelling
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
+import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadEvent
-import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
 class EditPhraseScreen(
-    private val phraseDetails: PhraseDetails
+    private val phrase: Phrase
 ) : Screen {
 
     @Composable
     override fun Content() {
+        val appState = LocalAppState.currentOrThrow
         val viewModel = koinScreenModel<EditPhraseScreenModel> {
-            parametersOf(phraseDetails)
+            parametersOf(phrase, appState.resource)
         }
         val navigator = LocalNavigator.currentOrThrow
         val state by viewModel.state.collectAsStateWithLifecycle()
 
         var spelling by remember {
-            mutableStateOf(TextFieldValue(phraseDetails.phrase.spelling))
+            mutableStateOf(TextFieldValue(phrase.spelling))
         }
         var description by remember {
-            mutableStateOf(TextFieldValue(phraseDetails.phrase.description))
+            mutableStateOf(TextFieldValue(phrase.description))
         }
 
         val event by viewModel.event.collectAsStateWithLifecycle(ReadEvent.Idle)
@@ -84,7 +86,7 @@ class EditPhraseScreen(
                 BrowseTopBar(
                     title = stringResource(
                         Res.string.editing_phrase,
-                        phraseDetails.phrase.phrase
+                        phrase.phrase
                     )
                 ) {
                     navigator.popUntil { it is TabbedScreen }

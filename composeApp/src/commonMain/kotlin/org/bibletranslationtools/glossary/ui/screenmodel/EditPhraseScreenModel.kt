@@ -16,6 +16,7 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
+import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.jetbrains.compose.resources.getString
 
@@ -31,7 +32,8 @@ data class EditPhraseState(
 )
 
 class EditPhraseScreenModel(
-    private val phraseDetails: PhraseDetails,
+    private val phrase: Phrase,
+    private val resource: Resource?,
     private val glossaryRepository: GlossaryRepository
 ) : ScreenModel {
 
@@ -62,13 +64,13 @@ class EditPhraseScreenModel(
             _state.value = _state.value.copy(error = null)
 
             withContext(Dispatchers.IO) {
-                val phrase = phraseDetails.phrase.copy(
+                val phrase = phrase.copy(
                     spelling = spelling,
                     description = description,
                     updatedAt = getCurrentTime(),
-                    id = phraseDetails.phrase.id
+                    id = phrase.id
                 )
-                val dbRefs = phraseDetails.phrase.id?.let {
+                val dbRefs = phrase.id?.let {
                     glossaryRepository.getRefs(it)
                 } ?: emptyList()
 
@@ -95,7 +97,7 @@ class EditPhraseScreenModel(
 
     private fun findRefs(phrase: Phrase): List<Ref> {
         val refs = mutableListOf<Ref>()
-        phraseDetails.resource.books.forEach { book ->
+        resource?.books?.forEach { book ->
             book.chapters.forEach { chapter ->
                 chapter.verses.forEach { verse ->
                     val regex = Regex(
@@ -106,7 +108,7 @@ class EditPhraseScreenModel(
                     if (count > 0) {
                         for (i in 1..count) {
                             val ref = Ref(
-                                resource = phraseDetails.resource.slug,
+                                resource = resource.slug,
                                 book = book.slug,
                                 chapter = chapter.number.toString(),
                                 verse = verse.number,
