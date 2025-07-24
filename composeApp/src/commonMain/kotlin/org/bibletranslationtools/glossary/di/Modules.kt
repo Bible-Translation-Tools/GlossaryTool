@@ -24,8 +24,12 @@ import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
-import org.bibletranslationtools.glossary.ui.state.AppStateHolder
-import org.bibletranslationtools.glossary.ui.state.AppStateHolderImpl
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
+import org.bibletranslationtools.glossary.ui.state.AppStateStoreImpl
+import org.bibletranslationtools.glossary.ui.state.ResourceStateHolder
+import org.bibletranslationtools.glossary.ui.state.ResourceStateHolderImpl
+import org.bibletranslationtools.glossary.ui.state.TabStateHolder
+import org.bibletranslationtools.glossary.ui.state.TabStateHolderImpl
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
@@ -42,7 +46,10 @@ val sharedModule = module {
     singleOf(::WorkbookDataSourceImpl).bind<WorkbookDataSource>()
     singleOf(::GlossaryRepositoryImpl).bind<GlossaryRepository>()
     singleOf(::InitApp)
-    singleOf(::AppStateHolderImpl).bind<AppStateHolder>()
+
+    singleOf(::ResourceStateHolderImpl).bind<ResourceStateHolder>()
+    singleOf(::TabStateHolderImpl).bind<TabStateHolder>()
+    singleOf(::AppStateStoreImpl).bind<AppStateStore>()
 
     singleOf(::SplashScreenModel)
     singleOf(::TabbedScreenModel)

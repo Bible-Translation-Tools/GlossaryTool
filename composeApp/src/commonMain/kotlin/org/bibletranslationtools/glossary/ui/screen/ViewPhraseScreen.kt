@@ -42,7 +42,7 @@ import glossary.composeapp.generated.resources.edit
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
-import org.bibletranslationtools.glossary.ui.state.AppStateHolder
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
@@ -52,8 +52,9 @@ class ViewPhraseScreen(
 
     @Composable
     override fun Content() {
-        val appStateHolder = koinInject<AppStateHolder>()
-        val appState by appStateHolder.appState.collectAsStateWithLifecycle()
+        val appStateStore = koinInject<AppStateStore>()
+        val resourceState by appStateStore.resourceStateHolder.resourceState
+            .collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
 
         Scaffold(
@@ -159,7 +160,7 @@ class ViewPhraseScreen(
                             .padding(16.dp)
                     ) {
                         items(phrase.refs) {
-                            appState.resource?.let { resource ->
+                            resourceState.resource?.let { resource ->
                                 val reference = "${it.book.uppercase()} ${it.chapter}:${it.verse}"
                                 val text = it.getText(resource)
                                 VerseReference(

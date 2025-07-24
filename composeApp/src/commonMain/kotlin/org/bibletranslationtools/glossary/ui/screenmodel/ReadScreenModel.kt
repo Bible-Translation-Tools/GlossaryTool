@@ -20,7 +20,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.state.AppStateHolder
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 
 sealed class NavigationResult {
     object NoChange : NavigationResult()
@@ -58,7 +58,7 @@ enum class NavDir(val incr: Int) {
 
 class ReadScreenModel(
     private val glossaryRepository: GlossaryRepository,
-    private val appStateHolder: AppStateHolder
+    private val appStateStore: AppStateStore
 ) : ScreenModel {
 
     private var _state = MutableStateFlow(HomeState())
@@ -119,9 +119,9 @@ class ReadScreenModel(
     private fun loadResource(bookSlug: String, chapter: Int) {
         if (loaded) return
 
-        appStateHolder.appState.value.resource?.let { activeResource ->
-            val book = activeResource.books.find { it.slug == bookSlug }
-                ?: activeResource.books.firstOrNull()
+        appStateStore.resourceStateHolder.resourceState.value.resource?.let { resource ->
+            val book = resource.books.find { it.slug == bookSlug }
+                ?: resource.books.firstOrNull()
 
             book?.let { selectedBook ->
                 val chapter = selectedBook.chapters.find { it.number == chapter }
@@ -194,7 +194,8 @@ class ReadScreenModel(
     }
 
     private fun navigateBook(dir: NavDir): NavigationResult {
-        return appStateHolder.appState.value.resource?.books?.let { books ->
+        val resource = appStateStore.resourceStateHolder.resourceState.value.resource
+        return resource?.books?.let { books ->
             _state.value.activeBook?.let { book ->
                 val index = books.indexOf(book) + dir.incr
                 books.getOrNull(index)?.let { book ->
@@ -212,7 +213,8 @@ class ReadScreenModel(
     }
 
     private fun navigateBookChapter(bookSlug: String, chapter: Int): NavigationResult {
-        appStateHolder.appState.value.resource?.books
+        val resource = appStateStore.resourceStateHolder.resourceState.value.resource
+        resource?.books
             ?.find { it.slug == bookSlug }?.let { book ->
                 book.chapters.find { it.number == chapter }?.let { chapter ->
                     return navigateBookChapter(book, chapter)
@@ -234,7 +236,8 @@ class ReadScreenModel(
     }
 
     private fun loadChapterPhrases() {
-        appStateHolder.appState.value.resource?.let { res ->
+        val resource = appStateStore.resourceStateHolder.resourceState.value.resource
+        resource?.let { res ->
             _state.value.activeGlossary?.let { glossary ->
                 _state.value.activeBook?.let { book ->
                     _state.value.activeChapter?.let { chapter ->

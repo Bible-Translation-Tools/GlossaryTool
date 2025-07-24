@@ -16,7 +16,7 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.InitApp
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
-import org.bibletranslationtools.glossary.ui.state.AppStateHolder
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.getString
 
 data class SplashState(
@@ -31,7 +31,7 @@ sealed class SplashEvent {
 
 class SplashScreenModel(
     private val initApp: InitApp,
-    private val appStateHolder: AppStateHolder,
+    private val appStateStore: AppStateStore,
     private val workbookDataSource: WorkbookDataSource
 ) : ScreenModel {
 
@@ -64,7 +64,9 @@ class SplashScreenModel(
                 val books = withContext(Dispatchers.IO) {
                     workbookDataSource.read(resource)
                 }
-                appStateHolder.updateResource(Resource(resource, books))
+                appStateStore.resourceStateHolder.updateResource(
+                    Resource(resource, books)
+                )
             }
 
             _state.value = _state.value.copy(

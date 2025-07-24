@@ -43,22 +43,20 @@ import org.bibletranslationtools.glossary.ui.screenmodel.ReadEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
-import org.bibletranslationtools.glossary.ui.state.AppStateHolder
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import org.koin.core.parameter.parametersOf
 
 class ReadScreen : Screen {
 
     @OptIn(InternalTextApi::class)
     @Composable
     override fun Content() {
-        val appStateHolder = koinInject<AppStateHolder>()
-        val appState by appStateHolder.appState.collectAsStateWithLifecycle()
+        val appStateStore = koinInject<AppStateStore>()
+        val resourceState by appStateStore.resourceStateHolder.resourceState
+            .collectAsStateWithLifecycle()
 
-        val screenModel = koinScreenModel<ReadScreenModel> {
-            parametersOf(appState.resource)
-        }
+        val screenModel = koinScreenModel<ReadScreenModel>()
         val tabbedScreenModel = koinScreenModel<TabbedScreenModel>()
 
         val state by screenModel.state.collectAsStateWithLifecycle()
@@ -182,7 +180,7 @@ class ReadScreen : Screen {
                                         PhraseDetails(
                                             phrase = phrase,
                                             phrases = state.chapterPhrases,
-                                            resource = appState.resource!!,
+                                            resource = resourceState.resource!!,
                                             book = state.activeBook!!,
                                             chapter = state.activeChapter!!,
                                             verse = verse
@@ -200,7 +198,7 @@ class ReadScreen : Screen {
                 ChapterNavigation(
                     title = title,
                     onBrowse = {
-                        appState.resource?.let { resource ->
+                        resourceState.resource?.let { resource ->
                             state.activeBook?.let { book ->
                                 state.activeChapter?.let { chapter ->
                                     textIsReady = false

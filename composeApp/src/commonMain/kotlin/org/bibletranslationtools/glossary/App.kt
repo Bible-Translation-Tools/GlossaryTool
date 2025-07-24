@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import cafe.adriel.voyager.navigator.Navigator
@@ -21,13 +22,14 @@ import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.navigation.MainTab
 import org.bibletranslationtools.glossary.ui.screen.SplashScreen
 import org.bibletranslationtools.glossary.ui.screen.TabbedScreen
-import org.bibletranslationtools.glossary.ui.state.AppStateHolder
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.compose.koinInject
 import kotlin.system.exitProcess
 
 @Composable
 fun App() {
-    val appState = koinInject<AppStateHolder>()
+    val appStateStore = koinInject<AppStateStore>()
+    val tabState by appStateStore.tabStateHolder.tabState.collectAsState()
 
     val theme by rememberStringSetting(Settings.THEME.name, Theme.SYSTEM.name)
     val colorScheme = when {
@@ -48,10 +50,10 @@ fun App() {
             screen = SplashScreen(),
             onBackPressed = {
                 if (it is TabbedScreen) {
-                    if (appState.appState.value.currentTab == defaultTab) {
+                    if (tabState.currentTab == defaultTab) {
                         exitProcess(0)
                     } else {
-                        appState.updateTab(defaultTab)
+                        appStateStore.tabStateHolder.updateTab(defaultTab)
                         false
                     }
                 } else true
