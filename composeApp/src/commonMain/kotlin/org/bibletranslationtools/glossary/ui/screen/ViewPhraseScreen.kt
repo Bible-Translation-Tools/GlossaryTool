@@ -25,12 +25,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -40,8 +42,9 @@ import glossary.composeapp.generated.resources.edit
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
-import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
+import org.bibletranslationtools.glossary.ui.state.AppStateHolder
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 class ViewPhraseScreen(
     private val phrase: Phrase
@@ -49,8 +52,9 @@ class ViewPhraseScreen(
 
     @Composable
     override fun Content() {
+        val appStateHolder = koinInject<AppStateHolder>()
+        val appState by appStateHolder.appState.collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
-        val appState = LocalAppState.currentOrThrow
 
         Scaffold(
             topBar = {

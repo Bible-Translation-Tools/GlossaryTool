@@ -16,8 +16,8 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
-import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.ui.state.AppStateHolder
 import org.jetbrains.compose.resources.getString
 
 sealed class EditPhraseEvent {
@@ -33,7 +33,7 @@ data class EditPhraseState(
 
 class EditPhraseScreenModel(
     private val phrase: Phrase,
-    private val resource: Resource?,
+    private val appStateHolder: AppStateHolder,
     private val glossaryRepository: GlossaryRepository
 ) : ScreenModel {
 
@@ -97,24 +97,26 @@ class EditPhraseScreenModel(
 
     private fun findRefs(phrase: Phrase): List<Ref> {
         val refs = mutableListOf<Ref>()
-        resource?.books?.forEach { book ->
-            book.chapters.forEach { chapter ->
-                chapter.verses.forEach { verse ->
-                    val regex = Regex(
-                        pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
-                        option = RegexOption.IGNORE_CASE
-                    )
-                    val count = regex.findAll(verse.text).count()
-                    if (count > 0) {
-                        for (i in 1..count) {
-                            val ref = Ref(
-                                resource = resource.slug,
-                                book = book.slug,
-                                chapter = chapter.number.toString(),
-                                verse = verse.number,
-                                phraseId = phrase.id
-                            )
-                            refs.add(ref)
+        appStateHolder.appState.value.resource?.let { resource ->
+            resource.books.forEach { book ->
+                book.chapters.forEach { chapter ->
+                    chapter.verses.forEach { verse ->
+                        val regex = Regex(
+                            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
+                            option = RegexOption.IGNORE_CASE
+                        )
+                        val count = regex.findAll(verse.text).count()
+                        if (count > 0) {
+                            for (i in 1..count) {
+                                val ref = Ref(
+                                    resource = resource.slug,
+                                    book = book.slug,
+                                    chapter = chapter.number.toString(),
+                                    verse = verse.number,
+                                    phraseId = phrase.id
+                                )
+                                refs.add(ref)
+                            }
                         }
                     }
                 }

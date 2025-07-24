@@ -26,7 +26,6 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.logo
 import glossary.composeapp.generated.resources.wa
 import org.bibletranslationtools.glossary.domain.Settings
-import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.jetbrains.compose.resources.painterResource
@@ -37,10 +36,8 @@ class SplashScreen : Screen {
     override fun Content() {
         val viewModel = koinScreenModel<SplashScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
-        val appState = LocalAppState.currentOrThrow
 
         val state by viewModel.state.collectAsStateWithLifecycle()
-
         val selectedResource by rememberStringSetting(
             Settings.RESOURCE.name,
             "en_ulb"
@@ -55,7 +52,6 @@ class SplashScreen : Screen {
 
         LaunchedEffect(state.initDone) {
             if (state.initDone) {
-                appState.resource = state.resource
                 navigator.push(TabbedScreen())
             } else {
                 viewModel.onEvent(SplashEvent.InitApp(selectedResource))

@@ -19,25 +19,27 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
 import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
-import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.navigation.MainTab
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
+import org.bibletranslationtools.glossary.ui.state.AppStateHolder
+import org.koin.compose.koinInject
 
 class TabbedScreen : Screen {
     @Composable
     override fun Content() {
+        val appStateHolder = koinInject<AppStateHolder>()
         val screenModel = koinScreenModel<TabbedScreenModel>()
         val snackBarHostState = LocalSnackBarHostState.currentOrThrow
 
         val navigator = LocalNavigator.currentOrThrow
-        val appState = LocalAppState.currentOrThrow
+        val appState by appStateHolder.appState.collectAsStateWithLifecycle()
         val state by screenModel.state.collectAsStateWithLifecycle()
 
         TabNavigator(appState.currentTab) { tabNavigator ->
             LaunchedEffect(tabNavigator.current) {
-                appState.currentTab = tabNavigator.current as MainTab
+                appStateHolder.updateTab(tabNavigator.current as MainTab)
             }
             LaunchedEffect(appState.currentTab) {
                 tabNavigator.current = appState.currentTab

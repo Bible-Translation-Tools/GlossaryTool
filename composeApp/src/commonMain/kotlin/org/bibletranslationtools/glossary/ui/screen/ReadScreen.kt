@@ -36,7 +36,6 @@ import glossary.composeapp.generated.resources.loading
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.components.SelectableText
-import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.screenmodel.NavigationResult
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
@@ -44,7 +43,9 @@ import org.bibletranslationtools.glossary.ui.screenmodel.ReadEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
+import org.bibletranslationtools.glossary.ui.state.AppStateHolder
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
 class ReadScreen : Screen {
@@ -52,7 +53,8 @@ class ReadScreen : Screen {
     @OptIn(InternalTextApi::class)
     @Composable
     override fun Content() {
-        val appState = LocalAppState.currentOrThrow
+        val appStateHolder = koinInject<AppStateHolder>()
+        val appState by appStateHolder.appState.collectAsStateWithLifecycle()
 
         val screenModel = koinScreenModel<ReadScreenModel> {
             parametersOf(appState.resource)

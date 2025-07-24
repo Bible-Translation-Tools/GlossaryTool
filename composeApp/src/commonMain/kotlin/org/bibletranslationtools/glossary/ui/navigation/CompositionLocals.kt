@@ -4,12 +4,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.ProvidableCompositionLocal
 import androidx.compose.runtime.staticCompositionLocalOf
 import cafe.adriel.voyager.navigator.Navigator
-import org.bibletranslationtools.glossary.AppState
 
 val LocalSnackBarHostState: ProvidableCompositionLocal<SnackbarHostState?> =
     staticCompositionLocalOf { null }
 
 val LocalRootNavigator: ProvidableCompositionLocal<Navigator?> =
     staticCompositionLocalOf { null }
-
-val LocalAppState = staticCompositionLocalOf<AppState?> { null }
