@@ -27,4 +27,5 @@
     <string name="typography">Typography</string>
     <string name="glossary_code">Code: %1$s</string>
     <string name="create_new_phrase">Create New Word</string>
+    <string name="search">Search</string>
 </resources>

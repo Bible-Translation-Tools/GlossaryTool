@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,18 +16,26 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,9 +46,11 @@ import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.glossary_code
+import glossary.composeapp.generated.resources.search
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
-import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
+import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
@@ -52,15 +63,32 @@ class GlossaryScreen : Screen {
         val screenModel = koinScreenModel<GlossaryScreenModel>()
         val state by screenModel.state.collectAsStateWithLifecycle()
         val navigator = LocalRootNavigator.currentOrThrow
-        val appState = LocalAppState.currentOrThrow
 
         var selectedGlossary by rememberStringSettingOrNull(
             Settings.GLOSSARY.name
         )
 
+        var filteredPhrases by remember { mutableStateOf<List<Phrase>>(emptyList()) }
+        var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+
         LaunchedEffect(Unit) {
             selectedGlossary?.let {
                 screenModel.onEvent(GlossaryEvent.LoadGlossary(it))
+            }
+        }
+
+        LaunchedEffect(state.activeGlossary) {
+            state.activeGlossary?.let { glossary ->
+                filteredPhrases = glossary.phrases
+            }
+        }
+
+        LaunchedEffect(searchQuery) {
+            state.activeGlossary?.let { glossary ->
+                filteredPhrases = glossary.phrases.filter { phrase ->
+                    phrase.phrase.contains(searchQuery.text, ignoreCase = true)
+                            || phrase.spelling.contains(searchQuery.text, ignoreCase = true)
+                }
             }
         }
 
@@ -120,7 +148,7 @@ class GlossaryScreen : Screen {
                         verticalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(vertical = 8.dp)
                     ) {
-                        items(glossary.phrases) { phrase ->
+                        items(filteredPhrases) { phrase ->
                             PhraseItem(phrase) {
                                 navigator.push(ViewPhraseScreen(phrase))
                             }
@@ -130,6 +158,57 @@ class GlossaryScreen : Screen {
 
                 if (state.activeGlossary == null && !state.isLoading) {
                     Text("Create Glossary")
+                }
+            }
+
+            if (state.activeGlossary != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                ) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.background)
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(16.dp)
+                    ) {
+                        SearchField(
+                            searchQuery = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = {
+                                Text(
+                                    text = stringResource(Res.string.search),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(
+                                        alpha = 0.5f
+                                    )
+                                )
+                            },
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.background,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                                focusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = Color.Transparent,
+                            ),
+                            modifier = Modifier.weight(1f)
+                                .height(60.dp)
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.onSurface.copy(
+                                        alpha = 0.05f
+                                    ),
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                        )
+                        IconButton(
+                            onClick = {}
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.FilterAlt,
+                                contentDescription = "Filter"
+                            )
+                        }
+                    }
                 }
             }
         }

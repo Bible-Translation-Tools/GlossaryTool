@@ -8,6 +8,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -27,7 +28,15 @@ import androidx.compose.ui.unit.sp
 fun SearchField(
     searchQuery: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
-    onFocusChange: (Boolean) -> Unit
+    modifier: Modifier = Modifier,
+    placeholder: @Composable (() -> Unit)? = null,
+    colors: TextFieldColors = TextFieldDefaults.colors(
+        focusedContainerColor = MaterialTheme.colorScheme.background,
+        unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+        focusedIndicatorColor = Color.Transparent,
+        unfocusedIndicatorColor = Color.Transparent,
+    ),
+    onFocusChange: (Boolean) -> Unit = {}
 ) {
     val focusManager = LocalFocusManager.current
     var searchFocused by remember { mutableStateOf(false) }
@@ -62,14 +71,10 @@ fun SearchField(
         textStyle = LocalTextStyle.current.copy(
             fontSize = 18.sp
         ),
+        placeholder = placeholder,
         shape = MaterialTheme.shapes.medium,
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = MaterialTheme.colorScheme.background,
-            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent,
-        ),
-        modifier = Modifier.width(width)
+        colors = colors,
+        modifier = modifier.width(width)
             .onFocusChanged {
                 searchFocused = it.isFocused
                 onFocusChange(it.isFocused)

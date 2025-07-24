@@ -17,6 +17,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
+import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
 import org.bibletranslationtools.glossary.ui.navigation.LocalAppState
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
@@ -42,23 +43,26 @@ class TabbedScreen : Screen {
                 tabNavigator.current = appState.currentTab
             }
 
-            Scaffold(
-                snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
-                content = { paddingValues ->
-                    Surface(
-                        modifier = Modifier.fillMaxSize()
-                            .padding(paddingValues)
-                    ) {
-                        CurrentTab()
+            KeyboardAware {
+                Scaffold(
+                    snackbarHost = { SnackbarHost(hostState = snackBarHostState) },
+                    content = { paddingValues ->
+                        Surface(
+                            modifier = Modifier.fillMaxSize()
+                                .padding(paddingValues)
+                        ) {
+                            CurrentTab()
+                        }
+                    },
+                    bottomBar = {
+                        BottomNavBar(
+                            currentTab = tabNavigator.current as MainTab,
+                            onTabSelected = { tab -> tabNavigator.current = tab }
+                        )
                     }
-                },
-                bottomBar = {
-                    BottomNavBar(
-                        currentTab = tabNavigator.current as MainTab,
-                        onTabSelected = { tab -> tabNavigator.current = tab }
-                    )
-                }
-            )
+                )
+            }
+
             state.phraseDetails?.let { phraseDetails ->
                 PhraseDetailsBar(
                     details = phraseDetails,
