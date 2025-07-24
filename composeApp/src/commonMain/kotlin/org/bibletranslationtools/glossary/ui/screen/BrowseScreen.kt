@@ -3,6 +3,7 @@ package org.bibletranslationtools.glossary.ui.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -42,6 +44,8 @@ import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.components.BookItem
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
 import org.bibletranslationtools.glossary.ui.components.ChapterGrid
+import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
+import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.jetbrains.compose.resources.stringResource
 
@@ -90,76 +94,81 @@ class BrowseScreen(
             }
         }
 
-        Scaffold(
-            topBar = {
-                BrowseTopBar(
-                    title = stringResource(Res.string.browse),
-                    actions = {
-                        SearchField(
-                            searchQuery = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            onFocusChange = { searchFocused = it }
-                        )
-
-                        Spacer(modifier = Modifier.width(5.dp))
-
-                        if (!searchFocused) {
-                            Button(
-                                onClick = { /* Handle language change */ },
-                                shape = MaterialTheme.shapes.medium,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.background,
-                                    contentColor = MaterialTheme.colorScheme.onBackground
+        KeyboardAware {
+            Scaffold(
+                topBar = {
+                    BrowseTopBar(
+                        title = stringResource(Res.string.browse),
+                        actions = {
+                            SearchField(
+                                searchQuery = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                onFocusChange = { searchFocused = it },
+                                colors = CustomTextFieldDefaults.colors(
+                                    unfocusedIndicatorColor = Color.Transparent
                                 ),
-                                border = BorderStroke(
-                                    1.dp,
-                                    MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                                )
-                            ) {
-                                Icon(
-                                    Icons.Default.Language,
-                                    contentDescription = "Language",
-                                    modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text("ENG")
+                                modifier = Modifier.weight(1f)
+                                    .height(48.dp)
+                            )
+
+                            if (!searchFocused) {
+                                Button(
+                                    onClick = { /* Handle language change */ },
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.background,
+                                        contentColor = MaterialTheme.colorScheme.onBackground
+                                    ),
+                                    border = BorderStroke(
+                                        1.dp,
+                                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                                    )
+                                ) {
+                                    Icon(
+                                        Icons.Default.Language,
+                                        contentDescription = "Language",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text("ENG")
+                                }
                             }
                         }
+                    ) {
+                        navigator.pop()
                     }
-                ) {
-                    navigator.pop()
                 }
-            }
-        ) { paddingValues ->
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues),
-                state = lazyListState
-            ) {
-                itemsIndexed(filteredBooks) { index, book ->
-                    BookItem(
-                        book = book,
-                        isExpanded = expandedBookIndex == index,
-                        onToggle = {
-                            expandedBookIndex = if (expandedBookIndex == index) -1 else index
-                        }
-                    )
-                    if (expandedBookIndex == index) {
-                        ChapterGrid(
-                            chapters = book.chapters.size,
-                            activeChapter = if (book == activeBook) activeChapter.number else null,
-                            bringIntoViewRequester = bringIntoViewRequester,
-                        ) { chapter ->
-                            if (activeBook != book) {
-                                onBack(chapter, book.slug)
-                            } else if (activeChapter.number != chapter) {
-                                onBack(chapter, null)
+            ) { paddingValues ->
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    state = lazyListState
+                ) {
+                    itemsIndexed(filteredBooks) { index, book ->
+                        BookItem(
+                            book = book,
+                            isExpanded = expandedBookIndex == index,
+                            onToggle = {
+                                expandedBookIndex = if (expandedBookIndex == index) -1 else index
                             }
-                            navigator.pop()
+                        )
+                        if (expandedBookIndex == index) {
+                            ChapterGrid(
+                                chapters = book.chapters.size,
+                                activeChapter = if (book == activeBook) activeChapter.number else null,
+                                bringIntoViewRequester = bringIntoViewRequester,
+                            ) { chapter ->
+                                if (activeBook != book) {
+                                    onBack(chapter, book.slug)
+                                } else if (activeChapter.number != chapter) {
+                                    onBack(chapter, null)
+                                }
+                                navigator.pop()
+                            }
                         }
+                        HorizontalDivider()
                     }
-                    HorizontalDivider()
                 }
             }
         }

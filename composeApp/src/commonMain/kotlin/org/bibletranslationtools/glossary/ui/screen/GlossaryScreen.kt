@@ -1,7 +1,6 @@
 package org.bibletranslationtools.glossary.ui.screen
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,7 +23,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,7 +31,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
@@ -49,6 +46,7 @@ import glossary.composeapp.generated.resources.glossary_code
 import glossary.composeapp.generated.resources.search
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.Settings
+import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
@@ -122,7 +120,9 @@ class GlossaryScreen : Screen {
                             containerColor = MaterialTheme.colorScheme.surface
                         ),
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = {}
+                        onClick = {
+                            navigator.push(CreatePhraseScreen())
+                        }
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -164,14 +164,17 @@ class GlossaryScreen : Screen {
             if (state.activeGlossary != null) {
                 Column(
                     modifier = Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .padding(16.dp)
                         .align(Alignment.BottomCenter)
                 ) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.background)
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .padding(16.dp)
                     ) {
                         SearchField(
                             searchQuery = searchQuery,
@@ -184,21 +187,13 @@ class GlossaryScreen : Screen {
                                     )
                                 )
                             },
-                            colors = TextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.background,
+                            colors = CustomTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
                                 unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                                focusedIndicatorColor = Color.Transparent,
-                                unfocusedIndicatorColor = Color.Transparent,
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
                             ),
                             modifier = Modifier.weight(1f)
-                                .height(60.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = MaterialTheme.colorScheme.onSurface.copy(
-                                        alpha = 0.05f
-                                    ),
-                                    shape = MaterialTheme.shapes.medium
-                                )
+                                .height(56.dp)
                         )
                         IconButton(
                             onClick = {}
