@@ -54,6 +54,8 @@ import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
 import org.jetbrains.compose.resources.stringResource
 
+private val BOTTOM_SEARCH_BAR_HEIGHT = 80.dp
+
 class GlossaryScreen : Screen {
 
     @Composable
@@ -148,7 +150,10 @@ class GlossaryScreen : Screen {
 
                     LazyColumn(
                         verticalArrangement = Arrangement.spacedBy(8.dp),
-                        contentPadding = PaddingValues(vertical = 8.dp)
+                        contentPadding = PaddingValues(
+                            top = 8.dp,
+                            bottom = BOTTOM_SEARCH_BAR_HEIGHT
+                        )
                     ) {
                         items(filteredPhrases) { phrase ->
                             PhraseItem(phrase) {
@@ -167,7 +172,7 @@ class GlossaryScreen : Screen {
                 Column(
                     modifier = Modifier.fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface)
-                        .padding(16.dp)
+                        .height(BOTTOM_SEARCH_BAR_HEIGHT)
                         .align(Alignment.BottomCenter)
                 ) {
                     HorizontalDivider(color = MaterialTheme.colorScheme.background)
@@ -177,6 +182,7 @@ class GlossaryScreen : Screen {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth()
+                            .padding(horizontal = 16.dp)
                     ) {
                         SearchField(
                             searchQuery = searchQuery,
