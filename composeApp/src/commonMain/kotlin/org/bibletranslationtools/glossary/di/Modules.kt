@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.di
 
 import org.bibletranslationtools.glossary.GlossaryDatabase
+import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
@@ -19,6 +20,7 @@ import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
+import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
@@ -57,5 +59,8 @@ val sharedModule = module {
     singleOf(::ReadScreenModel)
     factory { (phrase: Phrase) ->
         EditPhraseScreenModel(phrase, get(), get())
+    }
+    factory { (glossary: Glossary) ->
+        SearchPhraseScreenModel(glossary, get())
     }
 }

@@ -55,11 +55,11 @@ class EditPhraseScreen(
 
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<EditPhraseScreenModel> {
+        val screenModel = koinScreenModel<EditPhraseScreenModel> {
             parametersOf(phrase)
         }
         val navigator = LocalNavigator.currentOrThrow
-        val state by viewModel.state.collectAsStateWithLifecycle()
+        val state by screenModel.state.collectAsStateWithLifecycle()
 
         var spelling by remember {
             mutableStateOf(TextFieldValue(phrase.spelling))
@@ -68,7 +68,7 @@ class EditPhraseScreen(
             mutableStateOf(TextFieldValue(phrase.description))
         }
 
-        val event by viewModel.event.collectAsStateWithLifecycle(ReadEvent.Idle)
+        val event by screenModel.event.collectAsStateWithLifecycle(ReadEvent.Idle)
 
         LaunchedEffect(event) {
             when (event) {
@@ -175,7 +175,7 @@ class EditPhraseScreen(
                                     && description.text.isNotEmpty()
                                     && !state.isSaving,
                             onClick = {
-                                viewModel.onEvent(
+                                screenModel.onEvent(
                                     EditPhraseEvent.SavePhrase(
                                         spelling.text,
                                         description.text

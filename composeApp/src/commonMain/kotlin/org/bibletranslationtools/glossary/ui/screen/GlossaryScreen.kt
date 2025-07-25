@@ -121,7 +121,9 @@ class GlossaryScreen : Screen {
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            navigator.push(CreatePhraseScreen())
+                            state.activeGlossary?.let { glossary ->
+                                navigator.push(SearchPhraseScreen(glossary))
+                            }
                         }
                     ) {
                         Row(

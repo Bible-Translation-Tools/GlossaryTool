@@ -28,4 +28,6 @@
     <string name="glossary_code">Code: %1$s</string>
     <string name="create_new_phrase">Create New Word</string>
     <string name="search">Search</string>
+    <string name="search_word_placeholder">Start typing to search</string>
+    <string name="search_word_hint">Search for a word or phrase to add to your glossary or select one from the list below.</string>
 </resources>
