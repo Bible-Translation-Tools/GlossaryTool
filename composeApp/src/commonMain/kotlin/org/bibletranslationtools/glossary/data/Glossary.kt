@@ -15,7 +15,8 @@ data class Glossary(
     val id: String? = null,
     private val getPhrases: () -> List<Phrase> = { emptyList() }
 ) {
-    val phrases: List<Phrase> by lazy(getPhrases)
+    val phrases: List<Phrase>
+        get() = getPhrases()
 }
 
 fun GlossaryEntity.toModel(): Glossary {

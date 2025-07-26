@@ -1,8 +1,6 @@
 package org.bibletranslationtools.glossary.di
 
 import org.bibletranslationtools.glossary.GlossaryDatabase
-import org.bibletranslationtools.glossary.data.Glossary
-import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
@@ -20,14 +18,16 @@ import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
-import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
+import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.bibletranslationtools.glossary.ui.state.AppStateStoreImpl
+import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolder
+import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolderImpl
 import org.bibletranslationtools.glossary.ui.state.ResourceStateHolder
 import org.bibletranslationtools.glossary.ui.state.ResourceStateHolderImpl
 import org.bibletranslationtools.glossary.ui.state.TabStateHolder
@@ -50,6 +50,7 @@ val sharedModule = module {
     singleOf(::InitApp)
 
     singleOf(::ResourceStateHolderImpl).bind<ResourceStateHolder>()
+    singleOf(::GlossaryStateHolderImpl).bind<GlossaryStateHolder>()
     singleOf(::TabStateHolderImpl).bind<TabStateHolder>()
     singleOf(::AppStateStoreImpl).bind<AppStateStore>()
 
@@ -57,10 +58,8 @@ val sharedModule = module {
     singleOf(::TabbedScreenModel)
     singleOf(::GlossaryScreenModel)
     singleOf(::ReadScreenModel)
-    factory { (phrase: Phrase) ->
+    singleOf(::SearchPhraseScreenModel)
+    factory { (phrase: String) ->
         EditPhraseScreenModel(phrase, get(), get())
-    }
-    factory { (glossary: Glossary) ->
-        SearchPhraseScreenModel(glossary, get())
     }
 }

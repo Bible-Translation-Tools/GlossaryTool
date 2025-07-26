@@ -21,7 +21,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.text.AnnotatedString
@@ -31,6 +35,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -44,6 +49,8 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
 import kotlin.math.min
 
+private const val VERSE_TAG = "verse_tag"
+
 // Opt-in for onSelectionChange, which is an internal API.
 @OptIn(InternalTextApi::class)
 @Composable
@@ -51,19 +58,22 @@ fun SelectableText(
     chapter: Chapter,
     phrases: List<Phrase>,
     selectedText: String,
+    currentVerse: String?,
     onSelectedTextChanged: (String) -> Unit,
     onSaveSelection: (String) -> Unit,
     onPhraseClick: (Phrase, String) -> Unit,
     onTextReady: () -> Unit,
+    onVersePosition: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val highlightColor = MaterialTheme.colorScheme.onBackground
+    val dimColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
 
     val currentChapter by rememberUpdatedState(newValue = chapter)
     val currentPhrases by rememberUpdatedState(newValue = phrases)
 
     var selection by remember { mutableStateOf<Selection?>(null) }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
+    var positionInWindow by remember { mutableStateOf(Offset.Zero) }
     var annotatedString by remember { mutableStateOf<AnnotatedString?>(null) }
 
     LaunchedEffect(selectedText) {
@@ -72,7 +82,11 @@ fun SelectableText(
         }
     }
 
-    LaunchedEffect(currentChapter, currentPhrases) {
+    LaunchedEffect(currentChapter, currentPhrases, currentVerse) {
+        selection = null
+        onSelectedTextChanged("")
+        textLayoutResult = null
+
         annotatedString = buildAnnotatedString {
             val regex = if (currentPhrases.isNotEmpty()) {
                 val phrasesToFind = currentPhrases
@@ -86,14 +100,39 @@ fun SelectableText(
             }
 
             currentChapter.verses.forEach { verse ->
-                val verseText = "${verse.number} ${verse.text} "
+                val color = if (currentVerse == null || verse.number == currentVerse) {
+                    Color.Unspecified
+                } else {
+                    dimColor
+                }
+
+                withStyle(
+                    style = SpanStyle(
+                        color = color,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        baselineShift = BaselineShift.Superscript
+                    )
+                ) {
+                    addStringAnnotation(
+                        tag = VERSE_TAG,
+                        annotation = verse.number,
+                        start = length,
+                        end = length + verse.number.length
+                    )
+                    append(verse.number)
+                }
 
                 if (regex == null) {
-                    append(verseText)
+                    append(verse.text)
                 } else {
                     var lastIndex = 0
-                    regex.findAll(verseText).forEach { match ->
-                        append(verseText.substring(lastIndex, match.range.first))
+                    regex.findAll(verse.text).forEach { match ->
+                        withStyle(
+                            style = SpanStyle(color = color)
+                        ) {
+                            append(verse.text.substring(lastIndex, match.range.first))
+                        }
 
                         withLink(
                             link = LinkAnnotation.Clickable(
@@ -110,7 +149,7 @@ fun SelectableText(
                         ) {
                             withStyle(
                                 style = SpanStyle(
-                                    color = highlightColor,
+                                    color = color,
                                     fontWeight = FontWeight.Bold
                                 )
                             ) {
@@ -120,13 +159,43 @@ fun SelectableText(
                         lastIndex = match.range.last + 1
                     }
 
-                    if (lastIndex < verseText.length) {
-                        append(verseText.substring(lastIndex))
+                    if (lastIndex < verse.text.length) {
+                        withStyle(
+                            style = SpanStyle(color = color)
+                        ) {
+                            append(verse.text.substring(lastIndex))
+                        }
                     }
                 }
+                append(" ")
             }
         }
+
         onTextReady()
+    }
+
+    LaunchedEffect(annotatedString, textLayoutResult, positionInWindow, currentVerse) {
+        val layoutResult = textLayoutResult ?: return@LaunchedEffect
+        val text = annotatedString ?: return@LaunchedEffect
+        val verse = currentVerse ?: return@LaunchedEffect
+
+        val spanAnnotations = text.getStringAnnotations(
+            tag = VERSE_TAG,
+            start = 0,
+            end = text.length
+        )
+
+        spanAnnotations.firstOrNull { it.item == verse }?.let { range ->
+            val relativeBounds = layoutResult.getPathForRange(
+                range.start,
+                range.end
+            ).getBounds()
+
+            val absoluteBounds = relativeBounds.translate(
+                positionInWindow
+            )
+            onVersePosition(absoluteBounds.top.toInt())
+        }
     }
 
     Box(modifier = modifier) {
@@ -149,6 +218,9 @@ fun SelectableText(
                         style = LocalTextStyle.current.copy(lineHeight = 32.sp),
                         onTextLayout = { textLayoutResult = it },
                         modifier = Modifier.fillMaxWidth()
+                            .onGloballyPositioned { coordinates ->
+                                positionInWindow = coordinates.positionInWindow()
+                            }
                     )
                 }
             }

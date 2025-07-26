@@ -41,17 +41,13 @@ import glossary.composeapp.generated.resources.editing_phrase
 import glossary.composeapp.generated.resources.save_exit
 import glossary.composeapp.generated.resources.saving
 import glossary.composeapp.generated.resources.spelling
-import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.ReadEvent
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-class EditPhraseScreen(
-    private val phrase: Phrase
-) : Screen {
+class EditPhraseScreen(private val phrase: String) : Screen {
 
     @Composable
     override fun Content() {
@@ -62,13 +58,13 @@ class EditPhraseScreen(
         val state by screenModel.state.collectAsStateWithLifecycle()
 
         var spelling by remember {
-            mutableStateOf(TextFieldValue(phrase.spelling))
+            mutableStateOf(TextFieldValue(""))
         }
         var description by remember {
-            mutableStateOf(TextFieldValue(phrase.description))
+            mutableStateOf(TextFieldValue(""))
         }
 
-        val event by screenModel.event.collectAsStateWithLifecycle(ReadEvent.Idle)
+        val event by screenModel.event.collectAsStateWithLifecycle(EditPhraseEvent.Idle)
 
         LaunchedEffect(event) {
             when (event) {
@@ -79,12 +75,19 @@ class EditPhraseScreen(
             }
         }
 
+        LaunchedEffect(state.activePhrase) {
+            state.activePhrase?.let { phrase ->
+                spelling = TextFieldValue(phrase.spelling)
+                description = TextFieldValue(phrase.description)
+            }
+        }
+
         Scaffold(
             topBar = {
                 BrowseTopBar(
                     title = stringResource(
                         Res.string.editing_phrase,
-                        phrase.phrase
+                        phrase
                     )
                 ) {
                     navigator.popUntil { it is TabbedScreen }
@@ -175,11 +178,9 @@ class EditPhraseScreen(
                                     && description.text.isNotEmpty()
                                     && !state.isSaving,
                             onClick = {
-                                screenModel.onEvent(
-                                    EditPhraseEvent.SavePhrase(
-                                        spelling.text,
-                                        description.text
-                                    )
+                                screenModel.savePhrase(
+                                    spelling = spelling.text,
+                                    description = description.text
                                 )
                             },
                             shape = MaterialTheme.shapes.medium,

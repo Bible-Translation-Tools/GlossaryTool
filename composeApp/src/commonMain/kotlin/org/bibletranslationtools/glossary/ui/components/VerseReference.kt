@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.InlineTextContent
@@ -20,7 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun VerseReference(reference: String, phrase: String, text: String) {
+fun VerseReference(
+    reference: String,
+    phrase: String,
+    text: String,
+    onClick: () -> Unit = {}
+) {
     val style = TextStyle.Default.copy(
         lineHeight = 28.sp,
         fontSize = 16.sp
@@ -85,5 +91,6 @@ fun VerseReference(reference: String, phrase: String, text: String) {
         text = annotatedText,
         style = style,
         inlineContent = mapOf("reference" to referenceView),
+        modifier = Modifier.clickable { onClick() }
     )
 }

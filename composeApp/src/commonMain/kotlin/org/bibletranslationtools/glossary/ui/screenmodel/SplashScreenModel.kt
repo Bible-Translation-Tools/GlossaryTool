@@ -5,15 +5,17 @@ import cafe.adriel.voyager.core.model.screenModelScope
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.init_app
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.InitApp
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -24,15 +26,11 @@ data class SplashState(
     val message: String? = null
 )
 
-sealed class SplashEvent {
-    data object Idle : SplashEvent()
-    data class InitApp(val resource: String) : SplashEvent()
-}
-
 class SplashScreenModel(
     private val initApp: InitApp,
     private val appStateStore: AppStateStore,
-    private val workbookDataSource: WorkbookDataSource
+    private val workbookDataSource: WorkbookDataSource,
+    private val glossaryRepository: GlossaryRepository
 ) : ScreenModel {
 
     private var _state = MutableStateFlow(SplashState())
@@ -43,17 +41,7 @@ class SplashScreenModel(
             initialValue = SplashState()
         )
 
-    private val _event: Channel<SplashEvent> = Channel()
-    val event = _event.receiveAsFlow()
-
-    fun onEvent(event: SplashEvent) {
-        when (event) {
-            is SplashEvent.InitApp -> initializeApp(event.resource)
-            else -> resetChannel()
-        }
-    }
-
-    fun initializeApp(resource: String) {
+    fun initializeApp(resourceSlug: String, glossaryCode: String?) {
         screenModelScope.launch {
             _state.value = _state.value.copy(
                 message = getString(Res.string.init_app)
@@ -61,12 +49,8 @@ class SplashScreenModel(
 
             withContext(Dispatchers.IO) {
                 initApp()
-                val books = withContext(Dispatchers.IO) {
-                    workbookDataSource.read(resource)
-                }
-                appStateStore.resourceStateHolder.updateResource(
-                    Resource(resource, books)
-                )
+                loadResource(resourceSlug)
+                loadGlossary(glossaryCode)
             }
 
             _state.value = _state.value.copy(
@@ -76,9 +60,45 @@ class SplashScreenModel(
         }
     }
 
-    private fun resetChannel() {
-        screenModelScope.launch {
-            _event.send(SplashEvent.Idle)
+    private suspend fun loadResource(resourceSlug: String) {
+        val books = withContext(Dispatchers.Default) {
+            workbookDataSource.read(resourceSlug)
+        }
+        appStateStore.resourceStateHolder.updateResource(
+            Resource(resourceSlug, books)
+        )
+    }
+
+    private suspend fun loadGlossary(glossaryCode: String?) {
+        withContext(Dispatchers.Default) {
+            glossaryCode?.let { code ->
+                glossaryRepository.getGlossary(code)?.let { glossary ->
+                    appStateStore.glossaryStateHolder.updateGlossary(
+                        glossary.copy {
+                            runBlocking {
+                                loadPhrases(glossary.id!!)
+                            }
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun loadPhrases(glossaryId: String): List<Phrase> {
+        return withContext(Dispatchers.Default) {
+            glossaryRepository.getPhrases(glossaryId)
+                .map {
+                    it.copy(getRefs = {
+                        runBlocking { loadRefs(it.id!!) }
+                    })
+                }
+        }
+    }
+
+    private suspend fun loadRefs(phraseId: String): List<Ref> {
+        return withContext(Dispatchers.Default) {
+            glossaryRepository.getRefs(phraseId)
         }
     }
 }

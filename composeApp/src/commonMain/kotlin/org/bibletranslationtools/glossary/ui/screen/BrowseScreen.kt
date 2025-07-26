@@ -40,6 +40,7 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.browse
 import kotlinx.coroutines.delay
 import org.bibletranslationtools.glossary.data.Chapter
+import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.components.BookItem
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
@@ -47,13 +48,14 @@ import org.bibletranslationtools.glossary.ui.components.ChapterGrid
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.SearchField
+import org.bibletranslationtools.glossary.ui.event.AppEvent
+import org.bibletranslationtools.glossary.ui.event.EventBus
 import org.jetbrains.compose.resources.stringResource
 
 class BrowseScreen(
     private val books: List<Workbook>,
     private val activeBook: Workbook,
-    private val activeChapter: Chapter,
-    private val onBack: (Int, String?) -> Unit
+    private val activeChapter: Chapter
 ) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class)
@@ -159,12 +161,13 @@ class BrowseScreen(
                                 activeChapter = if (book == activeBook) activeChapter.number else null,
                                 bringIntoViewRequester = bringIntoViewRequester,
                             ) { chapter ->
-                                if (activeBook != book) {
-                                    onBack(chapter, book.slug)
-                                } else if (activeChapter.number != chapter) {
-                                    onBack(chapter, null)
-                                }
-                                navigator.pop()
+                                EventBus.events.trySend(
+                                    AppEvent.OpenRef(RefOption(
+                                        book = book.slug,
+                                        chapter = chapter
+                                    ))
+                                )
+                                navigator.popUntil { it is TabbedScreen }
                             }
                         }
                         HorizontalDivider()

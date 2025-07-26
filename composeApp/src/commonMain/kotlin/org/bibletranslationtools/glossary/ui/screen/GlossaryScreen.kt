@@ -39,20 +39,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.currentOrThrow
-import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.glossary_code
 import glossary.composeapp.generated.resources.search
 import org.bibletranslationtools.glossary.data.Phrase
-import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
-import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 private val BOTTOM_SEARCH_BAR_HEIGHT = 80.dp
 
@@ -60,31 +59,25 @@ class GlossaryScreen : Screen {
 
     @Composable
     override fun Content() {
+        val appStateStore = koinInject<AppStateStore>()
         val screenModel = koinScreenModel<GlossaryScreenModel>()
         val state by screenModel.state.collectAsStateWithLifecycle()
         val navigator = LocalRootNavigator.currentOrThrow
 
-        var selectedGlossary by rememberStringSettingOrNull(
-            Settings.GLOSSARY.name
-        )
+        val glossaryState by appStateStore.glossaryStateHolder.glossaryState
+            .collectAsStateWithLifecycle()
 
         var filteredPhrases by remember { mutableStateOf<List<Phrase>>(emptyList()) }
         var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
 
-        LaunchedEffect(Unit) {
-            selectedGlossary?.let {
-                screenModel.onEvent(GlossaryEvent.LoadGlossary(it))
-            }
-        }
-
-        LaunchedEffect(state.activeGlossary) {
-            state.activeGlossary?.let { glossary ->
+        LaunchedEffect(glossaryState.glossary) {
+            glossaryState.glossary?.let { glossary ->
                 filteredPhrases = glossary.phrases
             }
         }
 
         LaunchedEffect(searchQuery) {
-            state.activeGlossary?.let { glossary ->
+            glossaryState.glossary?.let { glossary ->
                 filteredPhrases = glossary.phrases.filter { phrase ->
                     phrase.phrase.contains(searchQuery.text, ignoreCase = true)
                             || phrase.spelling.contains(searchQuery.text, ignoreCase = true)
@@ -101,7 +94,7 @@ class GlossaryScreen : Screen {
                 modifier = Modifier.fillMaxSize()
                     .padding(16.dp)
             ) {
-                state.activeGlossary?.let { glossary ->
+                glossaryState.glossary?.let { glossary ->
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Text(
@@ -123,9 +116,7 @@ class GlossaryScreen : Screen {
                         ),
                         modifier = Modifier.fillMaxWidth(),
                         onClick = {
-                            state.activeGlossary?.let { glossary ->
-                                navigator.push(SearchPhraseScreen(glossary))
-                            }
+                            navigator.push(SearchPhraseScreen())
                         }
                     ) {
                         Row(
@@ -163,12 +154,12 @@ class GlossaryScreen : Screen {
                     }
                 }
 
-                if (state.activeGlossary == null && !state.isLoading) {
+                if (glossaryState.glossary == null && !state.isLoading) {
                     Text("Create Glossary")
                 }
             }
 
-            if (state.activeGlossary != null) {
+            if (glossaryState.glossary != null) {
                 Column(
                     modifier = Modifier.fillMaxWidth()
                         .background(MaterialTheme.colorScheme.surface)

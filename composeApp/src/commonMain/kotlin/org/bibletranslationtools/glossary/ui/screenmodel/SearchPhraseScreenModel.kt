@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import kotlin.random.Random
 import kotlin.text.Regex.Companion.escape
@@ -29,7 +28,6 @@ data class SearchPhraseState(
 )
 
 class SearchPhraseScreenModel(
-    glossary: Glossary,
     appStateStore: AppStateStore
 ) : ScreenModel {
 
@@ -42,6 +40,7 @@ class SearchPhraseScreenModel(
         )
 
     private val resourceState = appStateStore.resourceStateHolder.resourceState.value
+    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState.value
     private var sourceText: String? = null
     private var exclusions: Set<String> = emptySet()
     private var searchJob: Job? = null
@@ -56,8 +55,10 @@ class SearchPhraseScreenModel(
                         .joinToString { it.text }
                 }
             }
-            exclusions = glossary.phrases.map { it.phrase }
-                .map { it.lowercase() }.toSet()
+            glossaryState.glossary?.let { glossary ->
+                exclusions = glossary.phrases.map { it.phrase }
+                    .map { it.lowercase() }.toSet()
+            }
 
             onSearchQueryChanged(TextFieldValue(""))
         }

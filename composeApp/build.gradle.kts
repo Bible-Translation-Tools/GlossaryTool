@@ -60,7 +60,6 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.io)
@@ -68,7 +67,6 @@ kotlin {
 
             api(libs.koin.core)
             implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
 
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenmodel)

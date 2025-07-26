@@ -26,6 +26,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -39,16 +40,18 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_audio
 import glossary.composeapp.generated.resources.edit
+import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.toOption
 import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
+import org.bibletranslationtools.glossary.ui.event.AppEvent
+import org.bibletranslationtools.glossary.ui.event.EventBus
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-class ViewPhraseScreen(
-    private val phrase: Phrase
-) : Screen {
+class ViewPhraseScreen(private val phrase: Phrase) : Screen {
 
     @Composable
     override fun Content() {
@@ -56,6 +59,8 @@ class ViewPhraseScreen(
         val resourceState by appStateStore.resourceStateHolder.resourceState
             .collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
+
+        val coroutineScope = rememberCoroutineScope()
 
         Scaffold(
             topBar = {
@@ -106,7 +111,7 @@ class ViewPhraseScreen(
                     ) {
                         Button(
                             onClick = {
-                                navigator.push(EditPhraseScreen(phrase))
+                                navigator.push(EditPhraseScreen(phrase.phrase))
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
@@ -159,15 +164,23 @@ class ViewPhraseScreen(
                             )
                             .padding(16.dp)
                     ) {
-                        items(phrase.refs) {
+                        items(phrase.refs) { ref ->
                             resourceState.resource?.let { resource ->
-                                val reference = "${it.book.uppercase()} ${it.chapter}:${it.verse}"
-                                val text = it.getText(resource)
+                                val reference = "${ref.book.uppercase()} ${ref.chapter}:${ref.verse}"
+                                val text = ref.getText(resource)
+
                                 VerseReference(
                                     reference = reference,
                                     phrase = phrase.phrase,
                                     text = text
-                                )
+                                ) {
+                                    coroutineScope.launch {
+                                        EventBus.events.send(
+                                            AppEvent.OpenRef(ref.toOption())
+                                        )
+                                        navigator.popUntil { it is TabbedScreen }
+                                    }
+                                }
                             }
                         }
                     }

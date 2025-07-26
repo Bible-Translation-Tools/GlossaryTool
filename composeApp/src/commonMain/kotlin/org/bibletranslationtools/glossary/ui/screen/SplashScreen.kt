@@ -13,6 +13,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -22,11 +23,11 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.burnoo.compose.remembersetting.rememberStringSetting
+import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.logo
 import glossary.composeapp.generated.resources.wa
 import org.bibletranslationtools.glossary.domain.Settings
-import org.bibletranslationtools.glossary.ui.screenmodel.SplashEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.jetbrains.compose.resources.painterResource
 
@@ -34,13 +35,16 @@ class SplashScreen : Screen {
 
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<SplashScreenModel>()
+        val screenModel = koinScreenModel<SplashScreenModel>()
         val navigator = LocalNavigator.currentOrThrow
 
-        val state by viewModel.state.collectAsStateWithLifecycle()
+        val state by screenModel.state.collectAsStateWithLifecycle()
         val selectedResource by rememberStringSetting(
             Settings.RESOURCE.name,
             "en_ulb"
+        )
+        var selectedGlossary by rememberStringSettingOrNull(
+            Settings.GLOSSARY.name
         )
 
         val gradient = Brush.verticalGradient(
@@ -54,7 +58,10 @@ class SplashScreen : Screen {
             if (state.initDone) {
                 navigator.push(TabbedScreen())
             } else {
-                viewModel.onEvent(SplashEvent.InitApp(selectedResource))
+                screenModel.initializeApp(
+                    selectedResource,
+                    selectedGlossary
+                )
             }
         }
 

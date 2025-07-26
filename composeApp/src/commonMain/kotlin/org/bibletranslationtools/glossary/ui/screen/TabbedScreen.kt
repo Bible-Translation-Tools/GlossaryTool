@@ -16,17 +16,20 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
+import kotlinx.coroutines.flow.receiveAsFlow
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
 import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
+import org.bibletranslationtools.glossary.ui.event.AppEvent
+import org.bibletranslationtools.glossary.ui.event.EventBus
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.navigation.MainTab
-import org.bibletranslationtools.glossary.ui.screenmodel.TabbedEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.compose.koinInject
 
 class TabbedScreen : Screen {
+
     @Composable
     override fun Content() {
         val appStateStore = koinInject<AppStateStore>()
@@ -36,6 +39,8 @@ class TabbedScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val tabState by appStateStore.tabStateHolder.tabState.collectAsStateWithLifecycle()
         val state by screenModel.state.collectAsStateWithLifecycle()
+        val appEvent by EventBus.events.receiveAsFlow()
+            .collectAsStateWithLifecycle(AppEvent.Idle)
 
         TabNavigator(tabState.currentTab) { tabNavigator ->
             LaunchedEffect(tabNavigator.current) {
@@ -43,6 +48,17 @@ class TabbedScreen : Screen {
             }
             LaunchedEffect(tabState.currentTab) {
                 tabNavigator.current = tabState.currentTab
+            }
+            LaunchedEffect(appEvent) {
+                when (appEvent) {
+                    is AppEvent.OpenRef -> {
+                        appStateStore.tabStateHolder.updateTab(MainTab.Read)
+
+                        val ref = (appEvent as AppEvent.OpenRef).ref
+                        screenModel.loadRef(ref)
+                    }
+                    else -> {}
+                }
             }
 
             KeyboardAware {
@@ -74,9 +90,7 @@ class TabbedScreen : Screen {
                         )
                     },
                     onDismiss = {
-                        screenModel.onEvent(
-                            TabbedEvent.LoadPhrase(null)
-                        )
+                        screenModel.loadPhrase(null)
                     }
                 )
             }
