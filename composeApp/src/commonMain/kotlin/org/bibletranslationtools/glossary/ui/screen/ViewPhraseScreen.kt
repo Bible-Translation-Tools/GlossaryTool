@@ -43,7 +43,7 @@ import glossary.composeapp.generated.resources.edit
 import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.toOption
-import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
+import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
 import org.bibletranslationtools.glossary.ui.event.AppEvent
 import org.bibletranslationtools.glossary.ui.event.EventBus
@@ -64,7 +64,7 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
 
         Scaffold(
             topBar = {
-                BrowseTopBar(
+                TopAppBar(
                     title = phrase.phrase,
                     backgroundColor = MaterialTheme.colorScheme.background
                 ) {

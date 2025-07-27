@@ -1,6 +1,5 @@
 package org.bibletranslationtools.glossary.ui.screenmodel
 
-import androidx.compose.ui.text.input.TextFieldValue
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +22,6 @@ private const val MAX_RANDOM_ATTEMPTS = 500
 
 data class SearchPhraseState(
     val isSearching: Boolean = false,
-    val searchQuery: TextFieldValue = TextFieldValue(""),
     val results: List<String> = emptyList()
 )
 
@@ -60,12 +58,11 @@ class SearchPhraseScreenModel(
                     .map { it.lowercase() }.toSet()
             }
 
-            onSearchQueryChanged(TextFieldValue(""))
+            onSearchQueryChanged("")
         }
     }
 
-    fun onSearchQueryChanged(query: TextFieldValue) {
-        _state.update { it.copy(searchQuery = query) }
+    fun onSearchQueryChanged(query: String) {
         searchJob?.cancel()
         searchJob = screenModelScope.launch {
             _state.update { it.copy(isSearching = true) }
@@ -73,7 +70,7 @@ class SearchPhraseScreenModel(
             delay(300L)
 
             val results = withContext(Dispatchers.Default) {
-                findContent(query.text)
+                findContent(query)
             }
 
             _state.update {

@@ -33,6 +33,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.koinNavigatorScreenModel
 import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.currentOrThrow
 import dev.burnoo.compose.remembersetting.rememberIntSetting
@@ -48,7 +49,7 @@ import org.bibletranslationtools.glossary.ui.components.SelectableText
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
+import org.bibletranslationtools.glossary.ui.screenmodel.SharedScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -64,13 +65,13 @@ class ReadScreen : Screen {
         val resourceState by appStateStore.resourceStateHolder.resourceState
             .collectAsStateWithLifecycle()
 
+        val navigator = LocalRootNavigator.currentOrThrow
         val screenModel = koinScreenModel<ReadScreenModel>()
-        val tabbedScreenModel = koinScreenModel<TabbedScreenModel>()
+        val sharedScreenModel = navigator.koinNavigatorScreenModel<SharedScreenModel>()
 
         val state by screenModel.state.collectAsStateWithLifecycle()
-        val tabbedState by tabbedScreenModel.state.collectAsStateWithLifecycle()
+        val tabbedState by sharedScreenModel.state.collectAsStateWithLifecycle()
 
-        val navigator = LocalRootNavigator.currentOrThrow
         val scrollState = rememberScrollState()
         val coroutineScope = rememberCoroutineScope()
 
@@ -124,7 +125,7 @@ class ReadScreen : Screen {
 
         DisposableEffect(Unit) {
             onDispose {
-                tabbedScreenModel.clearRef()
+                sharedScreenModel.clearRef()
             }
         }
 
@@ -187,7 +188,7 @@ class ReadScreen : Screen {
                             val event = awaitPointerEvent()
                             if (event.type == PointerEventType.Press
                                 && tabbedState.currentRef != null) {
-                                tabbedScreenModel.clearRef()
+                                sharedScreenModel.clearRef()
                             }
                         }
                     }
@@ -223,7 +224,7 @@ class ReadScreen : Screen {
                                 navigator.push(EditPhraseScreen(it))
                             },
                             onPhraseClick = { phrase, verse ->
-                                tabbedScreenModel.loadPhrase(
+                                sharedScreenModel.loadPhrase(
                                     PhraseDetails(
                                         phrase = phrase,
                                         phrases = state.chapterPhrases,

@@ -27,7 +27,7 @@ data class TabbedState(
     val currentRef: RefOption? = null
 )
 
-class TabbedScreenModel : ScreenModel {
+class SharedScreenModel : ScreenModel {
     private var _state = MutableStateFlow(TabbedState())
     val state: StateFlow<TabbedState> = _state
         .stateIn(

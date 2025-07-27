@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -28,7 +29,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 @Immutable
@@ -58,8 +58,8 @@ object CustomTextFieldDefaults {
 }
 @Composable
 fun CustomOutlinedTextField(
-    value: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
+    value: String,
+    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     readOnly: Boolean = false,
@@ -94,55 +94,59 @@ fun CustomOutlinedTextField(
         label = "BackgroundColorAnimation"
     )
 
-    BasicTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier
-            .onFocusChanged { isFocused = it.isFocused },
-        enabled = enabled,
-        readOnly = readOnly,
-        textStyle = textStyle,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        singleLine = singleLine,
-        maxLines = maxLines,
-        minLines = minLines,
-        interactionSource = interactionSource,
-        cursorBrush = SolidColor(colors.cursorColor),
-        decorationBox = { innerTextField ->
-            Box(
-                modifier = Modifier
-                    .background(color = backgroundColor, shape = shape)
-                    .border(
-                        width = borderThickness,
-                        color = borderColor,
-                        shape = shape
-                    )
-                    .padding(12.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Row(
+    BoxWithConstraints(modifier = modifier, contentAlignment = Alignment.Center) {
+        val padding = this.maxHeight / 4.5f
+
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .onFocusChanged { isFocused = it.isFocused },
+            enabled = enabled,
+            readOnly = readOnly,
+            textStyle = textStyle,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            singleLine = singleLine,
+            maxLines = maxLines,
+            minLines = minLines,
+            interactionSource = interactionSource,
+            cursorBrush = SolidColor(colors.cursorColor),
+            decorationBox = { innerTextField ->
+                Box(
                     modifier = Modifier
-                        .fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        .background(color = backgroundColor, shape = shape)
+                        .border(
+                            width = borderThickness,
+                            color = borderColor,
+                            shape = shape
+                        )
+                        .padding(horizontal = 12.dp, vertical = padding),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    if (leadingIcon != null) {
-                        leadingIcon()
-                    }
-
-                    Box(modifier = Modifier.weight(1f)) {
-                        if (value.text.isEmpty() && placeholder != null) {
-                            placeholder()
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        if (leadingIcon != null) {
+                            leadingIcon()
                         }
-                        innerTextField()
-                    }
 
-                    if (trailingIcon != null) {
-                        trailingIcon()
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (value.isEmpty() && placeholder != null) {
+                                placeholder()
+                            }
+                            innerTextField()
+                        }
+
+                        if (trailingIcon != null) {
+                            trailingIcon()
+                        }
                     }
                 }
             }
-        }
-    )
+        )
+    }
 }

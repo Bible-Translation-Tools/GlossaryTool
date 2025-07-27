@@ -20,6 +20,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -34,7 +37,7 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.search_word_hint
 import glossary.composeapp.generated.resources.search_word_placeholder
 import org.bibletranslationtools.glossary.data.Phrase
-import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
+import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
@@ -54,13 +57,18 @@ class SearchPhraseScreen : Screen {
         val glossaryState by appStateStore.glossaryStateHolder.glossaryState
             .collectAsStateWithLifecycle()
 
+        var searchQuery by rememberSaveable { mutableStateOf("") }
+
         Scaffold(
             topBar = {
-                BrowseTopBar(
+                TopAppBar(
                     actions = {
                         SearchField(
-                            searchQuery = state.searchQuery,
-                            onValueChange = screenModel::onSearchQueryChanged,
+                            searchQuery = searchQuery,
+                            onValueChange = {
+                                searchQuery = it
+                                screenModel.onSearchQueryChanged(searchQuery)
+                            },
                             placeholder = {
                                 Text(
                                     text = stringResource(Res.string.search_word_placeholder),

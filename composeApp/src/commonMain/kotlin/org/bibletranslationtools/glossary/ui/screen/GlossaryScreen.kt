@@ -32,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -68,7 +67,7 @@ class GlossaryScreen : Screen {
             .collectAsStateWithLifecycle()
 
         var filteredPhrases by remember { mutableStateOf<List<Phrase>>(emptyList()) }
-        var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
+        var searchQuery by remember { mutableStateOf("") }
 
         LaunchedEffect(glossaryState.glossary) {
             glossaryState.glossary?.let { glossary ->
@@ -79,8 +78,8 @@ class GlossaryScreen : Screen {
         LaunchedEffect(searchQuery) {
             glossaryState.glossary?.let { glossary ->
                 filteredPhrases = glossary.phrases.filter { phrase ->
-                    phrase.phrase.contains(searchQuery.text, ignoreCase = true)
-                            || phrase.spelling.contains(searchQuery.text, ignoreCase = true)
+                    phrase.phrase.contains(searchQuery, ignoreCase = true)
+                            || phrase.spelling.contains(searchQuery, ignoreCase = true)
                 }
             }
         }

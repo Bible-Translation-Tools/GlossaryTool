@@ -31,7 +31,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -43,7 +42,7 @@ import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.components.BookItem
-import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
+import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.components.ChapterGrid
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.KeyboardAware
@@ -70,8 +69,8 @@ class BrowseScreen(
         }
 
         var filteredBooks by remember { mutableStateOf(books) }
-        var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
-        var searchFocused by remember { mutableStateOf(false) }
+        var searchQuery by rememberSaveable { mutableStateOf("") }
+        var searchFocused by rememberSaveable { mutableStateOf(false) }
 
         LaunchedEffect(Unit) {
             val initialBookIndex = books.indexOf(activeBook)
@@ -91,15 +90,15 @@ class BrowseScreen(
 
         LaunchedEffect(searchQuery) {
             filteredBooks = books.filter { book ->
-                book.title.contains(searchQuery.text, ignoreCase = true)
-                        || book.slug.contains(searchQuery.text, ignoreCase = true)
+                book.title.contains(searchQuery, ignoreCase = true)
+                        || book.slug.contains(searchQuery, ignoreCase = true)
             }
         }
 
         KeyboardAware {
             Scaffold(
                 topBar = {
-                    BrowseTopBar(
+                    TopAppBar(
                         title = stringResource(Res.string.browse),
                         actions = {
                             SearchField(

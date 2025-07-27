@@ -11,7 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
-import cafe.adriel.voyager.koin.koinScreenModel
+import cafe.adriel.voyager.koin.koinNavigatorScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.CurrentTab
@@ -24,7 +24,7 @@ import org.bibletranslationtools.glossary.ui.event.AppEvent
 import org.bibletranslationtools.glossary.ui.event.EventBus
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.navigation.MainTab
-import org.bibletranslationtools.glossary.ui.screenmodel.TabbedScreenModel
+import org.bibletranslationtools.glossary.ui.screenmodel.SharedScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.compose.koinInject
 
@@ -33,10 +33,11 @@ class TabbedScreen : Screen {
     @Composable
     override fun Content() {
         val appStateStore = koinInject<AppStateStore>()
-        val screenModel = koinScreenModel<TabbedScreenModel>()
+        val navigator = LocalNavigator.currentOrThrow
+
+        val screenModel = navigator.koinNavigatorScreenModel<SharedScreenModel>()
         val snackBarHostState = LocalSnackBarHostState.currentOrThrow
 
-        val navigator = LocalNavigator.currentOrThrow
         val tabState by appStateStore.tabStateHolder.tabState.collectAsStateWithLifecycle()
         val state by screenModel.state.collectAsStateWithLifecycle()
         val appEvent by EventBus.events.receiveAsFlow()

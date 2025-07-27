@@ -18,13 +18,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun SearchField(
-    searchQuery: TextFieldValue,
-    onValueChange: (TextFieldValue) -> Unit,
+    searchQuery: String,
+    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: @Composable (() -> Unit)? = null,
     colors: CustomTextFieldColors = CustomTextFieldDefaults.colors(),
@@ -49,7 +48,7 @@ fun SearchField(
                     imageVector = Icons.Default.Close,
                     contentDescription = "Close",
                     modifier = Modifier.clickable {
-                        onValueChange(TextFieldValue(""))
+                        onValueChange("")
                         focusManager.clearFocus()
                     }
                 )

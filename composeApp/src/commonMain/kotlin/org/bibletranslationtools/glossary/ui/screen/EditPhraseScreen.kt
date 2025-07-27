@@ -20,13 +20,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,7 +40,7 @@ import glossary.composeapp.generated.resources.editing_phrase
 import glossary.composeapp.generated.resources.save_exit
 import glossary.composeapp.generated.resources.saving
 import glossary.composeapp.generated.resources.spelling
-import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
+import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
 import org.jetbrains.compose.resources.stringResource
@@ -57,11 +56,11 @@ class EditPhraseScreen(private val phrase: String) : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val state by screenModel.state.collectAsStateWithLifecycle()
 
-        var spelling by remember {
-            mutableStateOf(TextFieldValue(""))
+        var spelling by rememberSaveable {
+            mutableStateOf("")
         }
-        var description by remember {
-            mutableStateOf(TextFieldValue(""))
+        var description by rememberSaveable {
+            mutableStateOf("")
         }
 
         val event by screenModel.event.collectAsStateWithLifecycle(EditPhraseEvent.Idle)
@@ -77,14 +76,18 @@ class EditPhraseScreen(private val phrase: String) : Screen {
 
         LaunchedEffect(state.activePhrase) {
             state.activePhrase?.let { phrase ->
-                spelling = TextFieldValue(phrase.spelling)
-                description = TextFieldValue(phrase.description)
+                if (spelling.isEmpty()) {
+                    spelling = phrase.spelling
+                }
+                if (description.isEmpty()) {
+                    description = phrase.description
+                }
             }
         }
 
         Scaffold(
             topBar = {
-                BrowseTopBar(
+                TopAppBar(
                     title = stringResource(
                         Res.string.editing_phrase,
                         phrase
@@ -174,13 +177,13 @@ class EditPhraseScreen(private val phrase: String) : Screen {
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Button(
-                            enabled = spelling.text.isNotEmpty()
-                                    && description.text.isNotEmpty()
+                            enabled = spelling.isNotEmpty()
+                                    && description.isNotEmpty()
                                     && !state.isSaving,
                             onClick = {
                                 screenModel.savePhrase(
-                                    spelling = spelling.text,
-                                    description = description.text
+                                    spelling = spelling,
+                                    description = description
                                 )
                             },
                             shape = MaterialTheme.shapes.medium,
