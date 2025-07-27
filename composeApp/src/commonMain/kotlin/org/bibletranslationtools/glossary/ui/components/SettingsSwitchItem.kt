@@ -14,13 +14,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun SettingsSwitchItem(
-    icon: ImageVector,
+    icon: Painter,
     text: String,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
@@ -35,7 +37,7 @@ fun SettingsSwitchItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
-            imageVector = icon,
+            painter = icon,
             contentDescription = text,
             modifier = Modifier.size(24.dp),
             tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -57,4 +59,19 @@ fun SettingsSwitchItem(
             )
         )
     }
+}
+
+@Composable
+fun SettingsSwitchItem(
+    icon: ImageVector,
+    text: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    SettingsSwitchItem(
+        icon = rememberVectorPainter(icon),
+        text = text,
+        checked = checked,
+        onCheckedChange = onCheckedChange
+    )
 }

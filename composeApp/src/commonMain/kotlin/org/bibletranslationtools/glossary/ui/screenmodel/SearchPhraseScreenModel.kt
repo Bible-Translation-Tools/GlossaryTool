@@ -37,8 +37,8 @@ class SearchPhraseScreenModel(
             initialValue = SearchPhraseState()
         )
 
-    private val resourceState = appStateStore.resourceStateHolder.resourceState.value
-    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState.value
+    private val resourceState = appStateStore.resourceStateHolder.resourceState
+    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
     private var sourceText: String? = null
     private var exclusions: Set<String> = emptySet()
     private var searchJob: Job? = null
@@ -47,13 +47,13 @@ class SearchPhraseScreenModel(
         screenModelScope.launch {
             _state.update { it.copy(isSearching = true) }
             sourceText = withContext(Dispatchers.Default) {
-                resourceState.resource?.let { resource ->
+                resourceState.value.resource?.let { resource ->
                     resource.books.flatMap { it.chapters }
                         .flatMap { it.verses }
                         .joinToString { it.text }
                 }
             }
-            glossaryState.glossary?.let { glossary ->
+            glossaryState.value.glossary?.let { glossary ->
                 exclusions = glossary.phrases.map { it.phrase }
                     .map { it.lowercase() }.toSet()
             }

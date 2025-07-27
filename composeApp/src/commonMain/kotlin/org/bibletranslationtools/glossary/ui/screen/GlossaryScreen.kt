@@ -154,7 +154,7 @@ class GlossaryScreen : Screen {
                 }
 
                 if (glossaryState.glossary == null && !state.isLoading) {
-                    Text("Create Glossary")
+                    Text("Download Glossary. Coming soon...")
                 }
             }
 

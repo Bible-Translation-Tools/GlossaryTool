@@ -27,9 +27,7 @@ enum class NavDir(val incr: Int) {
     PREV(-1)
 }
 
-class ReadScreenModel(
-    private val appStateStore: AppStateStore
-) : ScreenModel {
+class ReadScreenModel(appStateStore: AppStateStore) : ScreenModel {
 
     private var _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state
@@ -39,16 +37,19 @@ class ReadScreenModel(
             initialValue = HomeState()
         )
 
-    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState.value
-    private var loaded = false
+    private val resourceState = appStateStore.resourceStateHolder.resourceState
+    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
 
     fun initLoad(bookSlug: String, chapter: Int) {
         screenModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
             withContext(Dispatchers.IO) {
-                loadResource(bookSlug, chapter)
-                loadChapterPhrases()
+                if (_state.value.activeBook?.slug != bookSlug
+                    && _state.value.activeChapter?.number != chapter) {
+                    loadResource(bookSlug, chapter)
+                    loadChapterPhrases()
+                }
             }
 
             _state.update { it.copy(isLoading = false) }
@@ -56,9 +57,7 @@ class ReadScreenModel(
     }
 
     private fun loadResource(bookSlug: String, chapter: Int) {
-        if (loaded) return
-
-        appStateStore.resourceStateHolder.resourceState.value.resource?.let { resource ->
+        resourceState.value.resource?.let { resource ->
             val book = resource.books.find { it.slug == bookSlug }
                 ?: resource.books.firstOrNull()
 
@@ -73,7 +72,6 @@ class ReadScreenModel(
                     )
                 }
             }
-            loaded = true
         }
     }
 
@@ -93,27 +91,22 @@ class ReadScreenModel(
         _state.value.activeChapter?.let { chapter ->
             val current = chapter.number
             val chapter = current + dir.incr
-            val found = navigateChapter(chapter)
+
+            val found = _state.value.activeBook?.let { book ->
+                book.chapters.singleOrNull { it.number == chapter }?.let { chapter ->
+                    navigateBookChapter(book, chapter)
+                    true
+                } ?: false
+            } ?: false
+
             if (!found) {
                 navigateBook(dir)
             }
         }
     }
 
-    fun navigateChapter(chapter: Int): Boolean {
-        _state.value.activeBook?.let { book ->
-            book.chapters.singleOrNull { it.number == chapter }?.let { chapter ->
-                _state.update { it.copy(activeChapter = chapter) }
-                loadChapterPhrases()
-                return true
-            }
-        }
-        return false
-    }
-
     private fun navigateBook(dir: NavDir) {
-        val resource = appStateStore.resourceStateHolder.resourceState.value.resource
-        resource?.books?.let { books ->
+        resourceState.value.resource?.books?.let { books ->
             _state.value.activeBook?.let { book ->
                 val index = books.indexOf(book) + dir.incr
                 books.getOrNull(index)?.let { book ->
@@ -131,8 +124,7 @@ class ReadScreenModel(
     }
 
     fun navigateBookChapter(bookSlug: String, chapter: Int) {
-        val resource = appStateStore.resourceStateHolder.resourceState.value.resource
-        resource?.books
+        resourceState.value.resource?.books
             ?.find { it.slug == bookSlug }?.let { book ->
                 book.chapters.find { it.number == chapter }?.let { chapter ->
                     navigateBookChapter(book, chapter)
@@ -149,9 +141,8 @@ class ReadScreenModel(
     }
 
     private fun loadChapterPhrases() {
-        val resource = appStateStore.resourceStateHolder.resourceState.value.resource
-        resource?.let { res ->
-            glossaryState.glossary?.let { glossary ->
+        resourceState.value.resource?.let { res ->
+            glossaryState.value.glossary?.let { glossary ->
                 _state.value.activeBook?.let { book ->
                     _state.value.activeChapter?.let { chapter ->
                         val phrases = glossary.phrases.filter { phrase ->

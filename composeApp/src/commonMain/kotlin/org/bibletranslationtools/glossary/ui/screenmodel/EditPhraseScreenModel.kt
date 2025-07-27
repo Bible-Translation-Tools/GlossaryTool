@@ -49,9 +49,12 @@ class EditPhraseScreenModel(
             initialValue = EditPhraseState()
         )
 
+    private val resourceState = appStateStore.resourceStateHolder.resourceState
+    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
+
     init {
         screenModelScope.launch {
-            (appStateStore.glossaryStateHolder.glossaryState.value.glossary ?: run {
+            (glossaryState.value.glossary ?: run {
                 val code = randomCode()
                 val glossary = Glossary(code, "user")
                 val id = glossaryRepository.addGlossary(glossary)
@@ -126,8 +129,7 @@ class EditPhraseScreenModel(
 
     private fun findRefs(phrase: Phrase): List<Ref> {
         val refs = mutableListOf<Ref>()
-        val resource = appStateStore.resourceStateHolder.resourceState.value.resource
-        resource?.let { resource ->
+        resourceState.value.resource?.let { resource ->
             resource.books.forEach { book ->
                 book.chapters.forEach { chapter ->
                     chapter.verses.forEach { verse ->
