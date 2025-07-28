@@ -6,7 +6,6 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.no_refs_found
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +15,6 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
-import org.bibletranslationtools.glossary.Utils.randomCode
-import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
@@ -37,7 +34,7 @@ data class EditPhraseState(
 
 class EditPhraseScreenModel(
     private val phrase: String,
-    private val appStateStore: AppStateStore,
+    appStateStore: AppStateStore,
     private val glossaryRepository: GlossaryRepository
 ) : ScreenModel {
 
@@ -54,17 +51,7 @@ class EditPhraseScreenModel(
 
     init {
         screenModelScope.launch {
-            (glossaryState.value.glossary ?: run {
-                val code = randomCode()
-                val glossary = Glossary(code, "user")
-                val id = glossaryRepository.addGlossary(glossary)
-                id?.let {
-                    val withId = glossary.copy(id = id)
-                    appStateStore.glossaryStateHolder.updateGlossary(withId)
-                    delay(100)
-                    withId
-                }
-            })?.let { glossary ->
+            glossaryState.value.glossary?.let { glossary ->
                 val phrase = glossaryRepository.getPhrase(phrase, glossary.id!!)
                     ?: Phrase(
                         phrase = phrase,

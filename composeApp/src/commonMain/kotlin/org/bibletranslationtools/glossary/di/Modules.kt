@@ -8,6 +8,8 @@ import org.bibletranslationtools.glossary.domain.GlossaryDataSourceImpl
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.GlossaryRepositoryImpl
 import org.bibletranslationtools.glossary.domain.InitApp
+import org.bibletranslationtools.glossary.domain.LanguageDataSource
+import org.bibletranslationtools.glossary.domain.LanguageDataSourceImpl
 import org.bibletranslationtools.glossary.domain.PhraseDataSource
 import org.bibletranslationtools.glossary.domain.PhraseDataSourceImpl
 import org.bibletranslationtools.glossary.domain.RefDataSource
@@ -18,10 +20,12 @@ import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
+import org.bibletranslationtools.glossary.ui.screenmodel.CreateGlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
+import org.bibletranslationtools.glossary.ui.screenmodel.SelectLanguageScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SharedScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -45,6 +49,7 @@ val sharedModule = module {
     singleOf(::PhraseDataSourceImpl).bind<PhraseDataSource>()
     singleOf(::RefDataSourceImpl).bind<RefDataSource>()
     singleOf(::SettingsDataSourceImpl).bind<SettingsDataSource>()
+    singleOf(::LanguageDataSourceImpl).bind<LanguageDataSource>()
     singleOf(::DirectoryProviderImpl).bind<DirectoryProvider>()
     singleOf(::WorkbookDataSourceImpl).bind<WorkbookDataSource>()
     singleOf(::GlossaryRepositoryImpl).bind<GlossaryRepository>()
@@ -60,6 +65,8 @@ val sharedModule = module {
     factoryOf(::GlossaryScreenModel)
     factoryOf(::ReadScreenModel)
     factoryOf(::SearchPhraseScreenModel)
+    factoryOf(::SelectLanguageScreenModel)
+    factoryOf(::CreateGlossaryScreenModel)
     factory { (phrase: String) ->
         EditPhraseScreenModel(phrase, get(), get())
     }

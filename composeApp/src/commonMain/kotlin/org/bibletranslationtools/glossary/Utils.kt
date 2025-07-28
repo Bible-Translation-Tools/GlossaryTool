@@ -3,11 +3,18 @@ package org.bibletranslationtools.glossary
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.json.Json
 import kotlin.random.Random
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 object Utils {
+    val JsonLenient = Json {
+        isLenient = true
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
+
     fun randomString(length: Int): String {
         val charPool = ('a'..'z') + ('A'..'Z') + ('0'..'9')
         return (1..length)

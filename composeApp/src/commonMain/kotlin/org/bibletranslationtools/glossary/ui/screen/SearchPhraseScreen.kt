@@ -35,7 +35,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.search_word_hint
-import glossary.composeapp.generated.resources.search_word_placeholder
+import glossary.composeapp.generated.resources.search_placeholder
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
@@ -71,7 +71,7 @@ class SearchPhraseScreen : Screen {
                             },
                             placeholder = {
                                 Text(
-                                    text = stringResource(Res.string.search_word_placeholder),
+                                    text = stringResource(Res.string.search_placeholder),
                                     fontSize = 16.sp,
                                     color = MaterialTheme.colorScheme.onSurface.copy(
                                         alpha = 0.5f

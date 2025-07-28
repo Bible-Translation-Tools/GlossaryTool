@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
     <string name="app_name">Glossary></string>
-    <string name="init_app">Initializing resources...></string>
+    <string name="init_resources">Initializing resources...</string>
+    <string name="init_languages">Initializing languages...</string>
+    <string name="loading_resources">Loading resources...</string>
+    <string name="loading_glossary">Loading glossary...</string>
     <string name="loading">Loading...</string>
     <string name="read">Read</string>
     <string name="glossary">Glossary</string>
@@ -31,6 +34,12 @@
     <string name="glossary_code">Code: %1$s</string>
     <string name="create_new_phrase">Create New Word</string>
     <string name="search">Search</string>
-    <string name="search_word_placeholder">Start typing to search</string>
+    <string name="search_placeholder">Start typing to search</string>
     <string name="search_word_hint">Search for a word or phrase to add to your glossary or select one from the list below.</string>
+    <string name="share_code_hint">Share this code with anyone you want to share this glossary with.</string>
+    <string name="source_language">Source Language</string>
+    <string name="target_language">Target Language</string>
+    <string name="create_glossary">Create Glossary</string>
+    <string name="required">* Required</string>
+    <string name="create_glossary_error">Could not create glossary</string>
 </resources>

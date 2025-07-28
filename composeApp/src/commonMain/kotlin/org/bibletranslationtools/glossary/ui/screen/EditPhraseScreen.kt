@@ -63,7 +63,8 @@ class EditPhraseScreen(private val phrase: String) : Screen {
             mutableStateOf("")
         }
 
-        val event by screenModel.event.collectAsStateWithLifecycle(EditPhraseEvent.Idle)
+        val event by screenModel.event
+            .collectAsStateWithLifecycle(EditPhraseEvent.Idle)
 
         LaunchedEffect(event) {
             when (event) {

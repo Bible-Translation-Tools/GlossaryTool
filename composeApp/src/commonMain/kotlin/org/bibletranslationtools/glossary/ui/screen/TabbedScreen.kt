@@ -8,6 +8,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.screen.Screen
@@ -16,7 +17,9 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
+import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
 import kotlinx.coroutines.flow.receiveAsFlow
+import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
 import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
@@ -43,6 +46,10 @@ class TabbedScreen : Screen {
         val appEvent by EventBus.events.receiveAsFlow()
             .collectAsStateWithLifecycle(AppEvent.Idle)
 
+        var glossaryCode by rememberStringSettingOrNull(
+            Settings.GLOSSARY.name
+        )
+
         TabNavigator(tabState.currentTab) { tabNavigator ->
             LaunchedEffect(tabNavigator.current) {
                 appStateStore.tabStateHolder.updateTab(tabNavigator.current as MainTab)
@@ -57,6 +64,15 @@ class TabbedScreen : Screen {
 
                         val ref = (appEvent as AppEvent.OpenRef).ref
                         screenModel.loadRef(ref)
+                    }
+                    is AppEvent.SelectGlossary -> {
+                        val glossary = (appEvent as AppEvent.SelectGlossary).glossary
+
+                        appStateStore.glossaryStateHolder.updateGlossary(glossary)
+                        appStateStore.tabStateHolder.updateTab(MainTab.Glossary)
+
+                        // saving glossary code to preferences
+                        glossaryCode = glossary.code
                     }
                     else -> {}
                 }

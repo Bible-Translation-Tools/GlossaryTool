@@ -1,0 +1,23 @@
+CREATE TABLE LanguageEntity (
+    slug TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    angName TEXT NOT NULL,
+    direction TEXT NOT NULL,
+    gw INTEGER NOT NULL
+);
+
+getBySlug:
+SELECT * FROM LanguageEntity WHERE slug = :slug;
+
+getAll:
+SELECT * FROM LanguageEntity;
+
+getGatewayLangs:
+SELECT * FROM LanguageEntity WHERE gw = 1;
+
+getTargetLangs:
+SELECT * FROM LanguageEntity WHERE gw = 0;
+
+insert:
+INSERT OR REPLACE INTO LanguageEntity(slug, name, angName, direction, gw)
+VALUES (?, ?, ?, ?, ?);

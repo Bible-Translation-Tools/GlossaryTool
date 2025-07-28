@@ -59,9 +59,10 @@ class GlossaryScreen : Screen {
     @Composable
     override fun Content() {
         val appStateStore = koinInject<AppStateStore>()
+        val navigator = LocalRootNavigator.currentOrThrow
+
         val screenModel = koinScreenModel<GlossaryScreenModel>()
         val state by screenModel.state.collectAsStateWithLifecycle()
-        val navigator = LocalRootNavigator.currentOrThrow
 
         val glossaryState by appStateStore.glossaryStateHolder.glossaryState
             .collectAsStateWithLifecycle()
@@ -146,9 +147,13 @@ class GlossaryScreen : Screen {
                         )
                     ) {
                         items(filteredPhrases) { phrase ->
-                            PhraseItem(phrase) {
-                                navigator.push(ViewPhraseScreen(phrase))
-                            }
+                            PhraseItem(
+                                phrase = phrase,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    navigator.push(ViewPhraseScreen(phrase))
+                                }
+                            )
                         }
                     }
                 }

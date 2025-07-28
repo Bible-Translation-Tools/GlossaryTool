@@ -3,7 +3,8 @@ package org.bibletranslationtools.glossary.ui.screenmodel
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.init_app
+import glossary.composeapp.generated.resources.loading_glossary
+import glossary.composeapp.generated.resources.loading_resources
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -43,12 +44,12 @@ class SplashScreenModel(
 
     fun initializeApp(resourceSlug: String, glossaryCode: String?) {
         screenModelScope.launch {
-            _state.value = _state.value.copy(
-                message = getString(Res.string.init_app)
-            )
-
             withContext(Dispatchers.IO) {
-                initApp()
+                initApp { message ->
+                    _state.value = _state.value.copy(
+                        message = message
+                    )
+                }
                 loadResource(resourceSlug)
                 loadGlossary(glossaryCode)
             }
@@ -61,6 +62,10 @@ class SplashScreenModel(
     }
 
     private suspend fun loadResource(resourceSlug: String) {
+        _state.value = _state.value.copy(
+            message = getString(Res.string.loading_resources)
+        )
+
         val books = withContext(Dispatchers.Default) {
             workbookDataSource.read(resourceSlug)
         }
@@ -70,6 +75,10 @@ class SplashScreenModel(
     }
 
     private suspend fun loadGlossary(glossaryCode: String?) {
+        _state.value = _state.value.copy(
+            message = getString(Res.string.loading_glossary)
+        )
+
         withContext(Dispatchers.Default) {
             glossaryCode?.let { code ->
                 glossaryRepository.getGlossary(code)?.let { glossary ->
