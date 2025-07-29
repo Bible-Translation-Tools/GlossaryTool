@@ -23,7 +23,9 @@ import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.ui.screenmodel.CreateGlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
+import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryListScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
+import org.bibletranslationtools.glossary.ui.screenmodel.ImportGlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SelectLanguageScreenModel
@@ -69,6 +71,8 @@ val sharedModule = module {
     factoryOf(::SearchPhraseScreenModel)
     factoryOf(::SelectLanguageScreenModel)
     factoryOf(::CreateGlossaryScreenModel)
+    factoryOf(::GlossaryListScreenModel)
+    factoryOf(::ImportGlossaryScreenModel)
     factory { (phrase: String) ->
         EditPhraseScreenModel(phrase, get(), get())
     }

@@ -42,4 +42,19 @@
     <string name="create_glossary">Create Glossary</string>
     <string name="required">* Required</string>
     <string name="create_glossary_error">Could not create glossary</string>
+    <string name="available_glossaries">Available Glossaries</string>
+    <string name="active">Active</string>
+    <string name="add_glossary">Add Glossary</string>
+    <plurals name="words">
+        <item quantity="one">1 word</item>
+        <item quantity="few">%1$d words</item>
+        <item quantity="many">%1$d words</item>
+        <item quantity="other">%1$d words</item>
+    </plurals>
+    <plurals name="users">
+        <item quantity="one">1 user</item>
+        <item quantity="few">%1$d users</item>
+        <item quantity="many">%1$d users</item>
+        <item quantity="other">%1$d users</item>
+    </plurals>
 </resources>

@@ -27,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -41,7 +40,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_audio
 import glossary.composeapp.generated.resources.edit
-import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.toOption
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
@@ -66,8 +64,6 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
             parametersOf(phrase)
         }
         val state by screenModel.state.collectAsStateWithLifecycle()
-
-        val coroutineScope = rememberCoroutineScope()
 
         Scaffold(
             topBar = {
@@ -186,12 +182,10 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
                                         phrase = phrase.phrase,
                                         text = text
                                     ) {
-                                        coroutineScope.launch {
-                                            EventBus.events.send(
-                                                AppEvent.OpenRef(ref.toOption())
-                                            )
-                                            navigator.popUntil { it is TabbedScreen }
-                                        }
+                                        EventBus.events.trySend(
+                                            AppEvent.OpenRef(ref.toOption())
+                                        )
+                                        navigator.popUntil { it is TabbedScreen }
                                     }
                                 }
                             }

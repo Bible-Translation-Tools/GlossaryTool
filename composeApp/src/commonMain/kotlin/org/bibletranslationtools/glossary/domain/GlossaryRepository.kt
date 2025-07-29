@@ -9,6 +9,7 @@ import org.bibletranslationtools.glossary.data.toModel
 
 interface GlossaryRepository {
     suspend fun getGlossary(code: String): Glossary?
+    suspend fun getGlossaries(): List<Glossary>
     suspend fun addGlossary(glossary: Glossary): String?
     suspend fun getPhrase(phrase: String, glossaryId: String): Phrase?
     suspend fun getPhrases(glossaryId: String?): List<Phrase>
@@ -35,6 +36,21 @@ class GlossaryRepositoryImpl(
                 ?.toModel()
             val targetLanguage = languageDataSource.getBySlug(entity.targetLanguage)
                 ?.toModel()
+            if (sourceLanguage != null && targetLanguage != null) {
+                entity.toModel(sourceLanguage, targetLanguage)
+            } else {
+                null
+            }
+        }
+    }
+
+    override suspend fun getGlossaries(): List<Glossary> {
+        return glossaryDataSource.getAll().mapNotNull { entity ->
+            val sourceLanguage = languageDataSource.getBySlug(entity.sourceLanguage)
+                ?.toModel()
+            val targetLanguage = languageDataSource.getBySlug(entity.targetLanguage)
+                ?.toModel()
+
             if (sourceLanguage != null && targetLanguage != null) {
                 entity.toModel(sourceLanguage, targetLanguage)
             } else {

@@ -19,7 +19,8 @@ val LightColorScheme = lightColorScheme(
     onSecondary = Color.White,
     onTertiary = Color.White,
     onBackground = Color(0xFF444444),
-    onSurface = Color(0xFF444444)
+    onSurface = Color(0xFF444444),
+    primaryContainer = Color(0xFFEEF0FF)
 )
 
 val DarkColorScheme = darkColorScheme(
@@ -33,11 +34,9 @@ val DarkColorScheme = darkColorScheme(
     onSecondary = Color.White,
     onTertiary = Color.White,
     onBackground = Color(0xFFC9C9C9),
-    onSurface = Color(0xFFC9C9C9)
+    onSurface = Color(0xFFC9C9C9),
+    primaryContainer = Color(0xFFEEF0FF)
 )
-
-val ColorScheme.semiTransparent: Color
-    @Composable get() = Color(0x88000000)
 
 @Composable
 fun MainAppTheme(

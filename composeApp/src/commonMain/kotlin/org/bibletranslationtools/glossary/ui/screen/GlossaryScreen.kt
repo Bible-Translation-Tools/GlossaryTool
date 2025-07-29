@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.ui.screen
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -74,6 +76,8 @@ class GlossaryScreen : Screen {
         LaunchedEffect(glossaryState.glossary) {
             glossaryState.glossary?.let {
                 screenModel.loadPhrases(it)
+            } ?: run {
+                navigator.push(ImportGlossaryScreen())
             }
         }
 
@@ -96,14 +100,26 @@ class GlossaryScreen : Screen {
                 glossaryState.glossary?.let { glossary ->
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Text(
-                        text = stringResource(
-                            Res.string.glossary_code,
-                            glossary.code
-                        ),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
-                    )
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            navigator.push(GlossaryListScreen())
+                        }
+                    ) {
+                        Text(
+                            text = stringResource(
+                                Res.string.glossary_code,
+                                glossary.code
+                            ),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 24.sp
+                        )
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = "available glossaries"
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
