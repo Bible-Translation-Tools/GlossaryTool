@@ -15,12 +15,8 @@ data class Phrase(
     val createdAt: LocalDateTime = getCurrentTime(),
     val updatedAt: LocalDateTime = getCurrentTime(),
     val glossaryId: String? = null,
-    val id: String? = null,
-    private val getRefs: () -> List<Ref> = { emptyList() }
-) {
-    val refs: List<Ref>
-        get() = getRefs()
-}
+    val id: String? = null
+)
 
 fun PhraseEntity.toModel(): Phrase {
     return Phrase(

@@ -101,13 +101,15 @@ class TabbedScreen : Screen {
             state.phraseDetails?.let { phraseDetails ->
                 PhraseDetailsBar(
                     details = phraseDetails,
+                    onNavPhrase = { screenModel.navigatePhrase(it) },
+                    onNavRef = { screenModel.navigateRef(it) },
                     onViewDetails = { phrase ->
                         navigator.push(
                             ViewPhraseScreen(phrase)
                         )
                     },
                     onDismiss = {
-                        screenModel.loadPhrase(null)
+                        screenModel.clearPhraseDetails()
                     }
                 )
             }

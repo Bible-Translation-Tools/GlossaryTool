@@ -47,7 +47,6 @@ import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.components.SelectableText
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
-import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SharedScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -226,14 +225,12 @@ class ReadScreen : Screen {
                             },
                             onPhraseClick = { phrase, verse ->
                                 sharedScreenModel.loadPhrase(
-                                    PhraseDetails(
-                                        phrase = phrase,
-                                        phrases = state.chapterPhrases,
-                                        resource = resourceState.resource!!,
-                                        book = state.activeBook!!,
-                                        chapter = state.activeChapter!!,
-                                        verse = verse
-                                    )
+                                    phrase = phrase,
+                                    phrases = state.chapterPhrases,
+                                    resource = resourceState.resource!!,
+                                    book = state.activeBook!!,
+                                    chapter = state.activeChapter!!,
+                                    verse = verse
                                 )
                             },
                             onTextReady = { textIsReady = true },

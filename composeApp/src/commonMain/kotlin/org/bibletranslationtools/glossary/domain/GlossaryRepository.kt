@@ -11,10 +11,10 @@ interface GlossaryRepository {
     suspend fun getGlossary(code: String): Glossary?
     suspend fun addGlossary(glossary: Glossary): String?
     suspend fun getPhrase(phrase: String, glossaryId: String): Phrase?
-    suspend fun getPhrases(glossaryId: String): List<Phrase>
+    suspend fun getPhrases(glossaryId: String?): List<Phrase>
     suspend fun addPhrase(phrase: Phrase): String?
     suspend fun addRefs(refs: List<Ref>)
-    suspend fun getRefs(phraseId: String): List<Ref>
+    suspend fun getRefs(phraseId: String?): List<Ref>
     suspend fun getLanguage(slug: String): Language?
     suspend fun getAllLanguages(): List<Language>
     suspend fun getGatewayLanguages(): List<Language>
@@ -51,9 +51,11 @@ class GlossaryRepositoryImpl(
         return phraseDataSource.getByPhrase(phrase, glossaryId)?.toModel()
     }
 
-    override suspend fun getPhrases(glossaryId: String): List<Phrase> {
-        return phraseDataSource.getByGlossary(glossaryId)
-            .map { it.toModel() }
+    override suspend fun getPhrases(glossaryId: String?): List<Phrase> {
+        return glossaryId?.let { id ->
+            phraseDataSource.getByGlossary(id)
+                .map { it.toModel() }
+        } ?: emptyList()
     }
 
     override suspend fun addPhrase(phrase: Phrase): String? {
@@ -67,8 +69,10 @@ class GlossaryRepositoryImpl(
         }
     }
 
-    override suspend fun getRefs(phraseId: String): List<Ref> {
-        return refDataSource.getByPhrase(phraseId).map { it.toModel() }
+    override suspend fun getRefs(phraseId: String?): List<Ref> {
+        return phraseId?.let { id ->
+            refDataSource.getByPhrase(id).map { it.toModel() }
+        } ?: emptyList()
     }
 
     override suspend fun getLanguage(slug: String): Language? {

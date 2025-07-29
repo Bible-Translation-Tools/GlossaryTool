@@ -66,23 +66,21 @@ class GlossaryScreen : Screen {
         val glossaryState by appStateStore.glossaryStateHolder.glossaryState
             .collectAsStateWithLifecycle()
 
-        var filteredPhrases by remember(glossaryState.glossary?.phrases) {
-            mutableStateOf(glossaryState.glossary?.phrases ?: emptyList())
+        var filteredPhrases by remember(state.phrases) {
+            mutableStateOf(state.phrases)
         }
         var searchQuery by remember { mutableStateOf("") }
 
         LaunchedEffect(glossaryState.glossary) {
-            glossaryState.glossary?.let { glossary ->
-                filteredPhrases = glossary.phrases
+            glossaryState.glossary?.let {
+                screenModel.loadPhrases(it)
             }
         }
 
         LaunchedEffect(searchQuery) {
-            glossaryState.glossary?.let { glossary ->
-                filteredPhrases = glossary.phrases.filter { phrase ->
-                    phrase.phrase.contains(searchQuery, ignoreCase = true)
-                            || phrase.spelling.contains(searchQuery, ignoreCase = true)
-                }
+            filteredPhrases = state.phrases.filter { phrase ->
+                phrase.phrase.contains(searchQuery, ignoreCase = true)
+                        || phrase.spelling.contains(searchQuery, ignoreCase = true)
             }
         }
 

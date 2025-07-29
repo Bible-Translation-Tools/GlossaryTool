@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.di
 
 import org.bibletranslationtools.glossary.GlossaryDatabase
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
@@ -28,6 +29,7 @@ import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SelectLanguageScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SharedScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
+import org.bibletranslationtools.glossary.ui.screenmodel.ViewPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.bibletranslationtools.glossary.ui.state.AppStateStoreImpl
 import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolder
@@ -69,5 +71,8 @@ val sharedModule = module {
     factoryOf(::CreateGlossaryScreenModel)
     factory { (phrase: String) ->
         EditPhraseScreenModel(phrase, get(), get())
+    }
+    factory { (phrase: Phrase) ->
+        ViewPhraseScreenModel(phrase, get())
     }
 }

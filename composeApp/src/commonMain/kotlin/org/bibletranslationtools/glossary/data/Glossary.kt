@@ -14,12 +14,8 @@ data class Glossary(
     val targetLanguage: Language,
     val createdAt: LocalDateTime = getCurrentTime(),
     val updatedAt: LocalDateTime = getCurrentTime(),
-    val id: String? = null,
-    private val getPhrases: () -> List<Phrase> = { emptyList() }
-) {
-    val phrases: List<Phrase>
-        get() = getPhrases()
-}
+    val id: String? = null
+)
 
 fun GlossaryEntity.toModel(
     sourceLanguage: Language,

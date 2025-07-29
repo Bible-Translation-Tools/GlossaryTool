@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -47,9 +48,11 @@ import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
 import org.bibletranslationtools.glossary.ui.event.AppEvent
 import org.bibletranslationtools.glossary.ui.event.EventBus
+import org.bibletranslationtools.glossary.ui.screenmodel.ViewPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.core.parameter.parametersOf
 
 class ViewPhraseScreen(private val phrase: Phrase) : Screen {
 
@@ -59,6 +62,10 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
         val resourceState by appStateStore.resourceStateHolder.resourceState
             .collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
+        val screenModel = koinInject<ViewPhraseScreenModel> {
+            parametersOf(phrase)
+        }
+        val state by screenModel.state.collectAsStateWithLifecycle()
 
         val coroutineScope = rememberCoroutineScope()
 
@@ -155,30 +162,36 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
                         .background(Color.Transparent)
                         .weight(1f)
                 ) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        modifier = Modifier.fillMaxSize()
-                            .background(
-                                color = MaterialTheme.colorScheme.surface,
-                                shape = MaterialTheme.shapes.medium
-                            )
-                            .padding(16.dp)
-                    ) {
-                        items(phrase.refs) { ref ->
-                            resourceState.resource?.let { resource ->
-                                val reference = "${ref.book.uppercase()} ${ref.chapter}:${ref.verse}"
-                                val text = ref.getText(resource)
+                    if (state.isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            modifier = Modifier.fillMaxSize()
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                                .padding(16.dp)
+                        ) {
+                            items(state.refs) { ref ->
+                                resourceState.resource?.let { resource ->
+                                    val reference = "${ref.book.uppercase()} ${ref.chapter}:${ref.verse}"
+                                    val text = ref.getText(resource)
 
-                                VerseReference(
-                                    reference = reference,
-                                    phrase = phrase.phrase,
-                                    text = text
-                                ) {
-                                    coroutineScope.launch {
-                                        EventBus.events.send(
-                                            AppEvent.OpenRef(ref.toOption())
-                                        )
-                                        navigator.popUntil { it is TabbedScreen }
+                                    VerseReference(
+                                        reference = reference,
+                                        phrase = phrase.phrase,
+                                        text = text
+                                    ) {
+                                        coroutineScope.launch {
+                                            EventBus.events.send(
+                                                AppEvent.OpenRef(ref.toOption())
+                                            )
+                                            navigator.popUntil { it is TabbedScreen }
+                                        }
                                     }
                                 }
                             }

@@ -10,38 +10,40 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 
-data class GlossaryState(
+data class ViewPhraseState(
     val isLoading: Boolean = false,
-    val phrases: List<Phrase> = emptyList()
+    val refs: List<Ref> = emptyList()
 )
 
-class GlossaryScreenModel(
+class ViewPhraseScreenModel(
+    private val phrase: Phrase,
     private val glossaryRepository: GlossaryRepository
 ) : ScreenModel {
-    private var _state = MutableStateFlow(GlossaryState())
-    val state: StateFlow<GlossaryState> = _state
+
+    private var _state = MutableStateFlow(ViewPhraseState())
+    val state: StateFlow<ViewPhraseState> = _state
         .stateIn(
             scope = screenModelScope,
             started = SharingStarted.WhileSubscribed(5000),
-            initialValue = GlossaryState()
+            initialValue = ViewPhraseState()
         )
 
-    fun loadPhrases(glossary: Glossary) {
+    init {
         screenModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
-            val phrases = withContext(Dispatchers.Default) {
-                glossaryRepository.getPhrases(glossary.id)
+            val refs = withContext(Dispatchers.Default) {
+                glossaryRepository.getRefs(phrase.id)
             }
 
             _state.update {
                 it.copy(
                     isLoading = false,
-                    phrases = phrases
+                    refs = refs
                 )
             }
         }
