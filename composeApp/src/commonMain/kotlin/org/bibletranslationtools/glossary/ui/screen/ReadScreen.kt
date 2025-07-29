@@ -43,6 +43,7 @@ import glossary.composeapp.generated.resources.loading
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.components.SelectableText
@@ -116,11 +117,14 @@ class ReadScreen : Screen {
         var versePosition by remember { mutableIntStateOf(0) }
 
         LaunchedEffect(Unit) {
-            screenModel.initLoad(
-                bookSlug = activeBookSlug,
-                chapter = activeChapterNum,
-                currentRef = tabbedState.currentRef
-            )
+            if (tabbedState.currentRef == null) {
+                sharedScreenModel.loadRef(
+                    RefOption(
+                        book = activeBookSlug,
+                        chapter = activeChapterNum
+                    )
+                )
+            }
         }
 
         DisposableEffect(Unit) {
