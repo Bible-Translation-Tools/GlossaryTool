@@ -119,7 +119,8 @@ class ReadScreen : Screen {
         LaunchedEffect(Unit) {
             screenModel.initLoad(
                 bookSlug = activeBookSlug,
-                chapter = activeChapterNum
+                chapter = activeChapterNum,
+                currentRef = tabbedState.currentRef
             )
         }
 

@@ -93,7 +93,10 @@ class SplashScreen : Screen {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            LinearProgressIndicator()
+                            LinearProgressIndicator(
+                                color = MaterialTheme.colorScheme.primary,
+                                trackColor = MaterialTheme.colorScheme.onPrimary
+                            )
 
                             Text(
                                 text = message,

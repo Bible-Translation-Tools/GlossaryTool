@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 
@@ -40,7 +41,11 @@ class ReadScreenModel(appStateStore: AppStateStore) : ScreenModel {
     private val resourceState = appStateStore.resourceStateHolder.resourceState
     private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
 
-    fun initLoad(bookSlug: String, chapter: Int) {
+    fun initLoad(
+        bookSlug: String,
+        chapter: Int,
+        currentRef: RefOption?
+    ) {
         screenModelScope.launch {
             _state.update { it.copy(isLoading = true) }
 
@@ -48,6 +53,8 @@ class ReadScreenModel(appStateStore: AppStateStore) : ScreenModel {
                 if (_state.value.activeBook?.slug != bookSlug
                     && _state.value.activeChapter?.number != chapter) {
                     loadResource(bookSlug, chapter)
+                }
+                if (currentRef == null) {
                     loadChapterPhrases()
                 }
             }

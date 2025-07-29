@@ -18,7 +18,8 @@ data class Phrase(
     val id: String? = null,
     private val getRefs: () -> List<Ref> = { emptyList() }
 ) {
-    val refs: List<Ref> by lazy(getRefs)
+    val refs: List<Ref>
+        get() = getRefs()
 }
 
 fun PhraseEntity.toModel(): Phrase {

@@ -11,10 +11,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
-import org.bibletranslationtools.glossary.data.Phrase
-import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.InitApp
@@ -82,32 +79,9 @@ class SplashScreenModel(
         withContext(Dispatchers.Default) {
             glossaryCode?.let { code ->
                 glossaryRepository.getGlossary(code)?.let { glossary ->
-                    appStateStore.glossaryStateHolder.updateGlossary(
-                        glossary.copy {
-                            runBlocking {
-                                loadPhrases(glossary.id!!)
-                            }
-                        }
-                    )
+                    appStateStore.glossaryStateHolder.updateGlossary(glossary)
                 }
             }
-        }
-    }
-
-    private suspend fun loadPhrases(glossaryId: String): List<Phrase> {
-        return withContext(Dispatchers.Default) {
-            glossaryRepository.getPhrases(glossaryId)
-                .map {
-                    it.copy(getRefs = {
-                        runBlocking { loadRefs(it.id!!) }
-                    })
-                }
-        }
-    }
-
-    private suspend fun loadRefs(phraseId: String): List<Ref> {
-        return withContext(Dispatchers.Default) {
-            glossaryRepository.getRefs(phraseId)
         }
     }
 }

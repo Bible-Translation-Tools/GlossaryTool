@@ -42,7 +42,6 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.glossary_code
 import glossary.composeapp.generated.resources.search
-import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
@@ -67,7 +66,9 @@ class GlossaryScreen : Screen {
         val glossaryState by appStateStore.glossaryStateHolder.glossaryState
             .collectAsStateWithLifecycle()
 
-        var filteredPhrases by remember { mutableStateOf<List<Phrase>>(emptyList()) }
+        var filteredPhrases by remember(glossaryState.glossary?.phrases) {
+            mutableStateOf(glossaryState.glossary?.phrases ?: emptyList())
+        }
         var searchQuery by remember { mutableStateOf("") }
 
         LaunchedEffect(glossaryState.glossary) {
