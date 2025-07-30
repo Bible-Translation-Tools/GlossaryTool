@@ -72,7 +72,7 @@ class GlossaryListScreenModel(
             }
 
             val selectedGlossary = glossaryItems.singleOrNull {
-                it == glossaryState.value.glossary
+                it.glossary == glossaryState.value.glossary
             }
 
             _state.update {
