@@ -20,13 +20,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -41,34 +40,31 @@ import glossary.composeapp.generated.resources.editing_phrase
 import glossary.composeapp.generated.resources.save_exit
 import glossary.composeapp.generated.resources.saving
 import glossary.composeapp.generated.resources.spelling
-import org.bibletranslationtools.glossary.ui.components.BrowseTopBar
+import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseEvent
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.ReadEvent
-import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.jetbrains.compose.resources.stringResource
 import org.koin.core.parameter.parametersOf
 
-class EditPhraseScreen(
-    private val phraseDetails: PhraseDetails
-) : Screen {
+class EditPhraseScreen(private val phrase: String) : Screen {
 
     @Composable
     override fun Content() {
-        val viewModel = koinScreenModel<EditPhraseScreenModel> {
-            parametersOf(phraseDetails)
+        val screenModel = koinScreenModel<EditPhraseScreenModel> {
+            parametersOf(phrase)
         }
         val navigator = LocalNavigator.currentOrThrow
-        val state by viewModel.state.collectAsStateWithLifecycle()
+        val state by screenModel.state.collectAsStateWithLifecycle()
 
-        var spelling by remember {
-            mutableStateOf(TextFieldValue(phraseDetails.phrase.spelling))
+        var spelling by rememberSaveable {
+            mutableStateOf("")
         }
-        var description by remember {
-            mutableStateOf(TextFieldValue(phraseDetails.phrase.description))
+        var description by rememberSaveable {
+            mutableStateOf("")
         }
 
-        val event by viewModel.event.collectAsStateWithLifecycle(ReadEvent.Idle)
+        val event by screenModel.event
+            .collectAsStateWithLifecycle(EditPhraseEvent.Idle)
 
         LaunchedEffect(event) {
             when (event) {
@@ -79,12 +75,23 @@ class EditPhraseScreen(
             }
         }
 
+        LaunchedEffect(state.activePhrase) {
+            state.activePhrase?.let { phrase ->
+                if (spelling.isEmpty()) {
+                    spelling = phrase.spelling
+                }
+                if (description.isEmpty()) {
+                    description = phrase.description
+                }
+            }
+        }
+
         Scaffold(
             topBar = {
-                BrowseTopBar(
+                TopAppBar(
                     title = stringResource(
                         Res.string.editing_phrase,
-                        phraseDetails.phrase.phrase
+                        phrase
                     )
                 ) {
                     navigator.popUntil { it is TabbedScreen }
@@ -126,7 +133,7 @@ class EditPhraseScreen(
                                 alpha = 0.12f
                             ),
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                             disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
                                 alpha = 0.1f
                             )
@@ -157,7 +164,7 @@ class EditPhraseScreen(
                                 alpha = 0.12f
                             ),
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                             disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
                                 alpha = 0.1f
                             )
@@ -171,15 +178,12 @@ class EditPhraseScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Button(
-                            enabled = spelling.text.isNotEmpty()
-                                    && description.text.isNotEmpty()
+                            enabled = spelling.isNotEmpty()
                                     && !state.isSaving,
                             onClick = {
-                                viewModel.onEvent(
-                                    EditPhraseEvent.SavePhrase(
-                                        spelling.text,
-                                        description.text
-                                    )
+                                screenModel.savePhrase(
+                                    spelling = spelling,
+                                    description = description
                                 )
                             },
                             shape = MaterialTheme.shapes.medium,

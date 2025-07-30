@@ -10,18 +10,22 @@ import org.bibletranslationtools.glossary.toTimestamp
 data class Glossary(
     val code: String,
     val author: String,
+    val sourceLanguage: Language,
+    val targetLanguage: Language,
     val createdAt: LocalDateTime = getCurrentTime(),
     val updatedAt: LocalDateTime = getCurrentTime(),
-    val id: String? = null,
-    private val getPhrases: () -> List<Phrase> = { emptyList() }
-) {
-    val phrases: List<Phrase> by lazy(getPhrases)
-}
+    val id: String? = null
+)
 
-fun GlossaryEntity.toModel(): Glossary {
+fun GlossaryEntity.toModel(
+    sourceLanguage: Language,
+    targetLanguage: Language
+): Glossary {
     return Glossary(
         code = code,
         author = author,
+        sourceLanguage = sourceLanguage,
+        targetLanguage = targetLanguage,
         createdAt = createdAt.toLocalDateTime(),
         updatedAt = updatedAt.toLocalDateTime(),
         id = id
@@ -32,6 +36,8 @@ fun Glossary.toEntity(): GlossaryEntity {
     return GlossaryEntity(
         code = code,
         author = author,
+        sourceLanguage = sourceLanguage.slug,
+        targetLanguage = targetLanguage.slug,
         createdAt = createdAt.toTimestamp(),
         updatedAt = updatedAt.toTimestamp(),
         id = id ?: generateUUID()

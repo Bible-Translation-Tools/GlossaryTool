@@ -21,15 +21,21 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextToolbar
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
@@ -43,6 +49,8 @@ import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
 import kotlin.math.min
 
+private const val VERSE_TAG = "verse_tag"
+
 // Opt-in for onSelectionChange, which is an internal API.
 @OptIn(InternalTextApi::class)
 @Composable
@@ -50,20 +58,23 @@ fun SelectableText(
     chapter: Chapter,
     phrases: List<Phrase>,
     selectedText: String,
+    currentVerse: String?,
     onSelectedTextChanged: (String) -> Unit,
     onSaveSelection: (String) -> Unit,
     onPhraseClick: (Phrase, String) -> Unit,
     onTextReady: () -> Unit,
+    onVersePosition: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val highlightColor = MaterialTheme.colorScheme.onBackground
+    val dimColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
 
     val currentChapter by rememberUpdatedState(newValue = chapter)
     val currentPhrases by rememberUpdatedState(newValue = phrases)
 
     var selection by remember { mutableStateOf<Selection?>(null) }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var annotatedString by remember { mutableStateOf(buildAnnotatedString{}) }
+    var positionInWindow by remember { mutableStateOf(Offset.Zero) }
+    var annotatedString by remember { mutableStateOf<AnnotatedString?>(null) }
 
     LaunchedEffect(selectedText) {
         if (selectedText.isEmpty()) {
@@ -71,73 +82,148 @@ fun SelectableText(
         }
     }
 
-    LaunchedEffect(currentChapter, currentPhrases) {
+    LaunchedEffect(currentChapter, currentPhrases, currentVerse) {
+        selection = null
+        onSelectedTextChanged("")
+        textLayoutResult = null
+
         annotatedString = buildAnnotatedString {
-            currentChapter.verses.forEach { verse ->
-                val verseText = "${verse.number} ${verse.text} "
+            val regex = if (currentPhrases.isNotEmpty()) {
                 val phrasesToFind = currentPhrases
                     .map { "\\b${Regex.escape(it.phrase)}\\b" }
-                val regex = Regex(
+                Regex(
                     phrasesToFind.joinToString("|"),
                     RegexOption.IGNORE_CASE
                 )
-                var lastIndex = 0
-                regex.findAll(verseText).forEach { match ->
-                    append(verseText.substring(lastIndex, match.range.first))
+            } else {
+                null
+            }
 
-                    withLink(
-                        link = LinkAnnotation.Clickable(
-                            tag = match.value,
-                            linkInteractionListener = {
-                                currentPhrases.firstOrNull {
-                                    it.phrase.lowercase() == match.value.lowercase()
-                                }?.let {
-                                    onSelectedTextChanged("")
-                                    onPhraseClick(it, verse.number)
-                                }
-                            }
-                        )
-                    ) {
+            currentChapter.verses.forEach { verse ->
+                val color = if (currentVerse == null || verse.number == currentVerse) {
+                    Color.Unspecified
+                } else {
+                    dimColor
+                }
+
+                withStyle(
+                    style = SpanStyle(
+                        color = color,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        baselineShift = BaselineShift.Superscript
+                    )
+                ) {
+                    addStringAnnotation(
+                        tag = VERSE_TAG,
+                        annotation = verse.number,
+                        start = length,
+                        end = length + verse.number.length
+                    )
+                    append(verse.number)
+                    append(" ")
+                }
+
+                if (regex == null) {
+                    append(verse.text)
+                } else {
+                    var lastIndex = 0
+                    regex.findAll(verse.text).forEach { match ->
                         withStyle(
-                            style = SpanStyle(
-                                color = highlightColor,
-                                fontWeight = FontWeight.Bold
+                            style = SpanStyle(color = color)
+                        ) {
+                            append(verse.text.substring(lastIndex, match.range.first))
+                        }
+
+                        withLink(
+                            link = LinkAnnotation.Clickable(
+                                tag = match.value,
+                                linkInteractionListener = {
+                                    currentPhrases.firstOrNull {
+                                        it.phrase.lowercase() == match.value.lowercase()
+                                    }?.let {
+                                        onSelectedTextChanged("")
+                                        onPhraseClick(it, verse.number)
+                                    }
+                                }
                             )
                         ) {
-                            append(match.value)
+                            withStyle(
+                                style = SpanStyle(
+                                    color = color,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            ) {
+                                append(match.value)
+                            }
+                        }
+                        lastIndex = match.range.last + 1
+                    }
+
+                    if (lastIndex < verse.text.length) {
+                        withStyle(
+                            style = SpanStyle(color = color)
+                        ) {
+                            append(verse.text.substring(lastIndex))
                         }
                     }
-                    lastIndex = match.range.last + 1
                 }
-
-                if (lastIndex < verseText.length) {
-                    append(verseText.substring(lastIndex))
-                }
+                append(" ")
             }
         }
+
         onTextReady()
     }
 
+    LaunchedEffect(annotatedString, textLayoutResult, positionInWindow, currentVerse) {
+        val layoutResult = textLayoutResult ?: return@LaunchedEffect
+        val text = annotatedString ?: return@LaunchedEffect
+        val verse = currentVerse ?: return@LaunchedEffect
+
+        val spanAnnotations = text.getStringAnnotations(
+            tag = VERSE_TAG,
+            start = 0,
+            end = text.length
+        )
+
+        spanAnnotations.firstOrNull { it.item == verse }?.let { range ->
+            val relativeBounds = layoutResult.getPathForRange(
+                range.start,
+                range.end
+            ).getBounds()
+
+            val absoluteBounds = relativeBounds.translate(
+                positionInWindow
+            )
+            onVersePosition(absoluteBounds.top.toInt())
+        }
+    }
+
     Box(modifier = modifier) {
-        CompositionLocalProvider(LocalTextToolbar provides EmptyTextToolbar) {
-            SelectionContainer(
-                selection = selection,
-                onSelectionChange = { newSelection ->
-                    selection = newSelection
-                    val newSelectedText = newSelection?.let { sel ->
-                        val start = min(sel.start.offset, sel.end.offset)
-                        val end = max(sel.start.offset, sel.end.offset)
-                        annotatedString.substring(start, end)
-                    } ?: ""
-                    onSelectedTextChanged(newSelectedText)
+        annotatedString?.let { text ->
+            CompositionLocalProvider(LocalTextToolbar provides EmptyTextToolbar) {
+                SelectionContainer(
+                    selection = selection,
+                    onSelectionChange = { newSelection ->
+                        selection = newSelection
+                        val newSelectedText = newSelection?.let { sel ->
+                            val start = min(sel.start.offset, sel.end.offset)
+                            val end = max(sel.start.offset, sel.end.offset)
+                            text.substring(start, end)
+                        } ?: ""
+                        onSelectedTextChanged(newSelectedText)
+                    }
+                ) {
+                    Text(
+                        text = text,
+                        style = LocalTextStyle.current.copy(lineHeight = 32.sp),
+                        onTextLayout = { textLayoutResult = it },
+                        modifier = Modifier.fillMaxWidth()
+                            .onGloballyPositioned { coordinates ->
+                                positionInWindow = coordinates.positionInWindow()
+                            }
+                    )
                 }
-            ) {
-                Text(
-                    text = annotatedString,
-                    style = LocalTextStyle.current.copy(lineHeight = 32.sp),
-                    onTextLayout = { textLayoutResult = it },
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
 
@@ -159,7 +245,7 @@ fun SelectableText(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.onBackground,
-                        contentColor = MaterialTheme.colorScheme.background
+                        contentColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(
@@ -169,8 +255,24 @@ fun SelectableText(
                     modifier = Modifier
                         .offset(x = offsetX, y = offsetY)
                         .graphicsLayer {
-                            translationY = -size.height - 8.dp.toPx()
-                            translationX = -size.width / 2
+                            val containerWidth = layoutResult.size.width.toFloat()
+                            val margin = 8.dp.toPx()
+                            val buttonHeight = size.height
+
+                            val desiredX = selectionBoundingBox.center.x - size.width / 2
+                            val clampedX = desiredX.coerceIn(0f, containerWidth - size.width)
+
+                            val spaceAbove = selectionBoundingBox.top
+                            val isEnoughSpaceAbove = spaceAbove > (buttonHeight + margin)
+
+                            val desiredY = if (isEnoughSpaceAbove) {
+                                spaceAbove - buttonHeight - margin
+                            } else {
+                                selectionBoundingBox.bottom + margin
+                            }
+
+                            translationX = clampedX - selectionBoundingBox.center.x
+                            translationY = desiredY - selectionBoundingBox.top
                         }
                 ) {
                     val isView = currentPhrases.any {

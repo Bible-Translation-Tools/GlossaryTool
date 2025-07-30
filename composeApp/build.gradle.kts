@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.composeHotReload)
+    alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.sqlDelight)
 }
 
@@ -60,7 +61,6 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.io)
@@ -68,7 +68,6 @@ kotlin {
 
             api(libs.koin.core)
             implementation(libs.koin.compose)
-            implementation(libs.koin.compose.viewmodel)
 
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenmodel)
@@ -119,8 +118,8 @@ android {
         applicationId = "org.bibletranslationtools.glossary"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = libs.versions.glossary.version.get().toInt()
+        versionName = libs.versions.glossary.name.get()
     }
     packaging {
         resources {
@@ -149,7 +148,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.bibletranslationtools.glossary"
-            packageVersion = "1.0.0"
+            packageVersion = libs.versions.glossary.name.get()
         }
     }
 }

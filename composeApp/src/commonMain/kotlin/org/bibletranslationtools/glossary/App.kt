@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import cafe.adriel.voyager.navigator.Navigator
@@ -18,20 +19,23 @@ import org.bibletranslationtools.glossary.ui.LightColorScheme
 import org.bibletranslationtools.glossary.ui.MainAppTheme
 import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
-import org.bibletranslationtools.glossary.ui.navigation.LocalTabScreenState
 import org.bibletranslationtools.glossary.ui.navigation.MainTab
 import org.bibletranslationtools.glossary.ui.screen.SplashScreen
 import org.bibletranslationtools.glossary.ui.screen.TabbedScreen
-import org.bibletranslationtools.glossary.ui.screen.TabbedScreenState
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
+import org.koin.compose.koinInject
 import kotlin.system.exitProcess
 
 @Composable
 fun App() {
+    val appStateStore = koinInject<AppStateStore>()
+    val tabState by appStateStore.tabStateHolder.tabState.collectAsState()
+
     val theme by rememberStringSetting(Settings.THEME.name, Theme.SYSTEM.name)
-    val colorScheme = when (theme) {
-        Theme.LIGHT.name -> LightColorScheme
-        Theme.DARK.name -> DarkColorScheme
-        Theme.SYSTEM.name if isSystemInDarkTheme() -> DarkColorScheme
+    val colorScheme = when {
+        theme == Theme.LIGHT.name -> LightColorScheme
+        theme == Theme.DARK.name -> DarkColorScheme
+        theme == Theme.SYSTEM.name && isSystemInDarkTheme() -> DarkColorScheme
         else -> LightColorScheme
     }
 
@@ -40,17 +44,16 @@ fun App() {
 
     val defaultTab = MainTab.Read
     val snackBarHostState = remember { SnackbarHostState() }
-    val tabbedScreenState = remember { TabbedScreenState(defaultTab) }
 
     MainAppTheme(colorScheme) {
         Navigator(
             screen = SplashScreen(),
             onBackPressed = {
                 if (it is TabbedScreen) {
-                    if (tabbedScreenState.tab == defaultTab) {
+                    if (tabState.currentTab == defaultTab) {
                         exitProcess(0)
                     } else {
-                        tabbedScreenState.tab = defaultTab
+                        appStateStore.tabStateHolder.updateTab(defaultTab)
                         false
                     }
                 } else true
@@ -58,9 +61,7 @@ fun App() {
         ) { navigator ->
             CompositionLocalProvider(LocalRootNavigator provides navigator) {
                 CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
-                    CompositionLocalProvider(LocalTabScreenState provides tabbedScreenState) {
-                        SlideTransition(navigator)
-                    }
+                    SlideTransition(navigator)
                 }
             }
         }

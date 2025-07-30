@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize.Companion.StepBased
 import androidx.compose.material.icons.Icons
@@ -24,12 +25,14 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,48 +41,34 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.learn_more
 import org.bibletranslationtools.glossary.data.Phrase
-import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.jetbrains.compose.resources.stringResource
+
+enum class PhraseNavDir(val value: Int) {
+    PREV(-1),
+    NEXT(1)
+}
 
 @Composable
 fun PhraseDetailsBar(
     details: PhraseDetails,
+    onNavPhrase: (PhraseNavDir) -> Unit,
+    onNavRef: (PhraseNavDir) -> Unit,
     onViewDetails: (Phrase) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var currentPhrase by remember { mutableStateOf(details.phrase) }
-    var currentRef by remember { mutableStateOf<Ref?>(null) }
-    var initialVerse by remember { mutableStateOf<String?>(details.verse) }
+    val currentPhrase by rememberUpdatedState(details.phrase)
+    val currentRef by rememberUpdatedState(details.ref)
     var currentVerseText by remember { mutableStateOf("") }
 
-    LaunchedEffect(currentPhrase) {
-        currentRef = findRef(
-            details,
-            currentPhrase,
-            initialVerse
-        )
-    }
-
     LaunchedEffect(currentPhrase, currentRef) {
-        val ref = currentRef ?: Ref(
-            resource = details.resource.slug,
-            book = details.book.slug,
-            chapter = details.chapter.number.toString(),
-            verse = details.verse
-        )
-        val text = ref.getText(details.resource)
-        currentVerseText = shortenVerseText(text, currentPhrase)
-    }
-
-    LaunchedEffect(Unit) {
-        initialVerse = null
+        val text = currentRef?.getText(details.resource)
+        currentVerseText = shortenVerseText(text ?: "", currentPhrase)
     }
 
     Box(
@@ -93,16 +82,16 @@ fun PhraseDetailsBar(
                 onClick = onDismiss
             )
     ) {
-        Box(
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(
                     elevation = 16.dp,
-                    shape = MaterialTheme.shapes.extraLarge
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
                 )
                 .background(
                     color = MaterialTheme.colorScheme.surface,
-                    shape = MaterialTheme.shapes.extraLarge
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
                 )
                 .clickable(enabled = false, onClick = {})
         ) {
@@ -118,8 +107,7 @@ fun PhraseDetailsBar(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(onClick = {
-                        findPhrase(details, currentPhrase, -1)
-                            ?.let { currentPhrase = it }
+                        onNavPhrase(PhraseNavDir.PREV)
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -145,16 +133,17 @@ fun PhraseDetailsBar(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                contentDescription = "Play pronunciation",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                            if (!currentPhrase.audio.isNullOrEmpty()) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                    contentDescription = "Play pronunciation",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                     IconButton(onClick = {
-                        findPhrase(details, currentPhrase, 1)
-                            ?.let { currentPhrase = it }
+                        onNavPhrase(PhraseNavDir.NEXT)
                     }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -207,8 +196,7 @@ fun PhraseDetailsBar(
                         modifier = Modifier.weight(0.5f)
                     ) {
                         IconButton(onClick = {
-                            findRef(currentPhrase, currentRef, -1)
-                                ?.let { currentRef = it }
+                            onNavRef(PhraseNavDir.PREV)
                         }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -231,8 +219,7 @@ fun PhraseDetailsBar(
                             modifier = Modifier.weight(1f)
                         )
                         IconButton(onClick = {
-                            findRef(currentPhrase, currentRef, 1)
-                                ?.let { currentRef = it }
+                            onNavRef(PhraseNavDir.NEXT)
                         }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -265,38 +252,6 @@ fun PhraseDetailsBar(
             }
         }
     }
-}
-
-private fun findPhrase(
-    details: PhraseDetails,
-    phrase: Phrase,
-    incr: Int
-): Phrase? {
-    return details.phrases.getOrNull(
-        details.phrases.indexOf(phrase) + incr
-    )
-}
-
-private fun findRef(
-    details: PhraseDetails,
-    phrase: Phrase,
-    verse: String?
-): Ref? {
-    return phrase.refs.firstOrNull {
-        it.resource == details.resource.slug
-                && it.book == details.book.slug
-                && it.chapter == details.chapter.number.toString()
-                && (verse == null || it.verse == verse)
-    }
-}
-
-private fun findRef(
-    phrase: Phrase,
-    ref: Ref?,
-    incr: Int
-): Ref? {
-    return phrase.refs
-        .getOrNull(phrase.refs.indexOf(ref) + incr)
 }
 
 private fun shortenVerseText(text: String, phrase: Phrase): String {
