@@ -121,6 +121,7 @@ fun SelectableText(
                         end = length + verse.number.length
                     )
                     append(verse.number)
+                    append(" ")
                 }
 
                 if (regex == null) {
