@@ -254,8 +254,24 @@ fun SelectableText(
                     modifier = Modifier
                         .offset(x = offsetX, y = offsetY)
                         .graphicsLayer {
-                            translationY = -size.height - 8.dp.toPx()
-                            translationX = -size.width / 2
+                            val containerWidth = layoutResult.size.width.toFloat()
+                            val margin = 8.dp.toPx()
+                            val buttonHeight = size.height
+
+                            val desiredX = selectionBoundingBox.center.x - size.width / 2
+                            val clampedX = desiredX.coerceIn(0f, containerWidth - size.width)
+
+                            val spaceAbove = selectionBoundingBox.top
+                            val isEnoughSpaceAbove = spaceAbove > (buttonHeight + margin)
+
+                            val desiredY = if (isEnoughSpaceAbove) {
+                                spaceAbove - buttonHeight - margin
+                            } else {
+                                selectionBoundingBox.bottom + margin
+                            }
+
+                            translationX = clampedX - selectionBoundingBox.center.x
+                            translationY = desiredY - selectionBoundingBox.top
                         }
                 ) {
                     val isView = currentPhrases.any {
