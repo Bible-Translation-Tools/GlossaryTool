@@ -54,7 +54,7 @@ class GlossaryListScreen : Screen {
             Column(
                 modifier = Modifier.fillMaxSize()
                     .padding(paddingValues)
-                    .background(color = MaterialTheme.colorScheme.background)
+                    .background(color = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),

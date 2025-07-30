@@ -77,7 +77,7 @@ class SettingsScreen : Screen {
 
         Box(
             modifier = Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(
                 modifier = Modifier.fillMaxSize()

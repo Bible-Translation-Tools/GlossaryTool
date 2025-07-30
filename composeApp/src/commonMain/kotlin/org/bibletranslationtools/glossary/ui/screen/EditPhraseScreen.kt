@@ -133,7 +133,7 @@ class EditPhraseScreen(private val phrase: String) : Screen {
                                 alpha = 0.12f
                             ),
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                             disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
                                 alpha = 0.1f
                             )
@@ -164,7 +164,7 @@ class EditPhraseScreen(private val phrase: String) : Screen {
                                 alpha = 0.12f
                             ),
                             focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                             disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
                                 alpha = 0.1f
                             )

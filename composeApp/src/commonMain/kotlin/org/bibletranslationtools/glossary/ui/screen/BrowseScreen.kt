@@ -3,6 +3,7 @@ package org.bibletranslationtools.glossary.ui.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,11 +43,11 @@ import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.components.BookItem
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.components.ChapterGrid
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.SearchField
+import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.event.AppEvent
 import org.bibletranslationtools.glossary.ui.event.EventBus
 import org.jetbrains.compose.resources.stringResource
@@ -117,7 +118,7 @@ class BrowseScreen(
                                     onClick = { /* Handle language change */ },
                                     shape = MaterialTheme.shapes.medium,
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.background,
+                                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
                                         contentColor = MaterialTheme.colorScheme.onBackground
                                     ),
                                     border = BorderStroke(
@@ -152,22 +153,25 @@ class BrowseScreen(
                             isExpanded = expandedBookIndex == index,
                             onToggle = {
                                 expandedBookIndex = if (expandedBookIndex == index) -1 else index
-                            }
+                            },
+                            modifier = Modifier.fillMaxWidth()
                         )
                         if (expandedBookIndex == index) {
                             ChapterGrid(
                                 chapters = book.chapters.size,
                                 activeChapter = if (book == activeBook) activeChapter.number else null,
                                 bringIntoViewRequester = bringIntoViewRequester,
-                            ) { chapter ->
-                                EventBus.events.trySend(
-                                    AppEvent.OpenRef(RefOption(
-                                        book = book.slug,
-                                        chapter = chapter
-                                    ))
-                                )
-                                navigator.popUntil { it is TabbedScreen }
-                            }
+                                modifier = Modifier.fillMaxWidth(),
+                                onChapterClick = { chapter ->
+                                    EventBus.events.trySend(
+                                        AppEvent.OpenRef(RefOption(
+                                            book = book.slug,
+                                            chapter = chapter
+                                        ))
+                                    )
+                                    navigator.popUntil { it is TabbedScreen }
+                                }
+                            )
                         }
                         HorizontalDivider()
                     }

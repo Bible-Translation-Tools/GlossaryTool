@@ -50,7 +50,7 @@ fun VerseReference(
         Box(
             modifier = Modifier
                 .background(
-                    color = MaterialTheme.colorScheme.background,
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = MaterialTheme.shapes.small
                 )
                 .padding(horizontal = 8.dp, vertical = 2.dp)

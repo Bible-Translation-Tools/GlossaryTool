@@ -245,7 +245,7 @@ fun SelectableText(
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.onBackground,
-                        contentColor = MaterialTheme.colorScheme.background
+                        contentColor = MaterialTheme.colorScheme.surfaceVariant
                     ),
                     shape = MaterialTheme.shapes.medium,
                     elevation = ButtonDefaults.buttonElevation(

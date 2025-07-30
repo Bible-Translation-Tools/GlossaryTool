@@ -19,7 +19,7 @@ fun GlossaryInfo(
 ) {
     Surface(
         shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.background
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),

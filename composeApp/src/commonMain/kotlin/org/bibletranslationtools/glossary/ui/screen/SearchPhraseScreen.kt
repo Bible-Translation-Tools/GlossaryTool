@@ -79,10 +79,10 @@ class SearchPhraseScreen : Screen {
                                 )
                             },
                             colors = CustomTextFieldDefaults.colors(
-                                focusedContainerColor = MaterialTheme.colorScheme.background,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                                unfocusedIndicatorColor = MaterialTheme.colorScheme.background,
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
                             ),
                             modifier = Modifier.weight(1f)
                                 .height(56.dp)

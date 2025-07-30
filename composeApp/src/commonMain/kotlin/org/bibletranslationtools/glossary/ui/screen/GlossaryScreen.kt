@@ -90,7 +90,7 @@ class GlossaryScreen : Screen {
 
         Box(
             modifier = Modifier.fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -185,7 +185,7 @@ class GlossaryScreen : Screen {
                         .height(BOTTOM_SEARCH_BAR_HEIGHT)
                         .align(Alignment.BottomCenter)
                 ) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.background)
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -207,7 +207,7 @@ class GlossaryScreen : Screen {
                             },
                             colors = CustomTextFieldDefaults.colors(
                                 focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.background,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
                                 unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
                             ),
                             modifier = Modifier.weight(1f)

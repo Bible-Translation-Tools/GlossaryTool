@@ -69,7 +69,7 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
             topBar = {
                 TopAppBar(
                     title = phrase.phrase,
-                    backgroundColor = MaterialTheme.colorScheme.background
+                    backgroundColor = MaterialTheme.colorScheme.surfaceVariant
                 ) {
                     navigator.popUntil { it is TabbedScreen }
                 }

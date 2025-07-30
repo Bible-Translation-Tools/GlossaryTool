@@ -92,7 +92,7 @@ class SelectLanguageScreen(
                             )
                         },
                         colors = CustomTextFieldDefaults.colors(
-                            unfocusedContainerColor = MaterialTheme.colorScheme.background
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
                         modifier = Modifier.fillMaxWidth(),
                     )

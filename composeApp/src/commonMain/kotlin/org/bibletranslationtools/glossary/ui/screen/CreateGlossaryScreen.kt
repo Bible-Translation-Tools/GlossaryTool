@@ -99,7 +99,7 @@ class CreateGlossaryScreen : Screen {
             Column(
                 modifier = Modifier.fillMaxSize()
                     .padding(paddingValues)
-                    .background(color = MaterialTheme.colorScheme.background)
+                    .background(color = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,

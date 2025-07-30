@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -17,39 +18,42 @@ fun ChapterGrid(
     chapters: Int,
     activeChapter: Int?,
     bringIntoViewRequester: BringIntoViewRequester,
-    onChapterClick: (Int) -> Unit
+    onChapterClick: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val chapterNumbers = (1..chapters).toList()
     val chunkedChapters = chapterNumbers.chunked(5)
 
-    Column(
-        modifier = Modifier.padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        chunkedChapters.forEach { rowChapters ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                rowChapters.forEach { chapter ->
-                    val isActive = chapter == activeChapter
-                    var buttonModifier = Modifier.weight(1f)
+    Surface(modifier = modifier) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            chunkedChapters.forEach { rowChapters ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    rowChapters.forEach { chapter ->
+                        val isActive = chapter == activeChapter
+                        var buttonModifier = Modifier.weight(1f)
 
-                    if (isActive) {
-                        buttonModifier = buttonModifier
-                            .bringIntoViewRequester(bringIntoViewRequester)
+                        if (isActive) {
+                            buttonModifier = buttonModifier
+                                .bringIntoViewRequester(bringIntoViewRequester)
+                        }
+
+                        ChapterButton(
+                            chapter = chapter,
+                            isActive = chapter == activeChapter,
+                            onClick = { onChapterClick(chapter) },
+                            modifier = buttonModifier
+                        )
                     }
-
-                    ChapterButton(
-                        chapter = chapter,
-                        isActive = chapter == activeChapter,
-                        onClick = { onChapterClick(chapter) },
-                        modifier = buttonModifier
-                    )
-                }
-                val remainingSpace = 5 - rowChapters.size
-                if (remainingSpace > 0) {
-                    Spacer(modifier = Modifier.weight(remainingSpace.toFloat()))
+                    val remainingSpace = 5 - rowChapters.size
+                    if (remainingSpace > 0) {
+                        Spacer(modifier = Modifier.weight(remainingSpace.toFloat()))
+                    }
                 }
             }
         }
