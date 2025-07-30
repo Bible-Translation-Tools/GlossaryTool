@@ -179,7 +179,6 @@ class EditPhraseScreen(private val phrase: String) : Screen {
                     ) {
                         Button(
                             enabled = spelling.isNotEmpty()
-                                    && description.isNotEmpty()
                                     && !state.isSaving,
                             onClick = {
                                 screenModel.savePhrase(

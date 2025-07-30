@@ -133,11 +133,13 @@ fun PhraseDetailsBar(
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                                contentDescription = "Play pronunciation",
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+                            if (!currentPhrase.audio.isNullOrEmpty()) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                    contentDescription = "Play pronunciation",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
                     IconButton(onClick = {

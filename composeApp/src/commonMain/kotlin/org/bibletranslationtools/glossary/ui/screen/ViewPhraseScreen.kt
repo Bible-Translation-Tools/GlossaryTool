@@ -95,11 +95,13 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
                             fontSize = 28.sp,
                             fontWeight = FontWeight.Bold
                         )
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.VolumeUp,
-                            contentDescription = "Listen",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
+                        if (!phrase.audio.isNullOrEmpty()) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.VolumeUp,
+                                contentDescription = "Listen",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
@@ -139,6 +141,7 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
                                 contentColor = MaterialTheme.colorScheme.primary
                             ),
                             shape = MaterialTheme.shapes.medium,
+                            enabled = false,
                             modifier = Modifier.weight(0.48f)
                         ) {
                             Icon(
@@ -180,7 +183,8 @@ class ViewPhraseScreen(private val phrase: Phrase) : Screen {
                                     VerseReference(
                                         reference = reference,
                                         phrase = phrase.phrase,
-                                        text = text
+                                        text = text,
+                                        modifier = Modifier.fillMaxWidth()
                                     ) {
                                         EventBus.events.trySend(
                                             AppEvent.OpenRef(ref.toOption())

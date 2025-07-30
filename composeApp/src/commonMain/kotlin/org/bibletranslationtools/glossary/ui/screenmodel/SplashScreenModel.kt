@@ -6,6 +6,7 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.loading_glossary
 import glossary.composeapp.generated.resources.loading_resources
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -62,6 +63,8 @@ class SplashScreenModel(
         _state.value = _state.value.copy(
             message = getString(Res.string.loading_resources)
         )
+
+        delay(2000)
 
         val books = withContext(Dispatchers.Default) {
             workbookDataSource.read(resourceSlug)
