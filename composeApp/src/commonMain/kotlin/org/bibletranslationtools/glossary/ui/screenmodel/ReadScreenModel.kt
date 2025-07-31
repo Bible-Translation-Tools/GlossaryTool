@@ -117,12 +117,12 @@ class ReadScreenModel(
 
             val phrases = withContext(Dispatchers.Default) {
                 glossaryRepository.getPhrases(glossary.id)
+                    .filter { it.resourceId == resource.id }
                     .mapNotNull { phrase ->
                         val relevantRef = glossaryRepository.getRefs(phrase.id)
                             .find { ref ->
-                                ref.resource == resource.slug &&
-                                        ref.book == book.slug &&
-                                        ref.chapter == chapter.number.toString()
+                                ref.book == book.slug
+                                        && ref.chapter == chapter.number.toString()
                             }
                         relevantRef?.let { phrase to it }
                     }

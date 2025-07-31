@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.learn_more
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
 import org.jetbrains.compose.resources.stringResource
 
@@ -57,6 +58,7 @@ enum class PhraseNavDir(val value: Int) {
 @Composable
 fun PhraseDetailsBar(
     details: PhraseDetails,
+    resource: Resource,
     onNavPhrase: (PhraseNavDir) -> Unit,
     onNavRef: (PhraseNavDir) -> Unit,
     onViewDetails: (Phrase) -> Unit,
@@ -67,7 +69,7 @@ fun PhraseDetailsBar(
     var currentVerseText by remember { mutableStateOf("") }
 
     LaunchedEffect(currentPhrase, currentRef) {
-        val text = currentRef?.getText(details.resource)
+        val text = currentRef?.getText(resource)
         currentVerseText = shortenVerseText(text ?: "", currentPhrase)
     }
 

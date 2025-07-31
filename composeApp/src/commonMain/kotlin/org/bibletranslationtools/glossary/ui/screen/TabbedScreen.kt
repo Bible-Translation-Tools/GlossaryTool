@@ -41,6 +41,8 @@ class TabbedScreen : Screen {
         val screenModel = navigator.koinNavigatorScreenModel<SharedScreenModel>()
         val snackBarHostState = LocalSnackBarHostState.currentOrThrow
 
+        val resourceState by appStateStore.resourceStateHolder.resourceState
+            .collectAsStateWithLifecycle()
         val tabState by appStateStore.tabStateHolder.tabState.collectAsStateWithLifecycle()
         val state by screenModel.state.collectAsStateWithLifecycle()
         val appEvent by EventBus.events.receiveAsFlow()
@@ -99,19 +101,22 @@ class TabbedScreen : Screen {
             }
 
             state.phraseDetails?.let { phraseDetails ->
-                PhraseDetailsBar(
-                    details = phraseDetails,
-                    onNavPhrase = { screenModel.navigatePhrase(it) },
-                    onNavRef = { screenModel.navigateRef(it) },
-                    onViewDetails = { phrase ->
-                        navigator.push(
-                            ViewPhraseScreen(phrase)
-                        )
-                    },
-                    onDismiss = {
-                        screenModel.clearPhraseDetails()
-                    }
-                )
+                resourceState.resource?.let { resource ->
+                    PhraseDetailsBar(
+                        details = phraseDetails,
+                        resource = resource,
+                        onNavPhrase = { screenModel.navigatePhrase(it) },
+                        onNavRef = { screenModel.navigateRef(it) },
+                        onViewDetails = { phrase ->
+                            navigator.push(
+                                ViewPhraseScreen(phrase)
+                            )
+                        },
+                        onDismiss = {
+                            screenModel.clearPhraseDetails()
+                        }
+                    )
+                }
             }
         }
     }

@@ -14,7 +14,6 @@ import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.RefOption
-import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.components.PhraseNavDir
@@ -23,7 +22,6 @@ data class PhraseDetails(
     val phrase: Phrase,
     val phrases: List<Phrase>,
     val ref: Ref?,
-    val resource: Resource,
     val book: Workbook,
     val chapter: Chapter,
     val verse: String? = null
@@ -48,15 +46,13 @@ class SharedScreenModel(
     fun loadPhrase(
         phrase: Phrase,
         phrases: List<Phrase>,
-        resource: Resource,
         book: Workbook,
         chapter: Chapter,
         verse: String? = null
     ) {
         screenModelScope.launch {
-            val ref = navigateRef(
+            val ref = getInitialRef(
                 phrase = phrase,
-                resource = resource,
                 book = book,
                 chapter = chapter,
                 verse = verse
@@ -65,7 +61,6 @@ class SharedScreenModel(
                 phrase = phrase,
                 phrases = phrases,
                 ref = ref,
-                resource = resource,
                 book = book,
                 chapter = chapter,
                 verse = verse
@@ -106,9 +101,8 @@ class SharedScreenModel(
             details.phrases.getOrNull(
                 details.phrases.indexOf(details.phrase) + incr
             )?.let { phrase ->
-                val ref = navigateRef(
+                val ref = getInitialRef(
                     phrase = phrase,
-                    resource = details.resource,
                     book = details.book,
                     chapter = details.chapter
                 )
@@ -124,17 +118,15 @@ class SharedScreenModel(
         }
     }
 
-    private suspend fun navigateRef(
+    private suspend fun getInitialRef(
         phrase: Phrase,
-        resource: Resource,
         book: Workbook,
         chapter: Chapter,
         verse: String? = null,
     ): Ref? {
         return withContext(Dispatchers.Default) {
             glossaryRepository.getRefs(phrase.id).firstOrNull {
-                it.resource == resource.slug
-                        && it.book == book.slug
+                it.book == book.slug
                         && it.chapter == chapter.number.toString()
                         && (verse == null || it.verse == verse)
             }

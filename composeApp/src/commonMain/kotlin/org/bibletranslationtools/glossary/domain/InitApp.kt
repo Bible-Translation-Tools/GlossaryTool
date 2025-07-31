@@ -9,13 +9,16 @@ import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Language
 import org.bibletranslationtools.glossary.data.toEntity
+import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.jetbrains.compose.resources.getString
 
 class InitApp(
     private val settings: SettingsDataSource,
     private val languageDataSource: LanguageDataSource,
-    private val directoryProvider: DirectoryProvider
+    private val resourceDataSource: ResourceDataSource,
+    private val directoryProvider: DirectoryProvider,
+    private val resourceContainerAccessor: ResourceContainerAccessor
 ) {
     suspend operator fun invoke(onProgressMessage: (String) -> Unit) {
         val driver = createSqlDriver()
@@ -33,8 +36,8 @@ class InitApp(
         val init = settings.getByName(DbSettings.INIT.value)?.value_?.toBoolean() ?: false
 
         if (!init) {
-            initResources(onProgressMessage)
             initLanguages(onProgressMessage)
+            initResources(onProgressMessage)
             settings.insert(DbSettings.INIT.value, true.toString())
         }
     }
@@ -43,7 +46,10 @@ class InitApp(
         onProgressMessage(getString(Res.string.init_resources))
 
         val bytes = Res.readBytes("files/en_ulb.zip")
-        directoryProvider.saveSource(bytes, "en_ulb.zip")
+        val resourcePath = directoryProvider.saveSource(bytes, "en_ulb.zip")
+        val resource = resourceContainerAccessor.read(resourcePath)
+
+        resourceDataSource.insert(resource.toEntity())
     }
 
     private suspend fun initLanguages(onProgressMessage: (String) -> Unit) {

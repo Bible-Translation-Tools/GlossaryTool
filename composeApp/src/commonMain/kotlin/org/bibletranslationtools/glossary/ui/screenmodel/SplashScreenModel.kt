@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.InitApp
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
@@ -40,7 +39,7 @@ class SplashScreenModel(
             initialValue = SplashState()
         )
 
-    fun initializeApp(resourceSlug: String, glossaryCode: String?) {
+    fun initializeApp(resource: String, glossaryCode: String?) {
         screenModelScope.launch {
             withContext(Dispatchers.IO) {
                 initApp { message ->
@@ -48,7 +47,7 @@ class SplashScreenModel(
                         message = message
                     )
                 }
-                loadResource(resourceSlug)
+                loadResource(resource)
                 loadGlossary(glossaryCode)
             }
 
@@ -59,19 +58,23 @@ class SplashScreenModel(
         }
     }
 
-    private suspend fun loadResource(resourceSlug: String) {
+    private suspend fun loadResource(resource: String) {
         _state.value = _state.value.copy(
             message = getString(Res.string.loading_resources)
         )
 
         delay(2000)
 
-        val books = withContext(Dispatchers.Default) {
-            workbookDataSource.read(resourceSlug)
+        val resource = withContext(Dispatchers.Default) {
+            val res = workbookDataSource.read(resource)
+            val dbRes = glossaryRepository.getResource(res.lang, res.type)
+
+            if (dbRes == null) throw IllegalArgumentException("Resource not found in database")
+
+            res.copy(id = dbRes.id)
         }
-        appStateStore.resourceStateHolder.updateResource(
-            Resource(resourceSlug, books)
-        )
+
+        appStateStore.resourceStateHolder.updateResource(resource)
     }
 
     private suspend fun loadGlossary(glossaryCode: String?) {

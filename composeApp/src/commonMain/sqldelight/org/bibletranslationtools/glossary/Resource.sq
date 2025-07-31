@@ -1,0 +1,23 @@
+CREATE TABLE ResourceEntity (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    lang TEXT NOT NULL,
+    type TEXT NOT NULL,
+    version TEXT NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    modifiedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (lang) REFERENCES LanguageEntity (slug),
+    CONSTRAINT unique_resource UNIQUE (lang, type)
+);
+
+getAll:
+SELECT * FROM ResourceEntity;
+
+getByLangType:
+SELECT * FROM ResourceEntity WHERE lang = :lang AND type = :type;
+
+insert:
+INSERT OR REPLACE INTO ResourceEntity(lang, type, version, createdAt, modifiedAt)
+VALUES (?, ?, ?, ?, ?);
+
+delete:
+DELETE FROM ResourceEntity WHERE id = :id;

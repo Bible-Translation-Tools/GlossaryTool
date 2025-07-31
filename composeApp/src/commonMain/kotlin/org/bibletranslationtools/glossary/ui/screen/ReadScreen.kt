@@ -229,7 +229,6 @@ class ReadScreen : Screen {
                                 sharedScreenModel.loadPhrase(
                                     phrase = phrase,
                                     phrases = state.chapterPhrases,
-                                    resource = resourceState.resource!!,
                                     book = state.activeBook!!,
                                     chapter = state.activeChapter!!,
                                     verse = verse

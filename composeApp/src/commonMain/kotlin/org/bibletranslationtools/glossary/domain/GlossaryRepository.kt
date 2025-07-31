@@ -4,6 +4,7 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Language
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
+import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.toEntity
 import org.bibletranslationtools.glossary.data.toModel
 
@@ -14,20 +15,25 @@ interface GlossaryRepository {
     suspend fun getPhrase(phrase: String, glossaryId: String): Phrase?
     suspend fun getPhrases(glossaryId: String?): List<Phrase>
     suspend fun addPhrase(phrase: Phrase): String?
-    suspend fun addRefs(refs: List<Ref>)
+    suspend fun addRef(ref: Ref)
     suspend fun getRefs(phraseId: String?): List<Ref>
     suspend fun getLanguage(slug: String): Language?
     suspend fun getAllLanguages(): List<Language>
     suspend fun getGatewayLanguages(): List<Language>
     suspend fun getTargetLanguages(): List<Language>
     suspend fun addLanguage(language: Language)
+    suspend fun getAllResources(): List<Resource>
+    suspend fun getResource(langSlug: String, type: String): Resource?
+    suspend fun addResource(resource: Resource)
+    suspend fun deleteResource(id: Long)
 }
 
 class GlossaryRepositoryImpl(
     private val glossaryDataSource: GlossaryDataSource,
     private val phraseDataSource: PhraseDataSource,
     private val refDataSource: RefDataSource,
-    private val languageDataSource: LanguageDataSource
+    private val languageDataSource: LanguageDataSource,
+    private val resourceDataSource: ResourceDataSource
 ) : GlossaryRepository {
 
     override suspend fun getGlossary(code: String): Glossary? {
@@ -79,10 +85,8 @@ class GlossaryRepositoryImpl(
         return phraseDataSource.insert(entity)
     }
 
-    override suspend fun addRefs(refs: List<Ref>) {
-        for (ref in refs.map { it.toEntity() }) {
-            refDataSource.insert(ref)
-        }
+    override suspend fun addRef(ref: Ref) {
+        refDataSource.insert(ref.toEntity())
     }
 
     override suspend fun getRefs(phraseId: String?): List<Ref> {
@@ -109,5 +113,21 @@ class GlossaryRepositoryImpl(
 
     override suspend fun addLanguage(language: Language) {
         languageDataSource.insert(language.toEntity())
+    }
+
+    override suspend fun getAllResources(): List<Resource> {
+        return resourceDataSource.getAll().map { it.toModel() }
+    }
+
+    override suspend fun getResource(langSlug: String, type: String): Resource? {
+        return resourceDataSource.getByLangType(langSlug, type)?.toModel()
+    }
+
+    override suspend fun addResource(resource: Resource) {
+        resourceDataSource.insert(resource.toEntity())
+    }
+
+    override suspend fun deleteResource(id: Long) {
+        resourceDataSource.delete(id)
     }
 }

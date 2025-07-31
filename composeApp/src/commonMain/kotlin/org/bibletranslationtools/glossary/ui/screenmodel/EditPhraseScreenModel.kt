@@ -51,14 +51,16 @@ class EditPhraseScreenModel(
 
     init {
         screenModelScope.launch {
-            glossaryState.value.glossary?.let { glossary ->
-                val phrase = glossaryRepository.getPhrase(phrase, glossary.id!!)
-                    ?: Phrase(
-                        phrase = phrase,
-                        glossaryId = glossary.id
-                    )
-                _state.update { it.copy(activePhrase = phrase) }
-            }
+            val resource = resourceState.value.resource ?: return@launch
+            val glossary = glossaryState.value.glossary ?: return@launch
+
+            val phrase = glossaryRepository.getPhrase(phrase, glossary.id!!)
+                ?: Phrase(
+                    phrase = phrase,
+                    resourceId = resource.id,
+                    glossaryId = glossary.id
+                )
+            _state.update { it.copy(activePhrase = phrase) }
         }
     }
 
@@ -85,14 +87,14 @@ class EditPhraseScreenModel(
                     } ?: emptyList()
 
                     val refs = (dbRefs + findRefs(phrase)).distinctBy {
-                        listOf(it.resource, it.book, it.chapter, it.verse)
+                        listOf(it.book, it.chapter, it.verse)
                     }
 
                     if (refs.isNotEmpty()) {
                         glossaryRepository.addPhrase(phrase)?.let { phraseId ->
-                            glossaryRepository.addRefs(
-                                refs.map { ref -> ref.copy(phraseId = phraseId) }
-                            )
+                            refs.forEach { ref ->
+                                glossaryRepository.addRef(ref.copy(phraseId = phraseId))
+                            }
                         }
                         null
                     } else {
@@ -127,7 +129,6 @@ class EditPhraseScreenModel(
                         val count = regex.findAll(verse.text).count()
                         repeat(count) {
                             val ref = Ref(
-                                resource = resource.slug,
                                 book = book.slug,
                                 chapter = chapter.number.toString(),
                                 verse = verse.number,

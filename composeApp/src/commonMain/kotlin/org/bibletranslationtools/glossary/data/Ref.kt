@@ -4,7 +4,6 @@ import org.bibletranslationtools.glossary.RefEntity
 import org.bibletranslationtools.glossary.Utils.generateUUID
 
 data class Ref(
-    val resource: String,
     val book: String,
     val chapter: String,
     val verse: String,
@@ -26,22 +25,20 @@ data class Ref(
 
 fun RefEntity.toModel(): Ref {
     return Ref(
-        resource = this.resource,
-        book = this.book,
-        chapter = this.chapter,
-        verse = this.verse,
-        phraseId = this.phraseId,
-        id = this.id
+        book = book,
+        chapter = chapter,
+        verse = verse,
+        phraseId = phraseId,
+        id = id
     )
 }
 
 fun Ref.toEntity(): RefEntity {
     return RefEntity(
-        resource = this.resource,
-        book = this.book,
-        chapter = this.chapter,
-        verse = this.verse,
+        book = book,
+        chapter = chapter,
+        verse = verse,
         phraseId = phraseId!!,
-        id = this.id ?: generateUUID(),
+        id = id ?: generateUUID(),
     )
 }

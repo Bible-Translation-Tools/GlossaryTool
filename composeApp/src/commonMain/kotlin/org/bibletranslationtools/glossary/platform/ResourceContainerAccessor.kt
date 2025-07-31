@@ -1,9 +1,11 @@
 package org.bibletranslationtools.glossary.platform
 
-import org.bibletranslationtools.glossary.data.Workbook
+import kotlinx.io.files.Path
+import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 
 expect class ResourceContainerAccessor {
     constructor(directoryProvider: DirectoryProvider)
-    fun read(resource: String): List<Workbook>
+    fun read(resourceId: String): Resource
+    fun read(path: Path): Resource
 }

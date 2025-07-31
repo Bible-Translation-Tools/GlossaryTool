@@ -1,10 +1,11 @@
 package org.bibletranslationtools.glossary
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlinx.serialization.json.Json
 import kotlin.random.Random
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
@@ -48,8 +49,10 @@ object Utils {
         return Uuid.random().toString()
     }
 
+    @OptIn(ExperimentalTime::class)
     fun getCurrentTime() =
         Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
 
+    @OptIn(ExperimentalTime::class)
     fun getCurrentTimestamp() = Clock.System.now().epochSeconds
 }

@@ -1,9 +1,12 @@
 package org.bibletranslationtools.glossary.platform
 
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.atTime
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Language
+import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Verse
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
@@ -19,14 +22,17 @@ import java.io.File
 actual class ResourceContainerAccessor actual constructor(
     private val directoryProvider: DirectoryProvider
 ) {
-    actual fun read(resource: String): List<Workbook> {
+    actual fun read(resourceId: String): Resource {
         val resource = Path(
             directoryProvider.sources,
-            "$resource.zip"
+            "$resourceId.zip"
         )
+        return read(resource)
+    }
 
-        if (SystemFileSystem.exists(resource)) {
-            val resourceContainer = ResourceContainer.load(File(resource.toString()))
+    actual fun read(path: Path): Resource {
+        if (SystemFileSystem.exists(path)) {
+            val resourceContainer = ResourceContainer.load(File(path.toString()))
 
             val language = resourceContainer.manifest.dublinCore.language.let {
                 Language(
@@ -36,7 +42,7 @@ actual class ResourceContainerAccessor actual constructor(
                 )
             }
 
-            return resourceContainer.manifest.projects.map { project ->
+            val books = resourceContainer.manifest.projects.map { project ->
                 Workbook(
                     sort = project.sort,
                     slug = project.identifier,
@@ -46,11 +52,22 @@ actual class ResourceContainerAccessor actual constructor(
                     readChapters(resourceContainer, project.path)
                 }
             }
-        } else {
-            println("Resource doesn't exist.")
-        }
 
-        return emptyList()
+            val core = resourceContainer.manifest.dublinCore
+            val issuedDate = LocalDate.parse(core.issued)
+            val modifiedDate = LocalDate.parse(core.modified)
+
+            return Resource(
+                lang = core.language.identifier,
+                type = core.identifier,
+                version = core.version,
+                createdAt = issuedDate.atTime(0,0),
+                modifiedAt = modifiedDate.atTime(0,0),
+                books = books
+            )
+        } else {
+            throw IllegalArgumentException("Resource $path is not found.")
+        }
     }
 
     private fun readChapters(

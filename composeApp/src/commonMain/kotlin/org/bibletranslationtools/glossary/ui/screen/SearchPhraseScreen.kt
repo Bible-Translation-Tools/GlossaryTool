@@ -34,28 +34,21 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.search_word_hint
 import glossary.composeapp.generated.resources.search_placeholder
-import org.bibletranslationtools.glossary.data.Phrase
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import glossary.composeapp.generated.resources.search_word_hint
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.SearchField
+import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
-import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 
 class SearchPhraseScreen : Screen {
 
     @Composable
     override fun Content() {
-        val appStateStore = koinInject<AppStateStore>()
         val screenModel = koinScreenModel<SearchPhraseScreenModel>()
         val state by screenModel.state.collectAsStateWithLifecycle()
         val navigator = LocalNavigator.currentOrThrow
-
-        val glossaryState by appStateStore.glossaryStateHolder.glossaryState
-            .collectAsStateWithLifecycle()
 
         var searchQuery by rememberSaveable { mutableStateOf("") }
 
@@ -121,30 +114,24 @@ class SearchPhraseScreen : Screen {
                         )
                     } else {
                         LazyColumn {
-                            items(state.results) {
-                                glossaryState.glossary?.let { glossary ->
-                                    val phrase = Phrase(
-                                        phrase = it,
-                                        glossaryId = glossary.id
+                            items(state.results) { phrase ->
+                                Row(
+                                    modifier = Modifier.padding(12.dp)
+                                        .clickable {
+                                            navigator.push(
+                                                EditPhraseScreen(phrase)
+                                            )
+                                        }
+                                ) {
+                                    Text(
+                                        text = phrase,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.weight(1f)
                                     )
-                                    Row(
-                                        modifier = Modifier.padding(12.dp)
-                                            .clickable {
-                                                navigator.push(
-                                                    EditPhraseScreen(phrase.phrase)
-                                                )
-                                            }
-                                    ) {
-                                        Text(
-                                            text = phrase.phrase,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Icon(
-                                            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                            contentDescription = "create"
-                                        )
-                                    }
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = "create"
+                                    )
                                 }
                             }
                         }
