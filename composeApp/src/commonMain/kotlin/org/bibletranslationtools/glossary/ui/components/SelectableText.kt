@@ -62,7 +62,6 @@ fun SelectableText(
     onSelectedTextChanged: (String) -> Unit,
     onSaveSelection: (String) -> Unit,
     onPhraseClick: (Phrase, String) -> Unit,
-    onTextReady: () -> Unit,
     onVersePosition: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -171,8 +170,6 @@ fun SelectableText(
                 append(" ")
             }
         }
-
-        onTextReady()
     }
 
     LaunchedEffect(annotatedString, textLayoutResult, positionInWindow, currentVerse) {

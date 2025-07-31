@@ -1,6 +1,10 @@
 package org.bibletranslationtools.glossary.ui.screen
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -75,17 +80,25 @@ class BrowseScreen(
 
         LaunchedEffect(Unit) {
             val initialBookIndex = books.indexOf(activeBook)
-            if (initialBookIndex != -1) {
-                expandedBookIndex = initialBookIndex
-                delay(300)
-                bringIntoViewRequester.bringIntoView()
-            }
+            expandedBookIndex = initialBookIndex
+            delay(300)
+            bringIntoViewRequester.bringIntoView()
         }
 
         LaunchedEffect(expandedBookIndex) {
             if (expandedBookIndex != -1) {
-                lazyListState.animateScrollToItem(expandedBookIndex)
-                bringIntoViewRequester.bringIntoView()
+                delay(200)
+                val visibleItem = lazyListState.layoutInfo.visibleItemsInfo.firstOrNull {
+                    it.index == expandedBookIndex
+                }
+                if (visibleItem != null) {
+                    lazyListState.animateScrollBy(
+                        value = visibleItem.offset.toFloat(),
+                        animationSpec = tween(500)
+                    )
+                } else {
+                    lazyListState.animateScrollToItem(expandedBookIndex)
+                }
             }
         }
 
@@ -156,7 +169,13 @@ class BrowseScreen(
                             },
                             modifier = Modifier.fillMaxWidth()
                         )
-                        if (expandedBookIndex == index) {
+                        AnimatedVisibility(
+                            visible = expandedBookIndex == index,
+                            enter = expandVertically(
+                                expandFrom = Alignment.Top,
+                                animationSpec = tween(durationMillis = 500)
+                            )
+                        ) {
                             ChapterGrid(
                                 chapters = book.chapters.size,
                                 activeChapter = if (book == activeBook) activeChapter.number else null,
@@ -164,10 +183,12 @@ class BrowseScreen(
                                 modifier = Modifier.fillMaxWidth(),
                                 onChapterClick = { chapter ->
                                     EventBus.events.trySend(
-                                        AppEvent.OpenRef(RefOption(
-                                            book = book.slug,
-                                            chapter = chapter
-                                        ))
+                                        AppEvent.OpenRef(
+                                            RefOption(
+                                                book = book.slug,
+                                                chapter = chapter
+                                            )
+                                        )
                                     )
                                     navigator.popUntil { it is TabbedScreen }
                                 }

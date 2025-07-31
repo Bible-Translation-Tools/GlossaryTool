@@ -95,12 +95,10 @@ class ReadScreen : Screen {
         }
 
         var selectedText by remember { mutableStateOf("") }
-        var textIsReady by remember { mutableStateOf(false) }
         val isLoading by remember {
             derivedStateOf {
                 state.activeBook == null
                         || state.activeChapter == null
-                        || !textIsReady
             }
         }
 
@@ -237,7 +235,6 @@ class ReadScreen : Screen {
                                     verse = verse
                                 )
                             },
-                            onTextReady = { textIsReady = true },
                             onVersePosition = { versePosition = it }
                         )
                     }
@@ -251,7 +248,6 @@ class ReadScreen : Screen {
                         resourceState.resource?.let { resource ->
                             state.activeBook?.let { book ->
                                 state.activeChapter?.let { chapter ->
-                                    textIsReady = false
                                     navigator.push(
                                         BrowseScreen(
                                             resource.books,
@@ -264,11 +260,9 @@ class ReadScreen : Screen {
                         }
                     },
                     onPrevClick = {
-                        textIsReady = false
                         screenModel.prevChapter()
                     },
                     onNextClick = {
-                        textIsReady = false
                         screenModel.nextChapter()
                     }
                 )
