@@ -2,6 +2,8 @@ package org.bibletranslationtools.glossary.di
 
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.domain.CatalogApi
+import org.bibletranslationtools.glossary.domain.CatalogApiImpl
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
@@ -21,8 +23,10 @@ import org.bibletranslationtools.glossary.domain.SettingsDataSource
 import org.bibletranslationtools.glossary.domain.SettingsDataSourceImpl
 import org.bibletranslationtools.glossary.domain.WorkbookDataSource
 import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
+import org.bibletranslationtools.glossary.domain.createHttpClient
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
+import org.bibletranslationtools.glossary.platform.httpClientEngine
 import org.bibletranslationtools.glossary.ui.screenmodel.CreateGlossaryScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryListScreenModel
@@ -50,6 +54,7 @@ import org.koin.dsl.module
 val sharedModule = module {
     single { GlossaryDatabase(createSqlDriver()) }
     single { ResourceContainerAccessor(get()) }
+    single { CatalogApiImpl(createHttpClient(httpClientEngine)) }.bind<CatalogApi>()
 
     singleOf(::GlossaryDataSourceImpl).bind<GlossaryDataSource>()
     singleOf(::PhraseDataSourceImpl).bind<PhraseDataSource>()

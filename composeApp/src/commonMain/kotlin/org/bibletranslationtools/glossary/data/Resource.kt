@@ -9,9 +9,12 @@ data class Resource(
     val lang: String,
     val type: String,
     val version: String,
+    val format: String,
+    val url: String,
+    val filename: String,
     val createdAt: LocalDateTime,
     val modifiedAt: LocalDateTime,
-    val books: List<Workbook>,
+    val books: List<Workbook> = emptyList(),
     val id: Long = 0
 )
 
@@ -19,6 +22,9 @@ fun ResourceEntity.toModel() = Resource(
     lang = lang,
     type = type,
     version = version,
+    format = format,
+    url = url,
+    filename = filename,
     createdAt = createdAt.toLocalDateTime(),
     modifiedAt = modifiedAt.toLocalDateTime(),
     books = emptyList(),
@@ -29,6 +35,9 @@ fun Resource.toEntity() = ResourceEntity(
     lang = lang,
     type = type,
     version = version,
+    format = format,
+    url = url,
+    filename = filename,
     createdAt = createdAt.toTimestamp(),
     modifiedAt = modifiedAt.toTimestamp(),
     id = id

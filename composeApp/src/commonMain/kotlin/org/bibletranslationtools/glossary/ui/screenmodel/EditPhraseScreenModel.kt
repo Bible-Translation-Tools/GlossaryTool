@@ -51,13 +51,11 @@ class EditPhraseScreenModel(
 
     init {
         screenModelScope.launch {
-            val resource = resourceState.value.resource ?: return@launch
             val glossary = glossaryState.value.glossary ?: return@launch
 
             val phrase = glossaryRepository.getPhrase(phrase, glossary.id!!)
                 ?: Phrase(
                     phrase = phrase,
-                    resourceId = resource.id,
                     glossaryId = glossary.id
                 )
             _state.update { it.copy(activePhrase = phrase) }

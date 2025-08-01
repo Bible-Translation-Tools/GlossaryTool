@@ -14,7 +14,6 @@ data class Phrase(
     val audio: String? = null,
     val createdAt: LocalDateTime = getCurrentTime(),
     val updatedAt: LocalDateTime = getCurrentTime(),
-    val resourceId: Long? = null,
     val glossaryId: String? = null,
     val id: String? = null
 )
@@ -27,7 +26,6 @@ fun PhraseEntity.toModel(): Phrase {
         audio = audio,
         createdAt = createdAt.toLocalDateTime(),
         updatedAt = updatedAt.toLocalDateTime(),
-        resourceId = resourceId,
         glossaryId = glossaryId,
         id = id
     )
@@ -41,7 +39,6 @@ fun Phrase.toEntity(): PhraseEntity {
         audio = audio ?: "",
         createdAt = createdAt.toTimestamp(),
         updatedAt = updatedAt.toTimestamp(),
-        resourceId = resourceId!!,
         glossaryId = glossaryId!!,
         id = id ?: generateUUID()
     )

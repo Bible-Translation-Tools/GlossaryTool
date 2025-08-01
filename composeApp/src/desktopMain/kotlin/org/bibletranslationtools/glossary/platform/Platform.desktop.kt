@@ -2,6 +2,8 @@ package org.bibletranslationtools.glossary.platform
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.cio.CIO
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import java.io.File
 import java.util.Locale
@@ -35,3 +37,6 @@ actual fun createSqlDriver(): SqlDriver {
     )
     return driver
 }
+
+actual val httpClientEngine: HttpClientEngine
+    get() = CIO.create()

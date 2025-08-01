@@ -12,6 +12,7 @@ data class Glossary(
     val author: String,
     val sourceLanguage: Language,
     val targetLanguage: Language,
+    val resourceId: Long? = null,
     val createdAt: LocalDateTime = getCurrentTime(),
     val updatedAt: LocalDateTime = getCurrentTime(),
     val id: String? = null
@@ -26,6 +27,7 @@ fun GlossaryEntity.toModel(
         author = author,
         sourceLanguage = sourceLanguage,
         targetLanguage = targetLanguage,
+        resourceId = resourceId,
         createdAt = createdAt.toLocalDateTime(),
         updatedAt = updatedAt.toLocalDateTime(),
         id = id
@@ -38,6 +40,7 @@ fun Glossary.toEntity(): GlossaryEntity {
         author = author,
         sourceLanguage = sourceLanguage.slug,
         targetLanguage = targetLanguage.slug,
+        resourceId = resourceId!!,
         createdAt = createdAt.toTimestamp(),
         updatedAt = updatedAt.toTimestamp(),
         id = id ?: generateUUID()

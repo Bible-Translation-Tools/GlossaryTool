@@ -110,14 +110,12 @@ class ReadScreenModel(
 
     private fun loadChapterPhrases() {
         screenModelScope.launch {
-            val resource = resourceState.value.resource ?: return@launch
             val glossary = glossaryState.value.glossary ?: return@launch
             val book = _state.value.activeBook ?: return@launch
             val chapter = _state.value.activeChapter ?: return@launch
 
             val phrases = withContext(Dispatchers.Default) {
                 glossaryRepository.getPhrases(glossary.id)
-                    .filter { it.resourceId == resource.id }
                     .mapNotNull { phrase ->
                         val relevantRef = glossaryRepository.getRefs(phrase.id)
                             .find { ref ->

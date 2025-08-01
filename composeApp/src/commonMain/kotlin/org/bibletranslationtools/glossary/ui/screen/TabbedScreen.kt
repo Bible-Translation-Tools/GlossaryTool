@@ -17,6 +17,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
+import dev.burnoo.compose.remembersetting.rememberStringSetting
 import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.bibletranslationtools.glossary.domain.Settings
@@ -45,12 +46,39 @@ class TabbedScreen : Screen {
             .collectAsStateWithLifecycle()
         val tabState by appStateStore.tabStateHolder.tabState.collectAsStateWithLifecycle()
         val state by screenModel.state.collectAsStateWithLifecycle()
-        val appEvent by EventBus.events.receiveAsFlow()
-            .collectAsStateWithLifecycle(AppEvent.Idle)
 
         var glossaryCode by rememberStringSettingOrNull(
             Settings.GLOSSARY.name
         )
+        var resourceId by rememberStringSetting(
+            Settings.RESOURCE.name,
+            "en_ulb"
+        )
+
+        LaunchedEffect(Unit) {
+            EventBus.events.receiveAsFlow().collect { event ->
+                when (event) {
+                    is AppEvent.OpenRef -> {
+                        appStateStore.tabStateHolder.updateTab(MainTab.Read)
+                        screenModel.loadRef(event.ref)
+                    }
+                    is AppEvent.SelectGlossary -> {
+                        appStateStore.glossaryStateHolder.updateGlossary(event.glossary)
+                        appStateStore.tabStateHolder.updateTab(MainTab.Glossary)
+
+                        // saving glossary code to preferences
+                        glossaryCode = event.glossary.code
+                    }
+                    is AppEvent.SelectResource -> {
+                        appStateStore.resourceStateHolder.updateResource(event.resource)
+
+                        // saving resource id to preferences
+                        resourceId = "${event.resource.lang}_${event.resource.type}"
+                    }
+                    else -> {}
+                }
+            }
+        }
 
         TabNavigator(tabState.currentTab) { tabNavigator ->
             LaunchedEffect(tabNavigator.current) {
@@ -58,26 +86,6 @@ class TabbedScreen : Screen {
             }
             LaunchedEffect(tabState.currentTab) {
                 tabNavigator.current = tabState.currentTab
-            }
-            LaunchedEffect(appEvent) {
-                when (appEvent) {
-                    is AppEvent.OpenRef -> {
-                        appStateStore.tabStateHolder.updateTab(MainTab.Read)
-
-                        val ref = (appEvent as AppEvent.OpenRef).ref
-                        screenModel.loadRef(ref)
-                    }
-                    is AppEvent.SelectGlossary -> {
-                        val glossary = (appEvent as AppEvent.SelectGlossary).glossary
-
-                        appStateStore.glossaryStateHolder.updateGlossary(glossary)
-                        appStateStore.tabStateHolder.updateTab(MainTab.Glossary)
-
-                        // saving glossary code to preferences
-                        glossaryCode = glossary.code
-                    }
-                    else -> {}
-                }
             }
 
             KeyboardAware {

@@ -4,10 +4,12 @@ CREATE TABLE IF NOT EXISTS GlossaryEntity (
     author TEXT NOT NULL,
     sourceLanguage TEXT NOT NULL,
     targetLanguage TEXT NOT NULL,
+    resourceId INTEGER NOT NULL,
     createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     FOREIGN KEY (sourceLanguage) REFERENCES LanguageEntity (slug),
     FOREIGN KEY (targetLanguage) REFERENCES LanguageEntity (slug),
+    FOREIGN KEY (resourceId) REFERENCES ResourceEntity (id),
     CONSTRAINT unique_glossary UNIQUE (code)
 );
 
@@ -18,8 +20,8 @@ getByCode:
 SELECT * FROM GlossaryEntity WHERE code = :code;
 
 insert:
-INSERT OR REPLACE INTO GlossaryEntity(id, code, author, sourceLanguage, targetLanguage, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO GlossaryEntity(id, code, author, sourceLanguage, targetLanguage, resourceId, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
 
 delete:
 DELETE FROM GlossaryEntity WHERE id = :id;

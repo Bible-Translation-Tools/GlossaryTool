@@ -27,7 +27,6 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
             spelling = phrase.spelling,
             description = phrase.description,
             audio = phrase.audio,
-            resourceId = phrase.resourceId,
             glossaryId = phrase.glossaryId,
             updatedAt = phrase.updatedAt
         )

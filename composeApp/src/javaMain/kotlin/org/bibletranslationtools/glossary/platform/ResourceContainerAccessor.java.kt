@@ -1,7 +1,5 @@
 package org.bibletranslationtools.glossary.platform
 
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.atTime
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import org.bibletranslationtools.glossary.data.Chapter
@@ -10,6 +8,7 @@ import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Verse
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
+import org.bibletranslationtools.glossary.toLocalDateTime
 import org.wycliffeassociates.resourcecontainer.ResourceContainer
 import org.wycliffeassociates.usfmtools.USFMParser
 import org.wycliffeassociates.usfmtools.models.markers.CMarker
@@ -22,16 +21,16 @@ import java.io.File
 actual class ResourceContainerAccessor actual constructor(
     private val directoryProvider: DirectoryProvider
 ) {
-    actual fun read(resourceId: String): Resource {
-        val resource = Path(
+    actual fun read(filename: String): Resource? {
+        val path = Path(
             directoryProvider.sources,
-            "$resourceId.zip"
+            filename
         )
-        return read(resource)
+        return read(path)
     }
 
-    actual fun read(path: Path): Resource {
-        if (SystemFileSystem.exists(path)) {
+    actual fun read(path: Path): Resource? {
+        return if (SystemFileSystem.exists(path)) {
             val resourceContainer = ResourceContainer.load(File(path.toString()))
 
             val language = resourceContainer.manifest.dublinCore.language.let {
@@ -54,20 +53,19 @@ actual class ResourceContainerAccessor actual constructor(
             }
 
             val core = resourceContainer.manifest.dublinCore
-            val issuedDate = LocalDate.parse(core.issued)
-            val modifiedDate = LocalDate.parse(core.modified)
 
-            return Resource(
+            Resource(
                 lang = core.language.identifier,
                 type = core.identifier,
                 version = core.version,
-                createdAt = issuedDate.atTime(0,0),
-                modifiedAt = modifiedDate.atTime(0,0),
+                format = core.format,
+                url = "",
+                filename = path.name,
+                createdAt = core.issued.toLocalDateTime(),
+                modifiedAt = core.modified.toLocalDateTime(),
                 books = books
             )
-        } else {
-            throw IllegalArgumentException("Resource $path is not found.")
-        }
+        } else null
     }
 
     private fun readChapters(

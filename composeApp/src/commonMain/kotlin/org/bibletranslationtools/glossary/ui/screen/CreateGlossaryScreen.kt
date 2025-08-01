@@ -36,10 +36,14 @@ import cafe.adriel.voyager.koin.koinScreenModel
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.cancel
 import glossary.composeapp.generated.resources.create_glossary
 import glossary.composeapp.generated.resources.dictionary
+import glossary.composeapp.generated.resources.download
+import glossary.composeapp.generated.resources.download_resource_request
 import glossary.composeapp.generated.resources.glossary_code
 import glossary.composeapp.generated.resources.new_glossary
+import glossary.composeapp.generated.resources.ok
 import glossary.composeapp.generated.resources.saving
 import glossary.composeapp.generated.resources.share_code_hint
 import glossary.composeapp.generated.resources.source_language
@@ -47,6 +51,8 @@ import glossary.composeapp.generated.resources.target_language
 import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.ui.components.LanguageSelector
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.dialogs.ConfirmDialog
+import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.event.AppEvent
 import org.bibletranslationtools.glossary.ui.event.EventBus
 import org.bibletranslationtools.glossary.ui.screenmodel.CreateGlossaryEvent
@@ -82,6 +88,11 @@ class CreateGlossaryScreen : Screen {
                     val glossary = (event as CreateGlossaryEvent.OnGlossaryCreated).glossary
                     EventBus.events.send(AppEvent.SelectGlossary(glossary))
                     navigator.popUntil { it is TabbedScreen }
+                }
+                is CreateGlossaryEvent.OnResourceDownloaded -> {
+                    val resource = (event as CreateGlossaryEvent.OnResourceDownloaded).resource
+                    EventBus.events.send(AppEvent.SelectResource(resource))
+                    screenModel.createGlossary(code)
                 }
                 else -> {}
             }
@@ -136,7 +147,7 @@ class CreateGlossaryScreen : Screen {
                                 SelectLanguageScreen(
                                     title = sourceLangText,
                                     onSelect = { language ->
-                                        screenModel.updateSourceLanguage(language)
+                                        screenModel.setSourceLanguage(language)
                                     }
                                 )
                             )
@@ -152,7 +163,7 @@ class CreateGlossaryScreen : Screen {
                                 SelectLanguageScreen(
                                     title = targetLangText,
                                     onSelect = { language ->
-                                        screenModel.updateTargetLanguage(language)
+                                        screenModel.setTargetLanguage(language)
                                     }
                                 )
                             )
@@ -207,6 +218,25 @@ class CreateGlossaryScreen : Screen {
                             CircularProgressIndicator()
                             Text(stringResource(Res.string.saving))
                         }
+                    }
+
+                    state.resourceRequest?.let { request ->
+                        ConfirmDialog(
+                            title = stringResource(Res.string.download),
+                            text = stringResource(Res.string.download_resource_request),
+                            confirmButtonText = stringResource(Res.string.ok),
+                            dismissButtonText = stringResource(Res.string.cancel),
+                            onConfirm = {
+                                screenModel.downloadResource(request)
+                            },
+                            onDismiss = {
+                                screenModel.clearResourceRequest()
+                            }
+                        )
+                    }
+
+                    state.progress?.let { progress ->
+                        ProgressDialog(progress)
                     }
                 }
             }

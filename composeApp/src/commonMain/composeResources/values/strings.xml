@@ -3,6 +3,7 @@
     <string name="app_name">Glossary></string>
     <string name="init_resources">Initializing resources...</string>
     <string name="init_languages">Initializing languages...</string>
+    <string name="init_catalog">Initializing catalog...</string>
     <string name="loading_resources">Loading resources...</string>
     <string name="loading_glossary">Loading glossary...</string>
     <string name="loading">Loading...</string>
@@ -45,6 +46,12 @@
     <string name="available_glossaries">Available Glossaries</string>
     <string name="active">Active</string>
     <string name="add_glossary">Add Glossary</string>
+    <string name="ok">OK</string>
+    <string name="download">Download</string>
+    <string name="downloading">Downloading... Please wait.</string>
+    <string name="download_resource_request">In order to use this glossary, you need to download the resource for it. Would you like to download it now?</string>
+    <string name="resource_not_found">Resource not found</string>
+    <string name="unknown_error">Unknown error occurred</string>
     <plurals name="words">
         <item quantity="one">1 word</item>
         <item quantity="few">%1$d words</item>

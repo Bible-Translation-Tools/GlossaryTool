@@ -98,10 +98,15 @@ class GlossaryListScreen : Screen {
                     Button(
                         onClick = {
                             state.selectedGlossary?.let { item ->
-                                EventBus.events.trySend(
-                                    AppEvent.SelectGlossary(item.glossary)
-                                )
-                                navigator.pop()
+                                state.selectedResource?.let { resource ->
+                                    EventBus.events.trySend(
+                                        AppEvent.SelectResource(resource)
+                                    )
+                                    EventBus.events.trySend(
+                                        AppEvent.SelectGlossary(item.glossary)
+                                    )
+                                    navigator.pop()
+                                }
                             }
                         },
                         shape = MaterialTheme.shapes.medium,

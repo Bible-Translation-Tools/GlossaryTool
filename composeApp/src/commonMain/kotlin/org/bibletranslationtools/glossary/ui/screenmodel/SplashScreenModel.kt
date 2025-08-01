@@ -58,7 +58,7 @@ class SplashScreenModel(
         }
     }
 
-    private suspend fun loadResource(resource: String) {
+    private suspend fun loadResource(resourceId: String) {
         _state.value = _state.value.copy(
             message = getString(Res.string.loading_resources)
         )
@@ -66,12 +66,13 @@ class SplashScreenModel(
         delay(2000)
 
         val resource = withContext(Dispatchers.Default) {
-            val res = workbookDataSource.read(resource)
-            val dbRes = glossaryRepository.getResource(res.lang, res.type)
+            val (lang, type) = resourceId.split("_")
+            val dbRes = glossaryRepository.getResource(lang, type)
+            val res = dbRes?.let { workbookDataSource.read(it.filename) }
 
-            if (dbRes == null) throw IllegalArgumentException("Resource not found in database")
+            if (res == null) throw IllegalArgumentException("Resource not found in database")
 
-            res.copy(id = dbRes.id)
+            res.copy(id = dbRes.id, url = dbRes.url)
         }
 
         appStateStore.resourceStateHolder.updateResource(resource)

@@ -5,6 +5,8 @@ import android.os.LocaleList
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.android.Android
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.koin.mp.KoinPlatform.getKoin
 import java.util.Locale
@@ -35,3 +37,6 @@ actual fun createSqlDriver(): SqlDriver =
             }
         }
     )
+
+actual val httpClientEngine: HttpClientEngine
+    get() = Android.create()

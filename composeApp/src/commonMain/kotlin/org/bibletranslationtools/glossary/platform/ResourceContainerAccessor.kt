@@ -6,6 +6,6 @@ import org.bibletranslationtools.glossary.domain.DirectoryProvider
 
 expect class ResourceContainerAccessor {
     constructor(directoryProvider: DirectoryProvider)
-    fun read(resourceId: String): Resource
-    fun read(path: Path): Resource
+    fun read(filename: String): Resource?
+    fun read(path: Path): Resource?
 }

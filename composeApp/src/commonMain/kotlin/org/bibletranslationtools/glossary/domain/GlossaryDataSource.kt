@@ -26,6 +26,7 @@ class GlossaryDataSourceImpl(db: GlossaryDatabase): GlossaryDataSource {
             author = glossary.author,
             sourceLanguage = glossary.sourceLanguage,
             targetLanguage = glossary.targetLanguage,
+            resourceId = glossary.resourceId,
             updatedAt = glossary.updatedAt
         )
         if (result.await() > 0) {

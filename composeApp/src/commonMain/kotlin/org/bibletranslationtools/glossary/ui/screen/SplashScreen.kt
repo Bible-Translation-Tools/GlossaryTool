@@ -63,8 +63,8 @@ class SplashScreen : Screen {
                 navigator.push(TabbedScreen())
             } else {
                 screenModel.initializeApp(
-                    selectedResource,
-                    selectedGlossary
+                    resource = selectedResource,
+                    glossaryCode = selectedGlossary
                 )
             }
         }

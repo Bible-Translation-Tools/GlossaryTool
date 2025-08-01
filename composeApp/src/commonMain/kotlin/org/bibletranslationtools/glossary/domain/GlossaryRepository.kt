@@ -23,7 +23,9 @@ interface GlossaryRepository {
     suspend fun getTargetLanguages(): List<Language>
     suspend fun addLanguage(language: Language)
     suspend fun getAllResources(): List<Resource>
-    suspend fun getResource(langSlug: String, type: String): Resource?
+    suspend fun getResources(lang: String): List<Resource>
+    suspend fun getResource(id: Long): Resource?
+    suspend fun getResource(lang: String, type: String): Resource?
     suspend fun addResource(resource: Resource)
     suspend fun deleteResource(id: Long)
 }
@@ -119,8 +121,16 @@ class GlossaryRepositoryImpl(
         return resourceDataSource.getAll().map { it.toModel() }
     }
 
-    override suspend fun getResource(langSlug: String, type: String): Resource? {
-        return resourceDataSource.getByLangType(langSlug, type)?.toModel()
+    override suspend fun getResources(lang: String): List<Resource> {
+        return resourceDataSource.getByLang(lang).map { it.toModel() }
+    }
+
+    override suspend fun getResource(id: Long): Resource? {
+        return resourceDataSource.getById(id)?.toModel()
+    }
+
+    override suspend fun getResource(lang: String, type: String): Resource? {
+        return resourceDataSource.getByLangType(lang, type)?.toModel()
     }
 
     override suspend fun addResource(resource: Resource) {
