@@ -27,11 +27,10 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.active
 import glossary.composeapp.generated.resources.group
 import glossary.composeapp.generated.resources.match_word
-import glossary.composeapp.generated.resources.users
-import glossary.composeapp.generated.resources.words
-import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryItem
+import glossary.composeapp.generated.resources.users_count
+import glossary.composeapp.generated.resources.words_count
+import org.bibletranslationtools.glossary.ui.glossary.GlossaryItem
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.pluralStringResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -101,20 +100,12 @@ fun GlossaryItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     GlossaryInfo(
-                        title = pluralStringResource(
-                            Res.plurals.words,
-                            item.phraseCount,
-                            item.phraseCount
-                        ),
+                        title = stringResource(Res.string.words_count, item.phraseCount),
                         icon = painterResource(Res.drawable.match_word)
                     )
 
                     GlossaryInfo(
-                        title = pluralStringResource(
-                            Res.plurals.users,
-                            item.userCount,
-                            item.userCount
-                        ),
+                        title = stringResource(Res.string.users_count, item.userCount),
                         icon = painterResource(Res.drawable.group)
                     )
 

@@ -1,7 +1,6 @@
 package org.bibletranslationtools.glossary.di
 
 import org.bibletranslationtools.glossary.GlossaryDatabase
-import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.CatalogApi
 import org.bibletranslationtools.glossary.domain.CatalogApiImpl
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
@@ -27,25 +26,12 @@ import org.bibletranslationtools.glossary.domain.createHttpClient
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.platform.httpClientEngine
-import org.bibletranslationtools.glossary.ui.screenmodel.CreateGlossaryScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.EditPhraseScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryListScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.GlossaryScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.ImportGlossaryScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.ReadScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.SearchPhraseScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.SelectLanguageScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.SharedScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.SplashScreenModel
-import org.bibletranslationtools.glossary.ui.screenmodel.ViewPhraseScreenModel
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.bibletranslationtools.glossary.ui.state.AppStateStoreImpl
 import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolder
 import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolderImpl
 import org.bibletranslationtools.glossary.ui.state.ResourceStateHolder
 import org.bibletranslationtools.glossary.ui.state.ResourceStateHolderImpl
-import org.bibletranslationtools.glossary.ui.state.TabStateHolder
-import org.bibletranslationtools.glossary.ui.state.TabStateHolderImpl
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -69,22 +55,5 @@ val sharedModule = module {
 
     singleOf(::ResourceStateHolderImpl).bind<ResourceStateHolder>()
     singleOf(::GlossaryStateHolderImpl).bind<GlossaryStateHolder>()
-    singleOf(::TabStateHolderImpl).bind<TabStateHolder>()
     singleOf(::AppStateStoreImpl).bind<AppStateStore>()
-
-    factoryOf(::SplashScreenModel)
-    factoryOf(::SharedScreenModel)
-    factoryOf(::GlossaryScreenModel)
-    factoryOf(::ReadScreenModel)
-    factoryOf(::SearchPhraseScreenModel)
-    factoryOf(::SelectLanguageScreenModel)
-    factoryOf(::CreateGlossaryScreenModel)
-    factoryOf(::GlossaryListScreenModel)
-    factoryOf(::ImportGlossaryScreenModel)
-    factory { (phrase: String) ->
-        EditPhraseScreenModel(phrase, get(), get())
-    }
-    factory { (phrase: Phrase) ->
-        ViewPhraseScreenModel(phrase, get())
-    }
 }

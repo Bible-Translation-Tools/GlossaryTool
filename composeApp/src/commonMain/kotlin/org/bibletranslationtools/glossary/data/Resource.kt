@@ -16,7 +16,11 @@ data class Resource(
     val modifiedAt: LocalDateTime,
     val books: List<Workbook> = emptyList(),
     val id: Long = 0
-)
+) {
+    override fun toString(): String {
+        return "${lang}_$type"
+    }
+}
 
 fun ResourceEntity.toModel() = Resource(
     lang = lang,

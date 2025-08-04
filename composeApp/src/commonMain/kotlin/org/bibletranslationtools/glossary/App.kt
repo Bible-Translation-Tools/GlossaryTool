@@ -4,11 +4,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import cafe.adriel.voyager.navigator.Navigator
-import cafe.adriel.voyager.transitions.SlideTransition
+import com.arkivanov.decompose.extensions.compose.stack.Children
+import com.arkivanov.decompose.extensions.compose.stack.animation.slide
+import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import org.bibletranslationtools.glossary.domain.Locales
 import org.bibletranslationtools.glossary.domain.Settings
@@ -17,51 +17,34 @@ import org.bibletranslationtools.glossary.platform.applyLocale
 import org.bibletranslationtools.glossary.ui.DarkColorScheme
 import org.bibletranslationtools.glossary.ui.LightColorScheme
 import org.bibletranslationtools.glossary.ui.MainAppTheme
-import org.bibletranslationtools.glossary.ui.navigation.LocalRootNavigator
+import org.bibletranslationtools.glossary.ui.main.MainScreen
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
-import org.bibletranslationtools.glossary.ui.navigation.MainTab
-import org.bibletranslationtools.glossary.ui.screen.SplashScreen
-import org.bibletranslationtools.glossary.ui.screen.TabbedScreen
-import org.bibletranslationtools.glossary.ui.state.AppStateStore
-import org.koin.compose.koinInject
-import kotlin.system.exitProcess
+import org.bibletranslationtools.glossary.ui.splash.SplashScreen
 
 @Composable
-fun App() {
-    val appStateStore = koinInject<AppStateStore>()
-    val tabState by appStateStore.tabStateHolder.tabState.collectAsState()
-
-    val theme by rememberStringSetting(Settings.THEME.name, Theme.SYSTEM.name)
+fun App(root: RootComponent) {
+    val theme by rememberStringSetting(Settings.THEME, Theme.SYSTEM)
     val colorScheme = when {
-        theme == Theme.LIGHT.name -> LightColorScheme
-        theme == Theme.DARK.name -> DarkColorScheme
-        theme == Theme.SYSTEM.name && isSystemInDarkTheme() -> DarkColorScheme
+        theme == Theme.LIGHT -> LightColorScheme
+        theme == Theme.DARK -> DarkColorScheme
+        theme == Theme.SYSTEM && isSystemInDarkTheme() -> DarkColorScheme
         else -> LightColorScheme
     }
 
-    val locale by rememberStringSetting(Settings.LOCALE.name, Locales.EN.name)
+    val locale by rememberStringSetting(Settings.LOCALE, Locales.EN)
     applyLocale(locale.lowercase())
 
-    val defaultTab = MainTab.Read
     val snackBarHostState = remember { SnackbarHostState() }
 
     MainAppTheme(colorScheme) {
-        Navigator(
-            screen = SplashScreen(),
-            onBackPressed = {
-                if (it is TabbedScreen) {
-                    if (tabState.currentTab == defaultTab) {
-                        exitProcess(0)
-                    } else {
-                        appStateStore.tabStateHolder.updateTab(defaultTab)
-                        false
-                    }
-                } else true
-            }
-        ) { navigator ->
-            CompositionLocalProvider(LocalRootNavigator provides navigator) {
-                CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
-                    SlideTransition(navigator)
+        CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
+            Children(
+                stack = root.stack,
+                animation = stackAnimation(slide())
+            ) {
+                when (val child = it.instance) {
+                    is RootComponent.Child.Splash -> SplashScreen(child.component)
+                    is RootComponent.Child.Main -> MainScreen(child.component)
                 }
             }
         }
