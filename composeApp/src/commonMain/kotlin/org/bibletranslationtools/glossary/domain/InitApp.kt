@@ -46,6 +46,8 @@ class InitApp(
             initResources(onProgressMessage)
             settings.insert(DbSettings.INIT, true.toString())
         }
+
+        directoryProvider.clearTempDir()
     }
 
     private suspend fun initLanguages(onProgressMessage: (String) -> Unit) {

@@ -2,6 +2,7 @@ package org.bibletranslationtools.glossary.domain
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.io.IOException
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
@@ -16,13 +17,16 @@ interface DirectoryProvider {
 
     suspend fun saveSource(bytes: ByteArray, fileName: String): Path
     suspend fun saveSource(file: Path, fileName: String = file.name): Path
-    suspend fun readFile(fileName: String): String?
+    suspend fun readSource(fileName: String): String?
     suspend fun readFile(file: Path): String?
 
     suspend fun deleteFile(file: Path)
     suspend fun deleteFile(fileName: String)
+    suspend fun copyFileToDir(sourceFile: Path, destDir: Path)
 
-    suspend fun createTempFile(prefix: String, suffix: String): Path
+    suspend fun createTempFile(prefix: String, suffix: String, parent: Path? = null): Path
+    suspend fun createTempDir(prefix: String, parent: Path? = null): Path
+    suspend fun clearTempDir()
 }
 
 class DirectoryProviderImpl : DirectoryProvider {
@@ -45,6 +49,11 @@ class DirectoryProviderImpl : DirectoryProvider {
             }
             return dir
         }
+
+    override suspend fun readSource(fileName: String): String? {
+        val file = Path(sources, fileName)
+        return readFile(file)
+    }
 
     override suspend fun saveSource(bytes: ByteArray, fileName: String): Path {
         return writeFile(bytes, sources, fileName)
@@ -74,11 +83,6 @@ class DirectoryProviderImpl : DirectoryProvider {
         return targetFile
     }
 
-    override suspend fun readFile(fileName: String): String? {
-        val file = Path(sources, fileName)
-        return readFile(file)
-    }
-
     override suspend fun readFile(file: Path): String? {
         return try {
             withContext(Dispatchers.IO) {
@@ -86,7 +90,7 @@ class DirectoryProviderImpl : DirectoryProvider {
                     source.readString()
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             null
         }
     }
@@ -100,12 +104,71 @@ class DirectoryProviderImpl : DirectoryProvider {
         deleteFile(file)
     }
 
-    override suspend fun createTempFile(prefix: String, suffix: String): Path {
+    override suspend fun copyFileToDir(sourceFile: Path, destDir: Path) {
+        if (!SystemFileSystem.exists(destDir)
+            || SystemFileSystem.metadataOrNull(destDir)?.isDirectory != true) {
+            throw IllegalArgumentException("Destination directory does not exist or is not a directory: $destDir")
+        }
+
+        val destFile = Path(destDir, sourceFile.name)
+
+        try {
+            SystemFileSystem.source(sourceFile).buffered().use { source ->
+                SystemFileSystem.sink(destFile).buffered().use { sink ->
+                    source.transferTo(sink)
+                }
+            }
+        } catch (e: IOException) {
+            println("Error copying file: ${e.message}")
+        }
+    }
+
+    override suspend fun createTempFile(
+        prefix: String,
+        suffix: String,
+        parent: Path?
+    ): Path {
         val name = prefix + Utils.randomString(8) + suffix
-        val file = Path(tempDir, name)
+        val parentDir = if (parent != null) {
+            Path(tempDir, parent.name)
+        } else tempDir
+        val file = Path(parentDir, name)
         SystemFileSystem.sink(file).buffered().use {
             // it.write(ByteArray(0)) // Could write empty bytes or just close
         }
         return file
+    }
+
+    override suspend fun createTempDir(prefix: String, parent: Path?): Path {
+        val name = prefix + Utils.randomString(8)
+        val parentDir = if (parent != null) {
+            Path(tempDir, parent.name)
+        } else tempDir
+        val dir = Path(parentDir, name)
+        SystemFileSystem.createDirectories(dir)
+        return dir
+    }
+
+    override suspend fun clearTempDir() {
+        deleteDirRecursively(tempDir)
+    }
+
+    private fun deleteDirRecursively(path: Path) {
+        if (!SystemFileSystem.exists(path)) return
+
+        if (SystemFileSystem.metadataOrNull(path)?.isDirectory != true) {
+            SystemFileSystem.delete(path)
+            return
+        }
+
+        val children = SystemFileSystem.list(path)
+
+        if (children.isEmpty()) {
+            SystemFileSystem.delete(path)
+        } else {
+            children.forEach { dir ->
+                deleteDirRecursively(dir)
+            }
+        }
     }
 }

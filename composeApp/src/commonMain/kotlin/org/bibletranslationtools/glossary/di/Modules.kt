@@ -5,6 +5,7 @@ import org.bibletranslationtools.glossary.domain.CatalogApi
 import org.bibletranslationtools.glossary.domain.CatalogApiImpl
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
+import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
 import org.bibletranslationtools.glossary.domain.GlossaryDataSourceImpl
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
@@ -51,6 +52,8 @@ val sharedModule = module {
     singleOf(::DirectoryProviderImpl).bind<DirectoryProvider>()
     singleOf(::WorkbookDataSourceImpl).bind<WorkbookDataSource>()
     singleOf(::GlossaryRepositoryImpl).bind<GlossaryRepository>()
+    singleOf(::ExportGlossary)
+
     factoryOf(::InitApp)
 
     singleOf(::ResourceStateHolderImpl).bind<ResourceStateHolder>()

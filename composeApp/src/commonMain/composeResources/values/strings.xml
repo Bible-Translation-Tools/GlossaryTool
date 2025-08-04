@@ -52,6 +52,7 @@
     <string name="download_resource_request">In order to use this glossary, you need to download the resource for it. Would you like to download it now?</string>
     <string name="resource_not_found">Resource not found</string>
     <string name="unknown_error">Unknown error occurred</string>
+    <string name="export_glossary">Export Glossary</string>
     <string name="words_count">%1$d words</string>
     <string name="users_count">%1$d users</string>
 </resources>

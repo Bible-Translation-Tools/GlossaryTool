@@ -86,6 +86,9 @@ kotlin {
             implementation(libs.ktor.client.serialization)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.logging)
+
+            implementation(libs.filekit.dialogs.core)
+            implementation(libs.filekit.dialogs.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -147,6 +150,11 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.bibletranslationtools.glossary"
             packageVersion = libs.versions.glossary.name.get()
+
+            linux {
+                // FileKit requires this to be set
+                modules("jdk.security.auth")
+            }
         }
     }
 }

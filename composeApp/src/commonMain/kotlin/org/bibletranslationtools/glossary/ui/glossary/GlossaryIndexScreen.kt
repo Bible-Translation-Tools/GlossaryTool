@@ -25,11 +25,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,8 +42,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_new_phrase
+import glossary.composeapp.generated.resources.export_glossary
 import glossary.composeapp.generated.resources.glossary_code
 import glossary.composeapp.generated.resources.search
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.openFileSaver
+import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
@@ -63,6 +69,7 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
         mutableStateOf(model.phrases)
     }
     var searchQuery by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let {
@@ -109,6 +116,25 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
                     Icon(
                         imageVector = Icons.Default.KeyboardArrowDown,
                         contentDescription = "available glossaries"
+                    )
+                }
+
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch {
+                            glossaryState.glossary?.let { glossary ->
+                                FileKit.openFileSaver(
+                                    suggestedName = "glossary-${glossary.code}",
+                                    extension = "zip"
+                                )?.let { file ->
+                                    component.onExportGlossaryClicked(glossary, file)
+                                }
+                            }
+                        }
+                    }
+                ) {
+                    Text(
+                        text = stringResource(Res.string.export_glossary)
                     )
                 }
 
