@@ -1,25 +1,25 @@
 package org.bibletranslationtools.glossary.domain
 
-enum class DbSettings(val value: String) {
-    INIT("init")
+object DbSettings {
+    const val INIT = "init"
 }
 
-enum class Settings {
-    THEME,
-    LOCALE,
-    RESOURCE,
-    BOOK,
-    CHAPTER,
-    GLOSSARY
+object Settings {
+    const val THEME = "theme"
+    const val LOCALE = "locale"
+    const val RESOURCE = "resource"
+    const val BOOK = "book"
+    const val CHAPTER = "chapter"
+    const val GLOSSARY = "glossary"
 }
 
-enum class Theme {
-    LIGHT,
-    DARK,
-    SYSTEM
+object Theme {
+    const val LIGHT = "light"
+    const val DARK = "dark"
+    const val SYSTEM = "system"
 }
 
-enum class Locales(val value: String) {
-    EN("English"),
-    RU("Русский")
+object Locales {
+    const val EN = "English"
+    const val RU = "Русский"
 }

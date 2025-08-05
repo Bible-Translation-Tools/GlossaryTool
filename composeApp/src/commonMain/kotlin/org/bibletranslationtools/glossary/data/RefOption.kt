@@ -1,5 +1,8 @@
 package org.bibletranslationtools.glossary.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class RefOption(
     val book: String,
     val chapter: Int,
@@ -8,8 +11,8 @@ data class RefOption(
 
 fun Ref.toOption(): RefOption {
     return RefOption(
-        book = this.book,
-        chapter = this.chapter.toInt(),
-        verse = this.verse
+        book = book,
+        chapter = chapter.toInt(),
+        verse = verse
     )
 }

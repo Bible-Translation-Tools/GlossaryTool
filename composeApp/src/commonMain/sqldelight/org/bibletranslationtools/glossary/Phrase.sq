@@ -6,11 +6,10 @@ CREATE TABLE IF NOT EXISTS PhraseEntity (
     audio TEXT NOT NULL,
     glossaryId TEXT NOT NULL,
     createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (glossaryId) REFERENCES GlossaryEntity (id) ON DELETE CASCADE,
+    CONSTRAINT unique_phrase UNIQUE (phrase, glossaryId)
 );
-
-CREATE INDEX IF NOT EXISTS idx_phraseentity_glossaryid ON PhraseEntity(glossaryId);
-CREATE INDEX IF NOT EXISTS idx_phraseentity_phrase ON PhraseEntity(phrase);
 
 getByGlossary:
 SELECT * FROM PhraseEntity WHERE glossaryId = :glossaryId;
@@ -19,7 +18,8 @@ getByPhrase:
 SELECT * FROM PhraseEntity WHERE LOWER(phrase) = LOWER(:phrase) AND glossaryId = :glossaryId;
 
 insert:
-INSERT OR REPLACE INTO PhraseEntity(id, phrase, spelling, description, audio, glossaryId, updatedAt)
+INSERT OR REPLACE INTO
+PhraseEntity(id, phrase, spelling, description, audio, glossaryId, updatedAt)
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
 delete:

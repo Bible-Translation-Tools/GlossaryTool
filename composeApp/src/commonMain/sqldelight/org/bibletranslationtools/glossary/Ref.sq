@@ -1,21 +1,18 @@
 CREATE TABLE IF NOT EXISTS RefEntity (
     id TEXT PRIMARY KEY,
-    resource TEXT NOT NULL,
     book TEXT NOT NULL,
     chapter TEXT NOT NULL,
     verse TEXT NOT NULL,
-    phraseId TEXT NOT NULL
+    phraseId TEXT NOT NULL,
+    FOREIGN KEY (phraseId) REFERENCES PhraseEntity (id) ON DELETE CASCADE
 );
-
-CREATE INDEX IF NOT EXISTS idx_refentity_phraseid ON RefEntity(phraseId);
-CREATE INDEX IF NOT EXISTS idx_refentity_resource_book_chapter ON RefEntity(resource, book, chapter);
 
 getByPhrase:
 SELECT * FROM RefEntity WHERE phraseId = :phraseId;
 
 insert:
-INSERT OR REPLACE INTO RefEntity(id, resource, book, chapter, verse, phraseId)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO RefEntity(id, book, chapter, verse, phraseId)
+VALUES (?, ?, ?, ?, ?);
 
 delete:
 DELETE FROM RefEntity WHERE id = :id;

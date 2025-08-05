@@ -13,11 +13,14 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import org.bibletranslationtools.glossary.ui.main.MainComponent
 import org.bibletranslationtools.glossary.ui.navigation.MainTab
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun BottomNavBar(currentTab: MainTab, onTabSelected: (MainTab) -> Unit) {
-    val tabs = listOf(MainTab.Read, MainTab.Glossary, MainTab.Resources, MainTab.Settings)
+fun BottomNavBar(currentTab: MainComponent.Child, onTabSelected: (MainTab) -> Unit) {
+    val tabs = MainTab.entries
     val activeColor = MaterialTheme.colorScheme.primary
     val borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
 
@@ -34,20 +37,26 @@ fun BottomNavBar(currentTab: MainTab, onTabSelected: (MainTab) -> Unit) {
         }
     ) {
         tabs.forEach { tab ->
-            val isSelected = currentTab == tab
+            val isSelected = when (currentTab) {
+                is MainComponent.Child.Glossary -> tab == MainTab.Glossary
+                is MainComponent.Child.Read -> tab == MainTab.Read
+                is MainComponent.Child.Resources -> tab == MainTab.Resources
+                is MainComponent.Child.Settings -> tab == MainTab.Settings
+            }
             NavigationBarItem(
                 selected = isSelected,
                 onClick = { onTabSelected(tab) },
                 label = {
                     Text(
-                        text = tab.options.title,
+                        text = stringResource(tab.title),
                         fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                     )
                 },
                 icon = {
-                    tab.options.icon?.let { painter ->
-                        Icon(painter = painter, contentDescription = tab.options.title)
-                    }
+                    Icon(
+                        painter = painterResource(tab.icon),
+                        contentDescription = stringResource(tab.title)
+                    )
                 },
                 colors = NavigationBarItemDefaults.colors(
                     selectedIconColor = activeColor,

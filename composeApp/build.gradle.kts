@@ -30,9 +30,6 @@ kotlin {
 
     sourceSets {
         val commonMain by getting
-        val desktopMain by getting
-        val androidMain by getting
-
         val javaMain by creating {
             dependsOn(commonMain)
             dependencies {
@@ -43,6 +40,13 @@ kotlin {
                 implementation(libs.jackson.yaml)
             }
         }
+        val desktopMain by getting {
+            dependsOn(javaMain)
+        }
+        val androidMain by getting {
+            dependsOn(javaMain)
+        }
+
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
@@ -69,11 +73,8 @@ kotlin {
             api(libs.koin.core)
             implementation(libs.koin.compose)
 
-            implementation(libs.voyager.navigator)
-            implementation(libs.voyager.screenmodel)
-            implementation(libs.voyager.tab.navigator)
-            implementation(libs.voyager.transitions)
-            implementation(libs.voyager.koin)
+            api(libs.decompose.decompose)
+            implementation(libs.decompose.extensions.compose)
 
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
@@ -85,6 +86,9 @@ kotlin {
             implementation(libs.ktor.client.serialization)
             implementation(libs.ktor.serialization.kotlinx.json)
             implementation(libs.ktor.client.logging)
+
+            implementation(libs.filekit.dialogs.core)
+            implementation(libs.filekit.dialogs.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -96,9 +100,6 @@ kotlin {
             implementation(libs.sqldelight.jvm)
             implementation(libs.ktor.client.cio)
         }
-
-        androidMain.dependsOn(javaMain)
-        desktopMain.dependsOn(javaMain)
     }
 
     sqldelight {
@@ -149,6 +150,11 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "org.bibletranslationtools.glossary"
             packageVersion = libs.versions.glossary.name.get()
+
+            linux {
+                // FileKit requires this to be set
+                modules("jdk.security.auth")
+            }
         }
     }
 }

@@ -2,8 +2,11 @@ package org.bibletranslationtools.glossary.platform
 
 import android.content.Context
 import android.os.LocaleList
+import androidx.sqlite.db.SupportSQLiteDatabase
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.android.Android
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.koin.mp.KoinPlatform.getKoin
 import java.util.Locale
@@ -25,7 +28,15 @@ actual fun applyLocale(iso: String) {
 
 actual fun createSqlDriver(): SqlDriver =
     AndroidSqliteDriver(
-        GlossaryDatabase.Schema,
-        getKoin().get(),
-        "glossary.db"
+        schema = GlossaryDatabase.Schema,
+        context = getKoin().get(),
+        name = "glossary.db",
+        callback = object : AndroidSqliteDriver.Callback(GlossaryDatabase.Schema) {
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                db.execSQL("PRAGMA foreign_keys=ON;")
+            }
+        }
     )
+
+actual val httpClientEngine: HttpClientEngine
+    get() = Android.create()

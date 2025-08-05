@@ -5,7 +5,7 @@ import org.bibletranslationtools.glossary.RefEntity
 
 interface RefDataSource {
     suspend fun getByPhrase(phraseId: String): List<RefEntity>
-    suspend fun insert(refEntity: RefEntity): String?
+    suspend fun insert(ref: RefEntity): String?
     suspend fun delete(id: String): Long
 }
 
@@ -15,17 +15,16 @@ class RefDataSourceImpl(db: GlossaryDatabase): RefDataSource {
     override suspend fun getByPhrase(phraseId: String) = queries.getByPhrase(phraseId)
         .executeAsList()
 
-    override suspend fun insert(refEntity: RefEntity): String? {
+    override suspend fun insert(ref: RefEntity): String? {
         val result = queries.insert(
-            id = refEntity.id,
-            resource = refEntity.resource,
-            book = refEntity.book,
-            chapter = refEntity.chapter,
-            verse = refEntity.verse,
-            phraseId = refEntity.phraseId
+            id = ref.id,
+            book = ref.book,
+            chapter = ref.chapter,
+            verse = ref.verse,
+            phraseId = ref.phraseId
         )
         if (result.await() > 0) {
-            return refEntity.id
+            return ref.id
         }
         return null
     }
