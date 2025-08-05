@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
@@ -55,17 +56,19 @@ class DefaultBrowseComponent(
             val resource = resourceState.value.resource ?: return@launch
             _model.update { it.copy(isLoading = true) }
 
-            val books = resource.books
-            val activeBook = books.firstOrNull { it.slug == book }
-            val activeChapter = activeBook?.chapters?.firstOrNull { it.number == chapter }
+            withContext(Dispatchers.Default) {
+                val books = resource.books
+                val activeBook = books.firstOrNull { it.slug == book }
+                val activeChapter = activeBook?.chapters?.firstOrNull { it.number == chapter }
 
-            _model.update {
-                it.copy(
-                    isLoading = false,
-                    books = books,
-                    book = activeBook,
-                    chapter = activeChapter
-                )
+                _model.update {
+                    it.copy(
+                        isLoading = false,
+                        books = books,
+                        book = activeBook,
+                        chapter = activeChapter
+                    )
+                }
             }
         }
         lifecycle.doOnDestroy {
