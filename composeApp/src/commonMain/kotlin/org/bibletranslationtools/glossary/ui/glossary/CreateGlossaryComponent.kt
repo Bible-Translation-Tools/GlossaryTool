@@ -31,6 +31,7 @@ interface CreateGlossaryComponent {
     val model: Value<Model>
 
     data class ResourceRequest(
+        val code: String,
         val lang: String,
         val type: String? = null
     )
@@ -84,8 +85,8 @@ class DefaultCreateGlossaryComponent(
 
     override fun createGlossary(code: String) {
         componentScope.launch {
-            val sourceLanguage = model.value.sourceLanguage ?: return@launch
-            val targetLanguage = model.value.targetLanguage ?: return@launch
+            val sourceLang = model.value.sourceLanguage ?: return@launch
+            val targetLang = model.value.targetLanguage ?: return@launch
 
             sharedState.updateIsSaving(true)
 
@@ -94,31 +95,18 @@ class DefaultCreateGlossaryComponent(
             }
 
             resource?.let { res ->
-                val glossary = Glossary(
+                val error = createGlossary(
                     code = code,
-                    author = "User",
-                    sourceLanguage = sourceLanguage,
-                    targetLanguage = targetLanguage,
-                    resourceId = res.id
+                    resource = res,
+                    sourceLanguage = sourceLang,
+                    targetLanguage = targetLang
                 )
-
-                val id = withContext(Dispatchers.Default) {
-                    glossaryRepository.addGlossary(glossary)
-                }
-
-                var error: String? = null
-
-                id?.let {
-                    onGlossaryCreated(resource, glossary.copy(id = it))
-                } ?: run {
-                    error = getString(Res.string.create_glossary_error)
-                }
-
                 sharedState.updateError(error)
             } ?: run {
                 sharedState.updateResourceRequest(
                     CreateGlossaryComponent.ResourceRequest(
-                        sourceLanguage.slug
+                        code = code,
+                        lang = sourceLang.slug
                     )
                 )
             }
@@ -129,6 +117,9 @@ class DefaultCreateGlossaryComponent(
 
     override fun downloadResource(request: CreateGlossaryComponent.ResourceRequest) {
         componentScope.launch {
+            val sourceLang = model.value.sourceLanguage ?: return@launch
+            val targetLang = model.value.targetLanguage ?: return@launch
+
             val progress = Progress(
                 value = -1f,
                 message = getString(Res.string.downloading)
@@ -152,10 +143,21 @@ class DefaultCreateGlossaryComponent(
 
                 if (result is NetworkResult.Success) {
                     val path = directoryProvider.saveSource(result.data, filename)
-                    val res = resourceContainerAccessor.read(path)!!.copy(url = resource.url)
+                    val res = resourceContainerAccessor.read(path)!!
 
                     glossaryRepository.addResource(res)
-                    onResourceDownloaded(res)
+                    val resDb = glossaryRepository.getResource(res.lang, res.type)!!
+
+                    val resCopy = res.copy(id = resDb.id, url = resDb.url)
+
+                    onResourceDownloaded(resCopy)
+
+                    createGlossary(
+                        code = request.code,
+                        resource = resCopy,
+                        sourceLanguage = sourceLang,
+                        targetLanguage = targetLang
+                    )
                 } else {
                     error = (result as NetworkResult.Error).message
                         ?: getString(Res.string.unknown_error)
@@ -183,6 +185,35 @@ class DefaultCreateGlossaryComponent(
 
     override fun setTopBar(slot: ComposableSlot?) {
         onSetTopBar(slot)
+    }
+
+    private suspend fun createGlossary(
+        code: String,
+        resource: Resource,
+        sourceLanguage: Language,
+        targetLanguage: Language
+    ): String? {
+        val glossary = Glossary(
+            code = code,
+            author = "User",
+            sourceLanguage = sourceLanguage,
+            targetLanguage = targetLanguage,
+            resourceId = resource.id
+        )
+
+        val id = withContext(Dispatchers.Default) {
+            glossaryRepository.addGlossary(glossary)
+        }
+
+        var error: String? = null
+
+        id?.let {
+            onGlossaryCreated(resource, glossary.copy(id = it))
+        } ?: run {
+            error = getString(Res.string.create_glossary_error)
+        }
+
+        return error
     }
 
     private suspend fun findResource(): Resource? {

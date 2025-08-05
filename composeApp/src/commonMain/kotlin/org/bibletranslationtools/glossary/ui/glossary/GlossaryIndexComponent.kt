@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.doOnDestroy
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.exporting_glossary
 import io.github.vinceglb.filekit.PlatformFile
@@ -17,6 +18,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.ui.main.ComposableSlot
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -36,6 +38,7 @@ interface GlossaryIndexComponent {
     fun navigateSearchPhrases()
     fun navigateViewPhrase(phrase: Phrase)
     fun onExportGlossaryClicked(glossary: Glossary, file: PlatformFile)
+    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultGlossaryIndexComponent(
@@ -43,7 +46,8 @@ class DefaultGlossaryIndexComponent(
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateGlossaryList: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
-    private val onNavigateViewPhrase: (phrase: Phrase) -> Unit
+    private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
+    private val onSetTopBar: (ComposableSlot?) -> Unit
 ) : GlossaryIndexComponent, KoinComponent, ComponentContext by componentContext {
 
     private val glossaryRepository: GlossaryRepository by inject()
@@ -68,6 +72,9 @@ class DefaultGlossaryIndexComponent(
                     phrases = phrases
                 )
             }
+        }
+        lifecycle.doOnDestroy {
+            setTopBar(null)
         }
     }
 
@@ -101,5 +108,9 @@ class DefaultGlossaryIndexComponent(
 
             _model.update { it.copy(progress = null) }
         }
+    }
+
+    override fun setTopBar(slot: ComposableSlot?) {
+        onSetTopBar(slot)
     }
 }

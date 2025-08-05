@@ -17,9 +17,7 @@ import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.main.ComposableSlot
 import org.bibletranslationtools.glossary.ui.main.GlossaryIntent
-import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
 
 interface GlossaryComponent {
     val childStack: Value<ChildStack<*, Child>>
@@ -47,7 +45,6 @@ class DefaultGlossaryComponent(
     private val onSetTopBar: (ComposableSlot?) -> Unit
 ) : GlossaryComponent, KoinComponent, ComponentContext by componentContext {
 
-    private val appStateStore: AppStateStore by inject()
     private val navigation = StackNavigation<Config>()
     private val createGlossaryState = instanceKeeper.getOrCreate { CreateGlossaryStateKeeper() }
 
@@ -81,7 +78,8 @@ class DefaultGlossaryComponent(
                     },
                     onNavigateViewPhrase = { phrase ->
                         navigation.bringToFront(Config.ViewPhrase(phrase))
-                    }
+                    },
+                    onSetTopBar = onSetTopBar
                 )
             )
             is Config.GlossaryList -> GlossaryComponent.Child.GlossaryList(
@@ -101,9 +99,7 @@ class DefaultGlossaryComponent(
                     componentContext = context,
                     sharedState = createGlossaryState,
                     onNavigateBack = onNavigateBack,
-                    onResourceDownloaded = {
-                        appStateStore.resourceStateHolder.updateResource(it)
-                    },
+                    onResourceDownloaded = onSelectResource,
                     onGlossaryCreated = { resource, glossary ->
                         onSelectResource(resource)
                         onSelectGlossary(glossary)
@@ -135,8 +131,16 @@ class DefaultGlossaryComponent(
                 DefaultEditPhraseComponent(
                     componentContext = context,
                     phrase = config.phrase,
-                    onPhraseSaved = navigation::pop,
-                    onNavigateBack = navigation::pop,
+                    onPhraseSaved = {
+                        if (childStack.value.backStack.isEmpty()) {
+                            onNavigateBack()
+                        } else navigation.pop()
+                    },
+                    onNavigateBack = {
+                        if (childStack.value.backStack.isEmpty()) {
+                            onNavigateBack()
+                        } else navigation.pop()
+                    },
                     onSetTopBar = onSetTopBar
                 )
             )

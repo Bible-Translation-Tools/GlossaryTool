@@ -78,7 +78,8 @@ class DefaultReadComponent(
                     onPhraseSelected = onPhraseDetails,
                     onNavigateBrowse = { book, chapter ->
                         navigation.bringToFront(Config.Browse(book, chapter))
-                    }
+                    },
+                    onSetTopBar = onSetTopBar
                 )
             )
             is Config.Browse -> ReadComponent.Child.Browse(

@@ -150,7 +150,11 @@ class DirectoryProviderImpl : DirectoryProvider {
     }
 
     override suspend fun clearTempDir() {
-        deleteDirRecursively(tempDir)
+        try {
+            deleteDirRecursively(tempDir)
+        } catch (e: Exception) {
+            println("Error clearing temp directory: ${e.message}")
+        }
     }
 
     private fun deleteDirRecursively(path: Path) {
