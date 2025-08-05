@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -44,6 +43,19 @@ fun SelectLanguageScreen(component: SelectLanguageComponent) {
         mutableStateOf("")
     }
 
+    LaunchedEffect(Unit) {
+        component.setTopBar {
+            val title = if (model.type == LanguageType.SOURCE) {
+                stringResource(Res.string.source_language)
+            } else {
+                stringResource(Res.string.target_language)
+            }
+            TopAppBar(title = title) {
+                component.onBackClick()
+            }
+        }
+    }
+
     LaunchedEffect(searchQuery) {
         filteredLanguages = if (searchQuery.isNotEmpty()) {
             model.languages.filter { language ->
@@ -54,56 +66,42 @@ fun SelectLanguageScreen(component: SelectLanguageComponent) {
         } else model.languages
     }
 
-    Scaffold(
-        topBar = {
-            val title = if (model.type == LanguageType.SOURCE) {
-                stringResource(Res.string.source_language)
-            } else {
-                stringResource(Res.string.target_language)
-            }
-            TopAppBar(title = title) {
-                component.onBackClick()
-            }
-        }
-    ) { paddingValues ->
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surface)
+    ) {
         Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .background(color = MaterialTheme.colorScheme.surface)
+                .padding(16.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                SearchField(
-                    searchQuery = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    placeholder = {
-                        Text(
-                            text = stringResource(Res.string.search_placeholder),
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                        )
-                    },
-                    colors = CustomTextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                )
+            SearchField(
+                searchQuery = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = {
+                    Text(
+                        text = stringResource(Res.string.search_placeholder),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    )
+                },
+                colors = CustomTextFieldDefaults.colors(
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            )
 
-                HorizontalDivider()
+            HorizontalDivider()
 
-                LazyColumn {
-                    items(filteredLanguages) { language ->
-                        LanguageItem(
-                            language = language,
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = {
-                                component.onLanguageClick(language)
-                            }
-                        )
-                    }
+            LazyColumn {
+                items(filteredLanguages) { language ->
+                    LanguageItem(
+                        language = language,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            component.onLanguageClick(language)
+                        }
+                    )
                 }
             }
         }

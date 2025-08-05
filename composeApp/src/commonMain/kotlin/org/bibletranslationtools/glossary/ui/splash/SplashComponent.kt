@@ -15,7 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.InitApp
-import org.bibletranslationtools.glossary.domain.WorkbookDataSource
+import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
@@ -38,7 +38,7 @@ class DefaultSplashComponent(
 
     private val initApp: InitApp by inject()
     private val appStateStore: AppStateStore by inject()
-    private val workbookDataSource: WorkbookDataSource by inject()
+    private val resourceContainerAccessor: ResourceContainerAccessor by inject()
     private val glossaryRepository: GlossaryRepository by inject()
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -71,7 +71,7 @@ class DefaultSplashComponent(
         val resource = withContext(Dispatchers.Default) {
             val (lang, type) = resourceId.split("_")
             val dbRes = glossaryRepository.getResource(lang, type)
-            val res = dbRes?.let { workbookDataSource.read(it.filename) }
+            val res = dbRes?.let { resourceContainerAccessor.read(it.filename) }
 
             if (res == null) throw IllegalArgumentException("Resource not found in database")
 

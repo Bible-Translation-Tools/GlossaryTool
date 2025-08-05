@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.doOnDestroy
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.no_refs_found
 import kotlinx.coroutines.CoroutineScope
@@ -15,6 +16,7 @@ import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.ui.main.ComposableSlot
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
@@ -24,21 +26,23 @@ interface EditPhraseComponent {
 
     val model: Value<Model>
 
-    fun savePhrase(spelling: String, description: String)
-    fun onBackClick()
-
     data class Model(
         val isSaving: Boolean = false,
         val phrase: Phrase? = null,
         val error: String? = null
     )
+
+    fun savePhrase(spelling: String, description: String)
+    fun onBackClick()
+    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultEditPhraseComponent(
     componentContext: ComponentContext,
     private val phrase: String,
     private val onPhraseSaved: () -> Unit,
-    private val onNavigateBack: () -> Unit
+    private val onNavigateBack: () -> Unit,
+    private val onSetTopBar: (ComposableSlot?) -> Unit
 ) : EditPhraseComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
@@ -63,6 +67,9 @@ class DefaultEditPhraseComponent(
                 )
 
             _model.update { it.copy(phrase = phrase) }
+        }
+        lifecycle.doOnDestroy {
+            setTopBar(null)
         }
     }
 
@@ -117,6 +124,10 @@ class DefaultEditPhraseComponent(
 
     override fun onBackClick() {
         onNavigateBack()
+    }
+
+    override fun setTopBar(slot: ComposableSlot?) {
+        onSetTopBar(slot)
     }
 
     private fun findRefs(phrase: Phrase): List<Ref> {

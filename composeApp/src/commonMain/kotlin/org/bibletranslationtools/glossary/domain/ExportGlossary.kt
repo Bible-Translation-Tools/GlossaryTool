@@ -5,50 +5,13 @@ import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.writeString
-import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.Utils.JsonLenient
 import org.bibletranslationtools.glossary.data.Glossary
+import org.bibletranslationtools.glossary.data.export.GlossaryExport
+import org.bibletranslationtools.glossary.data.export.PhraseExport
+import org.bibletranslationtools.glossary.data.export.RefExport
+import org.bibletranslationtools.glossary.data.export.ResourceExport
 import org.bibletranslationtools.glossary.platform.zipDirectory
-
-@Serializable
-private data class GlossaryExport(
-    val id: String,
-    val code: String,
-    val author: String,
-    val sourceLanguage: String,
-    val targetLanguage: String,
-    val createdAt: String,
-    val updatedAt: String,
-    val resource: ExportResource,
-    val phrases: List<PhraseExport>
-)
-
-@Serializable
-private data class PhraseExport(
-    val id: String,
-    val phrase: String,
-    val spelling: String,
-    val description: String,
-    val audio: String?,
-    val createdAt: String,
-    val updatedAt: String,
-    val refs: List<RefExport>
-)
-
-@Serializable
-private data class RefExport(
-    val id: String,
-    val book: String,
-    val chapter: String,
-    val verse: String
-)
-
-@Serializable
-private data class ExportResource(
-    val language: String,
-    val type: String,
-    val version: String
-)
 
 class ExportGlossary(
     private val glossaryRepository: GlossaryRepository,
@@ -67,7 +30,7 @@ class ExportGlossary(
             targetLanguage = glossary.targetLanguage.slug,
             createdAt = glossary.createdAt.toString(),
             updatedAt = glossary.updatedAt.toString(),
-            resource = ExportResource(
+            resource = ResourceExport(
                 language = resource.lang,
                 type = resource.type,
                 version = resource.version

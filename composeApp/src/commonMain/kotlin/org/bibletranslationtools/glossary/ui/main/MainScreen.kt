@@ -32,6 +32,7 @@ import org.koin.compose.koinInject
 @Composable
 fun MainScreen(component: MainComponent) {
     val model by component.model.subscribeAsState()
+    val topBarContent by component.topBarSlot.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
     val resourceState by appStateStore.resourceStateHolder.resourceState
@@ -74,6 +75,9 @@ fun MainScreen(component: MainComponent) {
 
     KeyboardAware {
         Scaffold(
+            topBar = {
+                topBarContent()
+            },
             bottomBar = {
                 BottomNavBar(activeChild) { tab ->
                     component.onTabClicked(tab)

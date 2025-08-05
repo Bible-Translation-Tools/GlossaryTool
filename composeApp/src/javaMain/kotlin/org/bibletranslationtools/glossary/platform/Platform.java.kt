@@ -2,27 +2,55 @@ package org.bibletranslationtools.glossary.platform
 
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.sink
+import io.github.vinceglb.filekit.source
+import kotlinx.io.IOException
+import kotlinx.io.Source
+import kotlinx.io.asInputStream
 import kotlinx.io.asOutputStream
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.files.SystemPathSeparator
-import java.io.ByteArrayInputStream
+import java.io.File
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 import java.util.zip.ZipOutputStream
 
-actual fun extractZip(bytes: ByteArray, dir: Path) {
-    val byteArrayInputStream = ByteArrayInputStream(bytes)
-    ZipInputStream(byteArrayInputStream).use { zis ->
-        var entry = zis.nextEntry
+actual fun extractZip(file: PlatformFile, destDir: Path) {
+    SystemFileSystem.createDirectories(destDir)
+
+    val source: Source = file.source().buffered()
+    val zipInputStream = ZipInputStream(source.asInputStream())
+
+    zipInputStream.use { zis ->
+        var entry: ZipEntry? = zis.nextEntry
         while (entry != null) {
-            val targetPath = Path(dir, entry.name)
+            val destPath = Path(destDir, entry.name)
+
+            val destDirCanonical = File(destDir.toString()).canonicalPath
+            val entryCanonical = File(destPath.toString()).canonicalPath
+
+            if (!entryCanonical.startsWith(destDirCanonical)) {
+                throw IOException(
+                    "Zip entry is trying to extract outside of destination directory: ${entry.name}"
+                )
+            }
+
             if (entry.isDirectory) {
-                SystemFileSystem.createDirectories(targetPath)
+                SystemFileSystem.createDirectories(destPath)
             } else {
-                SystemFileSystem.sink(targetPath).buffered().use { sink ->
-                    sink.write(zis.readBytes())
+                destPath.parent?.let { parentDir ->
+                    if (!SystemFileSystem.exists(parentDir)) {
+                        SystemFileSystem.createDirectories(parentDir)
+                    }
+                }
+
+                SystemFileSystem.sink(destPath).buffered().use { fileSink ->
+                    val buffer = ByteArray(8192)
+                    var bytesRead: Int
+                    while (zis.read(buffer).also { bytesRead = it } != -1) {
+                        fileSink.write(buffer, 0, bytesRead)
+                    }
                 }
             }
             zis.closeEntry()

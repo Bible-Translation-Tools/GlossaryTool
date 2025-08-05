@@ -4,6 +4,8 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.exporting_glossary
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -12,8 +14,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -22,8 +26,8 @@ interface GlossaryIndexComponent {
 
     data class Model(
         val isLoading: Boolean = false,
-        val isExporting: Boolean = false,
-        val phrases: List<Phrase> = emptyList()
+        val phrases: List<Phrase> = emptyList(),
+        val progress: Progress? = null
     )
 
     fun loadPhrases(glossary: Glossary)
@@ -85,11 +89,17 @@ class DefaultGlossaryIndexComponent(
 
     override fun onExportGlossaryClicked(glossary: Glossary, file: PlatformFile) {
         componentScope.launch {
-            _model.update { it.copy(isExporting = true) }
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.exporting_glossary)
+            )
+            _model.update { it.copy(progress = progress) }
 
-            exportGlossary(glossary, file)
+            withContext(Dispatchers.Default) {
+                exportGlossary(glossary, file)
+            }
 
-            _model.update { it.copy(isExporting = false) }
+            _model.update { it.copy(progress = null) }
         }
     }
 }

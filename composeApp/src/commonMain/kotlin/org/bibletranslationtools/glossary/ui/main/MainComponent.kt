@@ -1,5 +1,6 @@
 package org.bibletranslationtools.glossary.ui.main
 
+import androidx.compose.runtime.Composable
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
@@ -39,6 +40,9 @@ import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+typealias ComposableSlot = @Composable () -> Unit
+val NoOpSlot: ComposableSlot = {}
+
 data class PhraseDetails(
     val phrase: Phrase,
     val phrases: List<Phrase>,
@@ -70,6 +74,7 @@ sealed class GlossaryIntent {
 
 interface MainComponent {
     val model: Value<Model>
+    val topBarSlot: Value<ComposableSlot>
 
     data class Model(
         val phraseDetails: PhraseDetails? = null,
@@ -78,12 +83,14 @@ interface MainComponent {
     )
 
     val childStack: Value<ChildStack<*, Child>>
+
     fun onTabClicked(tab: MainTab)
     fun navigatePhrase(dir: PhraseNavDir)
     fun navigateRef(dir: PhraseNavDir)
     fun clearPhraseDetails()
     fun onViewPhraseClick(phrase: Phrase)
     fun onEditPhraseClick(phrase: String)
+    fun setTopBar(slot: ComposableSlot?)
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
@@ -106,6 +113,9 @@ class DefaultMainComponent(
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private val navigation = StackNavigation<Config>()
+
+    private val _topBarSlot = MutableValue(NoOpSlot)
+    override val topBarSlot: Value<ComposableSlot> = _topBarSlot
 
     override val childStack: Value<ChildStack<*, MainComponent.Child>> =
         childStack(
@@ -133,7 +143,8 @@ class DefaultMainComponent(
                     intent = config.intent,
                     onPhraseDetails = ::loadPhrase,
                     onNavigateViewPhrase = ::onViewPhraseClick,
-                    onNavigateEditPhrase = ::onEditPhraseClick
+                    onNavigateEditPhrase = ::onEditPhraseClick,
+                    onSetTopBar = ::setTopBar
                 )
             )
             is Config.Glossary -> MainComponent.Child.Glossary(
@@ -143,7 +154,8 @@ class DefaultMainComponent(
                     onNavigateRef = ::navigateToReadAndLoadRef,
                     onSelectResource = ::selectActiveResource,
                     onSelectGlossary = ::selectActiveGlossary,
-                    onNavigateBack = navigation::pop
+                    onNavigateBack = navigation::pop,
+                    onSetTopBar = ::setTopBar
                 )
             )
             is Config.Resources -> MainComponent.Child.Resources(
@@ -192,6 +204,10 @@ class DefaultMainComponent(
         navigation.bringToFront(
             Config.Glossary(GlossaryIntent.EditPhrase(phrase))
         )
+    }
+
+    override fun setTopBar(slot: ComposableSlot?) {
+        _topBarSlot.value = slot ?: NoOpSlot
     }
 
     private fun onNavigateBack() {

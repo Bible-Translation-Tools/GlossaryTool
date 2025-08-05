@@ -16,9 +16,9 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -42,8 +42,8 @@ fun SearchPhrasesScreen(component: SearchPhrasesComponent) {
     val model by component.model.subscribeAsState()
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
-    Scaffold(
-        topBar = {
+    LaunchedEffect(Unit) {
+        component.setTopBar {
             TopAppBar(
                 actions = {
                     SearchField(
@@ -75,52 +75,51 @@ fun SearchPhrasesScreen(component: SearchPhrasesComponent) {
                 component.onBackClicked()
             }
         }
-    ) { paddingValues ->
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surface)
+    ) {
         Column(
             modifier = Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .background(color = MaterialTheme.colorScheme.surface)
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-                    .padding(16.dp)
-            ) {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            HorizontalDivider(
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = stringResource(Res.string.search_word_hint),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (model.isSearching) {
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
                 )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = stringResource(Res.string.search_word_hint),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                if (model.isSearching) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
-                    )
-                } else {
-                    LazyColumn {
-                        items(model.results) { phrase ->
-                            Row(
-                                modifier = Modifier.padding(12.dp)
-                                    .clickable {
-                                        component.onEditClick(phrase)
-                                    }
-                            ) {
-                                Text(
-                                    text = phrase,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                    contentDescription = "create"
-                                )
-                            }
+            } else {
+                LazyColumn {
+                    items(model.results) { phrase ->
+                        Row(
+                            modifier = Modifier.padding(12.dp)
+                                .clickable {
+                                    component.onEditClick(phrase)
+                                }
+                        ) {
+                            Text(
+                                text = phrase,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "create"
+                            )
                         }
                     }
                 }

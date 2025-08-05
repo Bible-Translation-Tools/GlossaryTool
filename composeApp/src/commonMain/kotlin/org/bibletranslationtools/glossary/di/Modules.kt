@@ -10,6 +10,7 @@ import org.bibletranslationtools.glossary.domain.GlossaryDataSource
 import org.bibletranslationtools.glossary.domain.GlossaryDataSourceImpl
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.GlossaryRepositoryImpl
+import org.bibletranslationtools.glossary.domain.ImportGlossary
 import org.bibletranslationtools.glossary.domain.InitApp
 import org.bibletranslationtools.glossary.domain.LanguageDataSource
 import org.bibletranslationtools.glossary.domain.LanguageDataSourceImpl
@@ -21,8 +22,6 @@ import org.bibletranslationtools.glossary.domain.ResourceDataSource
 import org.bibletranslationtools.glossary.domain.ResourceDataSourceImpl
 import org.bibletranslationtools.glossary.domain.SettingsDataSource
 import org.bibletranslationtools.glossary.domain.SettingsDataSourceImpl
-import org.bibletranslationtools.glossary.domain.WorkbookDataSource
-import org.bibletranslationtools.glossary.domain.WorkbookDataSourceImpl
 import org.bibletranslationtools.glossary.domain.createHttpClient
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
@@ -50,9 +49,9 @@ val sharedModule = module {
     singleOf(::LanguageDataSourceImpl).bind<LanguageDataSource>()
     singleOf(::ResourceDataSourceImpl).bind<ResourceDataSource>()
     singleOf(::DirectoryProviderImpl).bind<DirectoryProvider>()
-    singleOf(::WorkbookDataSourceImpl).bind<WorkbookDataSource>()
     singleOf(::GlossaryRepositoryImpl).bind<GlossaryRepository>()
     singleOf(::ExportGlossary)
+    singleOf(::ImportGlossary)
 
     factoryOf(::InitApp)
 

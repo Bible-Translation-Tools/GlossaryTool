@@ -14,9 +14,9 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,128 +65,127 @@ fun CreateGlossaryScreen(component: CreateGlossaryComponent) {
         }
     }
 
-    Scaffold(
-        topBar = {
+    LaunchedEffect(Unit) {
+        component.setTopBar {
             TopAppBar(
                 title = stringResource(Res.string.new_glossary)
             ) {
                 component.onBackClicked()
             }
         }
-    ) { paddingValues ->
+    }
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
         Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .background(color = MaterialTheme.colorScheme.surfaceVariant)
+                .padding(16.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxSize()
-                    .padding(16.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Image(
+                painter = painterResource(Res.drawable.dictionary),
+                contentDescription = "dictionary",
+                modifier = Modifier.size(120.dp)
+            )
+            Text(
+                text = stringResource(
+                    Res.string.glossary_code,
+                    code
+                ),
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            )
+
+            Text(
+                text = stringResource(Res.string.share_code_hint),
+                textAlign = TextAlign.Center
+            )
+
+            LanguageSelector(
+                title = stringResource(Res.string.source_language),
+                language = model.sourceLanguage,
+                onClick = component::onSourceLanguageClick,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            LanguageSelector(
+                title = stringResource(Res.string.target_language),
+                language = model.targetLanguage,
+                onClick = component::onTargetLanguageClick,
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Button(
+                onClick = {
+                    component.createGlossary(code)
+                },
+                shape = MaterialTheme.shapes.medium,
+                elevation = ButtonDefaults.buttonElevation(
+                    defaultElevation = 4.dp
+                ),
+                colors = ButtonDefaults.buttonColors(
+                    disabledContainerColor = if (createEnabled) {
+                        Color.Unspecified
+                    } else {
+                        Color.Transparent
+                    }
+                ),
+                enabled = createEnabled,
+                modifier = Modifier.fillMaxWidth()
+                    .height(48.dp)
             ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Image(
-                    painter = painterResource(Res.drawable.dictionary),
-                    contentDescription = "dictionary",
-                    modifier = Modifier.size(120.dp)
-                )
                 Text(
-                    text = stringResource(
-                        Res.string.glossary_code,
-                        code
-                    ),
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
+                    text = stringResource(Res.string.create_glossary),
+                    fontSize = 16.sp
                 )
+            }
 
-                Text(
-                    text = stringResource(Res.string.share_code_hint),
-                    textAlign = TextAlign.Center
-                )
-
-                LanguageSelector(
-                    title = stringResource(Res.string.source_language),
-                    language = model.sourceLanguage,
-                    onClick = component::onSourceLanguageClick,
+            model.error?.let { error ->
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier.fillMaxWidth()
-                )
-
-                LanguageSelector(
-                    title = stringResource(Res.string.target_language),
-                    language = model.targetLanguage,
-                    onClick = component::onTargetLanguageClick,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Button(
-                    onClick = {
-                        component.createGlossary(code)
-                    },
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = ButtonDefaults.buttonElevation(
-                        defaultElevation = 4.dp
-                    ),
-                    colors = ButtonDefaults.buttonColors(
-                        disabledContainerColor = if (createEnabled) {
-                            Color.Unspecified
-                        } else {
-                            Color.Transparent
-                        }
-                    ),
-                    enabled = createEnabled,
-                    modifier = Modifier.fillMaxWidth()
-                        .height(48.dp)
                 ) {
                     Text(
-                        text = stringResource(Res.string.create_glossary),
-                        fontSize = 16.sp
+                        text = error,
+                        color = MaterialTheme.colorScheme.error
                     )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
+            }
 
-                model.error?.let { error ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
+            if (model.isSaving) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    CircularProgressIndicator()
+                    Text(stringResource(Res.string.saving))
+                }
+            }
+
+            model.resourceRequest?.let { request ->
+                ConfirmDialog(
+                    title = stringResource(Res.string.download),
+                    text = stringResource(Res.string.download_resource_request),
+                    confirmButtonText = stringResource(Res.string.ok),
+                    dismissButtonText = stringResource(Res.string.cancel),
+                    onConfirm = {
+                        component.downloadResource(request)
+                    },
+                    onDismiss = {
+                        component.clearResourceRequest()
                     }
-                }
+                )
+            }
 
-                if (model.isSaving) {
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        CircularProgressIndicator()
-                        Text(stringResource(Res.string.saving))
-                    }
-                }
-
-                model.resourceRequest?.let { request ->
-                    ConfirmDialog(
-                        title = stringResource(Res.string.download),
-                        text = stringResource(Res.string.download_resource_request),
-                        confirmButtonText = stringResource(Res.string.ok),
-                        dismissButtonText = stringResource(Res.string.cancel),
-                        onConfirm = {
-                            component.downloadResource(request)
-                        },
-                        onDismiss = {
-                            component.clearResourceRequest()
-                        }
-                    )
-                }
-
-                model.progress?.let { progress ->
-                    ProgressDialog(progress)
-                }
+            model.progress?.let { progress ->
+                ProgressDialog(progress)
             }
         }
     }

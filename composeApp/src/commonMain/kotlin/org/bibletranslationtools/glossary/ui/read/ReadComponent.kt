@@ -6,6 +6,7 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.bringToFront
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
+import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
@@ -13,6 +14,7 @@ import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
+import org.bibletranslationtools.glossary.ui.main.ComposableSlot
 import org.bibletranslationtools.glossary.ui.main.ReadIntent
 import org.koin.core.component.KoinComponent
 
@@ -43,6 +45,7 @@ class DefaultReadComponent(
         verse: String?
     ) -> Unit,
     private val onNavigateEditPhrase: (String) -> Unit,
+    private val onSetTopBar: (ComposableSlot?) -> Unit
 ) : ReadComponent, KoinComponent, ComponentContext by componentContext {
 
     private val _model = MutableValue(ReadComponent.Model())
@@ -74,7 +77,7 @@ class DefaultReadComponent(
                     onNavigateEditPhrase = onNavigateEditPhrase,
                     onPhraseSelected = onPhraseDetails,
                     onNavigateBrowse = { book, chapter ->
-                        navigateToReadAndBrowse(book, chapter)
+                        navigation.bringToFront(Config.Browse(book, chapter))
                     }
                 )
             )
@@ -83,19 +86,14 @@ class DefaultReadComponent(
                     componentContext = context,
                     book = config.book,
                     chapter = config.chapter,
-                    onNavigateRef = { navigateToReadAndLoadRef(it) },
-                    onNavigateBack = { navigation.pop() }
+                    onNavigateRef = {
+                        navigation.replaceAll(Config.Index(it))
+                    },
+                    onNavigateBack = { navigation.pop() },
+                    onSetTopBar = onSetTopBar
                 )
             )
         }
-
-    private fun navigateToReadAndLoadRef(ref: RefOption) {
-        navigation.bringToFront(Config.Index(ref))
-    }
-
-    private fun navigateToReadAndBrowse(book: String, chapter: Int) {
-        navigation.bringToFront(Config.Browse(book, chapter))
-    }
 
     @Serializable
     private sealed interface Config {

@@ -16,7 +16,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,6 +41,16 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
     var isLoaded by remember { mutableStateOf(false) }
     val scrollState = rememberLazyListState()
 
+    LaunchedEffect(Unit) {
+        component.setTopBar {
+            TopAppBar(
+                title = stringResource(Res.string.available_glossaries)
+            ) {
+                component.navigateBack()
+            }
+        }
+    }
+
     LaunchedEffect(model.selectedGlossary) {
         if (model.selectedGlossary != null && !isLoaded) {
             val index = model.glossaries.indexOf(model.selectedGlossary)
@@ -50,69 +59,58 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = stringResource(Res.string.available_glossaries)
-            ) {
-                component.navigateBack()
-            }
-        }
-    ) { paddingValues ->
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(color = MaterialTheme.colorScheme.surfaceVariant)
+    ) {
         Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(paddingValues)
-                .background(color = MaterialTheme.colorScheme.surfaceVariant)
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Column(
+            LazyColumn(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.fillMaxWidth()
-                    .padding(16.dp)
+                contentPadding = PaddingValues(bottom = 2.dp),
+                state = scrollState,
+                modifier = Modifier.heightIn(max = 412.dp)
             ) {
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                    contentPadding = PaddingValues(bottom = 2.dp),
-                    state = scrollState,
-                    modifier = Modifier.heightIn(max = 412.dp)
-                ) {
-                    items(model.glossaries) { item ->
-                        GlossaryItem(
-                            item = item,
-                            isSelected = model.selectedGlossary == item,
-                            onSelected = { component.selectGlossary(item) },
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-
-                Button(
-                    onClick = {
-                        component.saveGlossary()
-                    },
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text(
-                        text = stringResource(Res.string.save_exit)
+                items(model.glossaries) { item ->
+                    GlossaryItem(
+                        item = item,
+                        isSelected = model.selectedGlossary == item,
+                        onSelected = { component.selectGlossary(item) },
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
 
-                ElevatedButton(
-                    onClick = {
-                        component.navigateImportGlossary()
-                    },
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.elevatedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                        .height(48.dp)
-                ) {
-                    Text(
-                        text = stringResource(Res.string.add_glossary)
-                    )
-                }
+            Button(
+                onClick = {
+                    component.saveGlossary()
+                },
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth()
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = stringResource(Res.string.save_exit)
+                )
+            }
+
+            ElevatedButton(
+                onClick = {
+                    component.navigateImportGlossary()
+                },
+                shape = MaterialTheme.shapes.medium,
+                colors = ButtonDefaults.elevatedButtonColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                ),
+                modifier = Modifier.fillMaxWidth()
+                    .height(48.dp)
+            ) {
+                Text(
+                    text = stringResource(Res.string.add_glossary)
+                )
             }
         }
     }

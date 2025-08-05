@@ -15,6 +15,7 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.ui.main.ComposableSlot
 import org.bibletranslationtools.glossary.ui.main.GlossaryIntent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
@@ -42,7 +43,8 @@ class DefaultGlossaryComponent(
     private val onNavigateRef: (RefOption) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
-    private val onNavigateBack: () -> Unit
+    private val onNavigateBack: () -> Unit,
+    private val onSetTopBar: (ComposableSlot?) -> Unit
 ) : GlossaryComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
@@ -90,7 +92,8 @@ class DefaultGlossaryComponent(
                     },
                     onSelectResource = onSelectResource,
                     onSelectGlossary = onSelectGlossary,
-                    onNavigateBack = navigation::pop
+                    onNavigateBack = navigation::pop,
+                    onSetTopBar = onSetTopBar
                 )
             )
             is Config.CreateGlossary -> GlossaryComponent.Child.CreateGlossary(
@@ -108,18 +111,24 @@ class DefaultGlossaryComponent(
                     },
                     onSelectLanguage = { type ->
                         navigation.bringToFront(Config.SelectLanguage(type))
-                    }
+                    },
+                    onSetTopBar = onSetTopBar
                 )
             )
             is Config.ViewPhrase -> GlossaryComponent.Child.ViewPhrase(
                 DefaultViewPhraseComponent(
                     componentContext = context,
                     phrase = config.phrase,
-                    onNavigateBack = navigation::pop,
+                    onNavigateBack = {
+                        if (childStack.value.backStack.isEmpty()) {
+                            onNavigateBack()
+                        } else navigation.pop()
+                    },
                     onNavigateRef = onNavigateRef,
                     onNavigateEdit = { phrase ->
                         navigation.bringToFront(Config.EditPhrase(phrase))
-                    }
+                    },
+                    onSetTopBar = onSetTopBar
                 )
             )
             is Config.EditPhrase -> GlossaryComponent.Child.EditPhrase(
@@ -127,13 +136,20 @@ class DefaultGlossaryComponent(
                     componentContext = context,
                     phrase = config.phrase,
                     onPhraseSaved = navigation::pop,
-                    onNavigateBack = navigation::pop
+                    onNavigateBack = navigation::pop,
+                    onSetTopBar = onSetTopBar
                 )
             )
             is Config.ImportGlossary -> GlossaryComponent.Child.ImportGlossary(
                 DefaultImportGlossaryComponent(
                     componentContext = context,
-                    onNavigateBack = navigation::pop
+                    onSelectResource = onSelectResource,
+                    onSelectGlossary = onSelectGlossary,
+                    onImportFinished = {
+                        navigation.bringToFront(Config.Index)
+                    },
+                    onNavigateBack = navigation::pop,
+                    onSetTopBar = onSetTopBar
                 )
             )
             is Config.SearchPhrases -> GlossaryComponent.Child.SearchPhrases(
@@ -142,7 +158,8 @@ class DefaultGlossaryComponent(
                     onNavigateBack = navigation::pop,
                     onNavigateEdit = { phrase ->
                         navigation.bringToFront(Config.EditPhrase(phrase))
-                    }
+                    },
+                    onSetTopBar = onSetTopBar
                 )
             )
             is Config.SelectLanguage -> GlossaryComponent.Child.SelectLanguage(
@@ -150,7 +167,8 @@ class DefaultGlossaryComponent(
                     componentContext = context,
                     type = config.type,
                     sharedState = createGlossaryState,
-                    onDismiss = navigation::pop
+                    onDismiss = navigation::pop,
+                    onSetTopBar = onSetTopBar
                 )
             )
         }

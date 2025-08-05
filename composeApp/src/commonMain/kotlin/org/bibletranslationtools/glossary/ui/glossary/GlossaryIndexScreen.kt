@@ -51,6 +51,7 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
+import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -238,6 +239,10 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
                     }
                 }
             }
+        }
+
+        model.progress?.let { progress ->
+            ProgressDialog(progress)
         }
     }
 }
