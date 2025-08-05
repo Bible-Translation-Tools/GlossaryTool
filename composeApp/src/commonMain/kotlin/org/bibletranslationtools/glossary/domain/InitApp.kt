@@ -38,14 +38,16 @@ class InitApp(
             }
         )
 
-        val init = settings.getByName(DbSettings.INIT.value)?.value_?.toBoolean() ?: false
+        val init = settings.getByName(DbSettings.INIT)?.value_?.toBoolean() ?: false
 
         if (!init) {
             initLanguages(onProgressMessage)
             initCatalog(onProgressMessage)
             initResources(onProgressMessage)
-            settings.insert(DbSettings.INIT.value, true.toString())
+            settings.insert(DbSettings.INIT, true.toString())
         }
+
+        directoryProvider.clearTempDir()
     }
 
     private suspend fun initLanguages(onProgressMessage: (String) -> Unit) {

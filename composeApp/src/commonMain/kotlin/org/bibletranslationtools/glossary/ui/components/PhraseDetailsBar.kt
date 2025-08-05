@@ -47,7 +47,7 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.learn_more
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Resource
-import org.bibletranslationtools.glossary.ui.screenmodel.PhraseDetails
+import org.bibletranslationtools.glossary.ui.main.PhraseDetails
 import org.jetbrains.compose.resources.stringResource
 
 enum class PhraseNavDir(val value: Int) {

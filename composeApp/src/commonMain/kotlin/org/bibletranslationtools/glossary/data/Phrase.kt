@@ -1,12 +1,14 @@
 package org.bibletranslationtools.glossary.data
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.PhraseEntity
 import org.bibletranslationtools.glossary.Utils.generateUUID
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.toLocalDateTime
 import org.bibletranslationtools.glossary.toTimestamp
 
+@Serializable
 data class Phrase(
     val phrase: String,
     val spelling: String = "",

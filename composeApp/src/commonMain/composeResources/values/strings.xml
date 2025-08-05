@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <resources>
-    <string name="app_name">Glossary></string>
+    <string name="app_name">Glossary</string>
     <string name="init_resources">Initializing resources...</string>
     <string name="init_languages">Initializing languages...</string>
     <string name="init_catalog">Initializing catalog...</string>
@@ -52,16 +52,15 @@
     <string name="download_resource_request">In order to use this glossary, you need to download the resource for it. Would you like to download it now?</string>
     <string name="resource_not_found">Resource not found</string>
     <string name="unknown_error">Unknown error occurred</string>
-    <plurals name="words">
-        <item quantity="one">1 word</item>
-        <item quantity="few">%1$d words</item>
-        <item quantity="many">%1$d words</item>
-        <item quantity="other">%1$d words</item>
-    </plurals>
-    <plurals name="users">
-        <item quantity="one">1 user</item>
-        <item quantity="few">%1$d users</item>
-        <item quantity="many">%1$d users</item>
-        <item quantity="other">%1$d users</item>
-    </plurals>
+    <string name="export_glossary">Export Glossary</string>
+    <string name="exporting_glossary">Exporting Glossary...</string>
+    <string name="import_glossary_title">Let's Get Your Glossary Ready</string>
+    <string name="import_glossary_hint">Enter the 5-digit code from your team. This will download the glossary so you can use it right away.</string>
+    <string name="import_glossary_manually">Import Manually</string>
+    <string name="code_not_recognized">Your code was not recognized.</string>
+    <string name="downloading_glossary">Downloading Glossary...</string>
+    <string name="downloading_glossary_hint">This process may take several moments to complete. We will notify you when your glossary is ready.</string>
+    <string name="importing_glossary">Importing Glossary...</string>
+    <string name="words_count">%1$d words</string>
+    <string name="users_count">%1$d users</string>
 </resources>
