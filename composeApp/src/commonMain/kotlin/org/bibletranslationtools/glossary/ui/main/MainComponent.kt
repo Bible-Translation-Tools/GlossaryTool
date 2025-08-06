@@ -72,7 +72,7 @@ sealed class GlossaryIntent {
     data object CreateGlossary : GlossaryIntent()
 }
 
-interface MainComponent {
+interface MainComponent: ParentContext {
     val model: Value<Model>
     val topBarSlot: Value<ComposableSlot>
 
@@ -90,7 +90,6 @@ interface MainComponent {
     fun clearPhraseDetails()
     fun onViewPhraseClick(phrase: Phrase)
     fun onEditPhraseClick(phrase: String)
-    fun setTopBar(slot: ComposableSlot?)
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
@@ -140,30 +139,34 @@ class DefaultMainComponent(
             is Config.Read -> MainComponent.Child.Read(
                 DefaultReadComponent(
                     componentContext = context,
+                    parentContext = this,
                     intent = config.intent,
                     onPhraseDetails = ::loadPhrase,
                     onNavigateViewPhrase = ::onViewPhraseClick,
-                    onNavigateEditPhrase = ::onEditPhraseClick,
-                    onSetTopBar = ::setTopBar
+                    onNavigateEditPhrase = ::onEditPhraseClick
                 )
             )
             is Config.Glossary -> MainComponent.Child.Glossary(
                 DefaultGlossaryComponent(
                     componentContext = context,
+                    parentContext = this,
                     intent = config.intent,
                     onNavigateRef = ::navigateToReadAndLoadRef,
                     onSelectResource = ::selectActiveResource,
                     onSelectGlossary = ::selectActiveGlossary,
-                    onNavigateBack = navigation::pop,
-                    onSetTopBar = ::setTopBar
+                    onNavigateBack = navigation::pop
                 )
             )
             is Config.Resources -> MainComponent.Child.Resources(
-                DefaultResourcesComponent(context)
+                DefaultResourcesComponent(
+                    componentContext = context,
+                    parentContext = this
+                )
             )
             is Config.Settings -> MainComponent.Child.Settings(
                 DefaultSettingsComponent(
                     componentContext = context,
+                    parentContext = this,
                     onCreateGlossary = ::navigateToGlossaryCreate
                 )
             )
@@ -206,7 +209,7 @@ class DefaultMainComponent(
         )
     }
 
-    override fun setTopBar(slot: ComposableSlot?) {
+    override fun setTopAppBar(slot: ComposableSlot?) {
         _topBarSlot.value = slot ?: NoOpSlot
     }
 

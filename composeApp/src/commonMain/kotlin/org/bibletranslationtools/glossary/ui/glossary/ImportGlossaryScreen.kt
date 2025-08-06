@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.add_glossary
 import glossary.composeapp.generated.resources.download
 import glossary.composeapp.generated.resources.downloading_glossary
 import glossary.composeapp.generated.resources.downloading_glossary_hint
@@ -58,9 +59,9 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        component.setTopBar {
+        component.setTopAppBar {
             TopAppBar(
-                title = "Add Glossary"
+                title = stringResource(Res.string.add_glossary)
             ) {
                 component.onBackClicked()
             }

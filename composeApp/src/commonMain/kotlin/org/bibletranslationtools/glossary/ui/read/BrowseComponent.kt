@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -13,12 +12,13 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
+import org.bibletranslationtools.glossary.ui.main.ParentContext
+import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface BrowseComponent {
+interface BrowseComponent: ParentContext {
     val model: Value<Model>
 
     data class Model(
@@ -30,17 +30,17 @@ interface BrowseComponent {
 
     fun onBackClick()
     fun onRefClick(ref: RefOption)
-    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultBrowseComponent(
     componentContext: ComponentContext,
+    parentContext: ParentContext,
     private val book: String,
     private val chapter: Int,
     private val onNavigateBack: () -> Unit,
-    private val onNavigateRef: (RefOption) -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : BrowseComponent, KoinComponent, ComponentContext by componentContext {
+    private val onNavigateRef: (RefOption) -> Unit
+) : AppComponent(componentContext, parentContext),
+    BrowseComponent, KoinComponent {
 
     private val appStateStore: AppStateStore by inject()
 
@@ -71,9 +71,6 @@ class DefaultBrowseComponent(
                 }
             }
         }
-        lifecycle.doOnDestroy {
-            setTopBar(null)
-        }
     }
 
     override fun onBackClick() {
@@ -82,9 +79,5 @@ class DefaultBrowseComponent(
 
     override fun onRefClick(ref: RefOption) {
         onNavigateRef(ref)
-    }
-
-    override fun setTopBar(slot: ComposableSlot?) {
-        onSetTopBar(slot)
     }
 }

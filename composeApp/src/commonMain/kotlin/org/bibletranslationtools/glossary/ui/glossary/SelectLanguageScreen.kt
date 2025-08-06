@@ -44,7 +44,7 @@ fun SelectLanguageScreen(component: SelectLanguageComponent) {
     }
 
     LaunchedEffect(Unit) {
-        component.setTopBar {
+        component.setTopAppBar {
             val title = if (model.type == LanguageType.SOURCE) {
                 stringResource(Res.string.source_language)
             } else {

@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,7 +14,8 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
+import org.bibletranslationtools.glossary.ui.main.ParentContext
+import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -25,7 +25,7 @@ enum class NavDir(val incr: Int) {
     PREV(-1)
 }
 
-interface ReadIndexComponent {
+interface ReadIndexComponent : ParentContext {
     val model: Value<Model>
 
     data class Model(
@@ -45,11 +45,11 @@ interface ReadIndexComponent {
     fun onEditPhraseSelected(phrase: String)
     fun selectPhraseForView(phrase: Phrase)
     fun onPhraseClick(phrase: Phrase, verse: String?)
-    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultReadIndexComponent(
     componentContext: ComponentContext,
+    parentContext: ParentContext,
     private val ref: RefOption? = null,
     private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
     private val onNavigateEditPhrase: (phrase: String) -> Unit,
@@ -60,9 +60,9 @@ class DefaultReadIndexComponent(
         chapter: Chapter,
         verse: String?
     ) -> Unit,
-    private val onNavigateBrowse: (book: String, chapter: Int) -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : ReadIndexComponent, KoinComponent, ComponentContext by componentContext {
+    private val onNavigateBrowse: (book: String, chapter: Int) -> Unit
+) : AppComponent(componentContext, parentContext),
+    ReadIndexComponent, KoinComponent {
 
     private val appStateStore: AppStateStore by inject()
     private val glossaryRepository: GlossaryRepository by inject()
@@ -78,9 +78,6 @@ class DefaultReadIndexComponent(
     init {
         componentScope.launch {
             _model.update { it.copy(currentRef = ref) }
-        }
-        lifecycle.doOnDestroy {
-            setTopBar(null)
         }
     }
 
@@ -131,10 +128,6 @@ class DefaultReadIndexComponent(
 
     override fun selectPhraseForView(phrase: Phrase) {
         onNavigateViewPhrase(phrase)
-    }
-
-    override fun setTopBar(slot: ComposableSlot?) {
-        onSetTopBar(slot)
     }
 
     private fun navigateChapter(dir: NavDir) {

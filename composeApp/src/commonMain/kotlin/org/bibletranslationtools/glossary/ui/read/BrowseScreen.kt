@@ -64,7 +64,7 @@ fun BrowseScreen(component: BrowseComponent) {
     var searchFocused by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        component.setTopBar {
+        component.setTopAppBar {
             TopAppBar(
                 title = stringResource(Res.string.browse),
                 actions = {

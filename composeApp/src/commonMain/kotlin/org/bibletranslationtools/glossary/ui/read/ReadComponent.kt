@@ -14,11 +14,12 @@ import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
+import org.bibletranslationtools.glossary.ui.main.ParentContext
 import org.bibletranslationtools.glossary.ui.main.ReadIntent
+import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.koin.core.component.KoinComponent
 
-interface ReadComponent {
+interface ReadComponent: ParentContext {
     val model: Value<Model>
 
     data class Model(
@@ -35,6 +36,7 @@ interface ReadComponent {
 
 class DefaultReadComponent(
     componentContext: ComponentContext,
+    private val parentContext: ParentContext,
     intent: ReadIntent,
     private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
     private val onPhraseDetails: (
@@ -44,9 +46,9 @@ class DefaultReadComponent(
         chapter: Chapter,
         verse: String?
     ) -> Unit,
-    private val onNavigateEditPhrase: (String) -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : ReadComponent, KoinComponent, ComponentContext by componentContext {
+    private val onNavigateEditPhrase: (String) -> Unit
+) : AppComponent(componentContext, parentContext),
+    ReadComponent, KoinComponent {
 
     private val _model = MutableValue(ReadComponent.Model())
     override val model: Value<ReadComponent.Model> = _model
@@ -72,26 +74,26 @@ class DefaultReadComponent(
             is Config.Index -> ReadComponent.Child.Index(
                 DefaultReadIndexComponent(
                     componentContext = context,
+                    parentContext = parentContext,
                     ref = config.ref,
                     onNavigateViewPhrase = onNavigateViewPhrase,
                     onNavigateEditPhrase = onNavigateEditPhrase,
                     onPhraseSelected = onPhraseDetails,
                     onNavigateBrowse = { book, chapter ->
                         navigation.bringToFront(Config.Browse(book, chapter))
-                    },
-                    onSetTopBar = onSetTopBar
+                    }
                 )
             )
             is Config.Browse -> ReadComponent.Child.Browse(
                 DefaultBrowseComponent(
                     componentContext = context,
+                    parentContext = parentContext,
                     book = config.book,
                     chapter = config.chapter,
                     onNavigateRef = {
                         navigation.replaceAll(Config.Index(it))
                     },
-                    onNavigateBack = { navigation.pop() },
-                    onSetTopBar = onSetTopBar
+                    onNavigateBack = { navigation.pop() }
                 )
             )
         }

@@ -11,15 +11,14 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
+import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
-import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
 import org.bibletranslationtools.glossary.ui.glossary.GlossaryScreen
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
@@ -73,28 +72,26 @@ fun MainScreen(component: MainComponent) {
         }
     }
 
-    KeyboardAware {
-        Scaffold(
-            topBar = {
-                topBarContent()
-            },
-            bottomBar = {
-                BottomNavBar(activeChild) { tab ->
-                    component.onTabClicked(tab)
-                }
+    Scaffold(
+        topBar = {
+            topBarContent()
+        },
+        bottomBar = {
+            BottomNavBar(activeChild) { tab ->
+                component.onTabClicked(tab)
             }
-        ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues)) {
-                Children(
-                    stack = component.childStack,
-                    animation = stackAnimation(fade())
-                ) {
-                    when (val child = it.instance) {
-                        is MainComponent.Child.Read -> ReadScreen(child.component)
-                        is MainComponent.Child.Glossary -> GlossaryScreen(child.component)
-                        is MainComponent.Child.Resources -> ResourcesScreen(child.component)
-                        is MainComponent.Child.Settings -> SettingsScreen(child.component)
-                    }
+        }
+    ) { paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            Children(
+                stack = component.childStack,
+                animation = stackAnimation(Utils.slideHorizontally())
+            ) {
+                when (val child = it.instance) {
+                    is MainComponent.Child.Read -> ReadScreen(child.component)
+                    is MainComponent.Child.Glossary -> GlossaryScreen(child.component)
+                    is MainComponent.Child.Resources -> ResourcesScreen(child.component)
+                    is MainComponent.Child.Settings -> SettingsScreen(child.component)
                 }
             }
         }

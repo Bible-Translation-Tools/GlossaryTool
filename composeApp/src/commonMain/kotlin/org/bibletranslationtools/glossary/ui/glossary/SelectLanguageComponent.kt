@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -12,7 +11,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Language
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
+import org.bibletranslationtools.glossary.ui.main.ParentContext
+import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -20,7 +20,7 @@ enum class LanguageType {
     SOURCE, TARGET
 }
 
-interface SelectLanguageComponent {
+interface SelectLanguageComponent : ParentContext {
     val model: Value<Model>
 
     data class Model(
@@ -31,16 +31,16 @@ interface SelectLanguageComponent {
 
     fun onLanguageClick(language: Language)
     fun onBackClick()
-    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultSelectLanguageComponent(
     componentContext: ComponentContext,
+    parentContext: ParentContext,
     private val type: LanguageType,
     private val sharedState: CreateGlossaryStateKeeper,
-    private val onDismiss: () -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : SelectLanguageComponent, KoinComponent, ComponentContext by componentContext {
+    private val onDismiss: () -> Unit
+) : AppComponent(componentContext, parentContext),
+    SelectLanguageComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
 
@@ -65,9 +65,6 @@ class DefaultSelectLanguageComponent(
                 languages = languages
             )
         }
-        lifecycle.doOnDestroy {
-            setTopBar(null)
-        }
     }
 
     override fun onLanguageClick(language: Language) {
@@ -77,9 +74,5 @@ class DefaultSelectLanguageComponent(
 
     override fun onBackClick() {
         onDismiss()
-    }
-
-    override fun setTopBar(slot: ComposableSlot?) {
-        onSetTopBar(slot)
     }
 }

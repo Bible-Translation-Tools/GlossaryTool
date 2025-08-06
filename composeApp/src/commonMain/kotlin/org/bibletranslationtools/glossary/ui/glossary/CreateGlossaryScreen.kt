@@ -66,7 +66,7 @@ fun CreateGlossaryScreen(component: CreateGlossaryComponent) {
     }
 
     LaunchedEffect(Unit) {
-        component.setTopBar {
+        component.setTopAppBar {
             TopAppBar(
                 title = stringResource(Res.string.new_glossary)
             ) {

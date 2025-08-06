@@ -72,10 +72,6 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
     var searchQuery by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        component.setTopBar(null)
-    }
-
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let {
             component.loadPhrases(it)

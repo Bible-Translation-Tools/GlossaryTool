@@ -2,7 +2,6 @@ package org.bibletranslationtools.glossary.ui.glossary
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.Value
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_glossary_error
 import glossary.composeapp.generated.resources.downloading
@@ -22,12 +21,13 @@ import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
+import org.bibletranslationtools.glossary.ui.main.ParentContext
+import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface CreateGlossaryComponent {
+interface CreateGlossaryComponent : ParentContext {
     val model: Value<Model>
 
     data class ResourceRequest(
@@ -51,18 +51,18 @@ interface CreateGlossaryComponent {
     fun clearResourceRequest()
     fun onSourceLanguageClick()
     fun onTargetLanguageClick()
-    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultCreateGlossaryComponent(
     componentContext: ComponentContext,
+    parentContext: ParentContext,
     private val sharedState: CreateGlossaryStateKeeper,
     private val onNavigateBack: () -> Unit,
     private val onResourceDownloaded: (Resource) -> Unit,
     private val onGlossaryCreated: (Resource, Glossary) -> Unit,
-    private val onSelectLanguage: (type: LanguageType) -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : CreateGlossaryComponent, KoinComponent, ComponentContext by componentContext {
+    private val onSelectLanguage: (type: LanguageType) -> Unit
+) : AppComponent(componentContext, parentContext),
+    CreateGlossaryComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
     private val catalogApi: CatalogApi by inject()
@@ -72,12 +72,6 @@ class DefaultCreateGlossaryComponent(
     override val model: Value<CreateGlossaryComponent.Model> = sharedState.model
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-
-    init {
-        lifecycle.doOnDestroy {
-            setTopBar(null)
-        }
-    }
 
     override fun onBackClicked() {
         onNavigateBack()
@@ -181,10 +175,6 @@ class DefaultCreateGlossaryComponent(
 
     override fun onTargetLanguageClick() {
         onSelectLanguage(LanguageType.TARGET)
-    }
-
-    override fun setTopBar(slot: ComposableSlot?) {
-        onSetTopBar(slot)
     }
 
     private suspend fun createGlossary(

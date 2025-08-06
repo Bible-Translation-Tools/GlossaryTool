@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -13,7 +12,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
+import org.bibletranslationtools.glossary.ui.main.ParentContext
+import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -24,7 +24,7 @@ private const val MAX_SEARCH_RESULTS = 100
 private const val RANDOM_WORD_SAMPLE_SIZE = 100
 private const val MAX_RANDOM_ATTEMPTS = 500
 
-interface SearchPhrasesComponent {
+interface SearchPhrasesComponent : ParentContext {
     val model: Value<Model>
 
     data class Model(
@@ -35,15 +35,15 @@ interface SearchPhrasesComponent {
     fun onBackClicked()
     fun onSearchQueryChanged(query: String)
     fun onEditClick(phrase: String)
-    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultSearchPhrasesComponent(
     componentContext: ComponentContext,
+    parentContext: ParentContext,
     private val onNavigateBack: () -> Unit,
-    private val onNavigateEdit: (phrase: String) -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : SearchPhrasesComponent, KoinComponent, ComponentContext by componentContext {
+    private val onNavigateEdit: (phrase: String) -> Unit
+) : AppComponent(componentContext, parentContext),
+    SearchPhrasesComponent, KoinComponent {
 
     private val appStateStore: AppStateStore by inject()
     private val glossaryRepository: GlossaryRepository by inject()
@@ -78,9 +78,6 @@ class DefaultSearchPhrasesComponent(
 
             onSearchQueryChanged("")
         }
-        lifecycle.doOnDestroy {
-            setTopBar(null)
-        }
     }
 
     override fun onBackClicked() {
@@ -109,10 +106,6 @@ class DefaultSearchPhrasesComponent(
 
     override fun onEditClick(phrase: String) {
         onNavigateEdit(phrase)
-    }
-
-    override fun setTopBar(slot: ComposableSlot?) {
-        onSetTopBar(slot)
     }
 
     private fun findContent(query: String): List<String> {

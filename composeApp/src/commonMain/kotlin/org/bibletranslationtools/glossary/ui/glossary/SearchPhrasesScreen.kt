@@ -43,7 +43,7 @@ fun SearchPhrasesScreen(component: SearchPhrasesComponent) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        component.setTopBar {
+        component.setTopAppBar {
             TopAppBar(
                 actions = {
                     SearchField(

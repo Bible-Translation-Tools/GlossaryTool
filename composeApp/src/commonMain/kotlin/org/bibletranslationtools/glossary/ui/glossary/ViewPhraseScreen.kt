@@ -54,7 +54,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
         .collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        component.setTopBar {
+        component.setTopAppBar {
             TopAppBar(
                 title = model.phrase?.phrase,
                 backgroundColor = MaterialTheme.colorScheme.surfaceVariant

@@ -94,7 +94,6 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
     var versePosition by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
-        component.setTopBar(null)
         if (model.currentRef == null) {
             component.loadRef(
                 RefOption(

@@ -1,10 +1,13 @@
 package org.bibletranslationtools.glossary.ui.resources
 
 import com.arkivanov.decompose.ComponentContext
+import org.bibletranslationtools.glossary.ui.main.ParentContext
+import org.bibletranslationtools.glossary.ui.main.AppComponent
 
-interface ResourcesComponent
+interface ResourcesComponent: ParentContext
 
 class DefaultResourcesComponent(
-    componentContext: ComponentContext
-) : ResourcesComponent, ComponentContext by componentContext {
-}
+    componentContext: ComponentContext,
+    parentContext: ParentContext
+) : AppComponent(componentContext, parentContext),
+    ResourcesComponent

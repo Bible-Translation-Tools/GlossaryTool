@@ -42,7 +42,7 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
     val scrollState = rememberLazyListState()
 
     LaunchedEffect(Unit) {
-        component.setTopBar {
+        component.setTopAppBar {
             TopAppBar(
                 title = stringResource(Res.string.available_glossaries)
             ) {

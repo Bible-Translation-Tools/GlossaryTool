@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.importing_glossary
 import io.github.vinceglb.filekit.PlatformFile
@@ -18,12 +17,13 @@ import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.ImportGlossary
 import org.bibletranslationtools.glossary.ui.components.OtpAction
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
+import org.bibletranslationtools.glossary.ui.main.ParentContext
+import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface ImportGlossaryComponent {
+interface ImportGlossaryComponent : ParentContext {
     val model: Value<Model>
 
     data class Model(
@@ -37,17 +37,17 @@ interface ImportGlossaryComponent {
     fun onBackClicked()
     fun onOtpAction(action: OtpAction)
     fun onImportClicked(file: PlatformFile)
-    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultImportGlossaryComponent(
     componentContext: ComponentContext,
+    parentContext: ParentContext,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onImportFinished: () -> Unit,
-    private val onNavigateBack: () -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : ImportGlossaryComponent, KoinComponent, ComponentContext by componentContext {
+    private val onNavigateBack: () -> Unit
+) : AppComponent(componentContext, parentContext),
+    ImportGlossaryComponent, KoinComponent {
 
     private val importGlossary: ImportGlossary by inject()
 
@@ -55,12 +55,6 @@ class DefaultImportGlossaryComponent(
     override val model: Value<ImportGlossaryComponent.Model> = _model
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-
-    init {
-        lifecycle.doOnDestroy {
-            setTopBar(null)
-        }
-    }
 
     override fun onBackClicked() {
         onNavigateBack()
@@ -117,10 +111,6 @@ class DefaultImportGlossaryComponent(
 
             onImportFinished()
         }
-    }
-
-    override fun setTopBar(slot: ComposableSlot?) {
-        onSetTopBar(slot)
     }
 
     private fun enterChar(char: String?, index: Int) {
