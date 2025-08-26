@@ -17,8 +17,8 @@ import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.ImportGlossary
 import org.bibletranslationtools.glossary.ui.components.OtpAction
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.AppComponent
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -34,7 +34,6 @@ interface ImportGlossaryComponent : ParentContext {
         val progress: Progress? = null
     )
 
-    fun onBackClicked()
     fun onOtpAction(action: OtpAction)
     fun onImportClicked(file: PlatformFile)
 }
@@ -56,7 +55,7 @@ class DefaultImportGlossaryComponent(
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    override fun onBackClicked() {
+    override fun onBackClick() {
         onNavigateBack()
     }
 

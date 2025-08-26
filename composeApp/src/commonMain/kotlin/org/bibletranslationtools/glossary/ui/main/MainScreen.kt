@@ -1,6 +1,5 @@
 package org.bibletranslationtools.glossary.ui.main
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -31,7 +30,6 @@ import org.koin.compose.koinInject
 @Composable
 fun MainScreen(component: MainComponent) {
     val model by component.model.subscribeAsState()
-    val topBarContent by component.topBarSlot.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
     val resourceState by appStateStore.resourceStateHolder.resourceState
@@ -73,26 +71,22 @@ fun MainScreen(component: MainComponent) {
     }
 
     Scaffold(
-        topBar = {
-            topBarContent()
-        },
         bottomBar = {
             BottomNavBar(activeChild) { tab ->
                 component.onTabClicked(tab)
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            Children(
-                stack = component.childStack,
-                animation = stackAnimation(Utils.slideHorizontally())
-            ) {
-                when (val child = it.instance) {
-                    is MainComponent.Child.Read -> ReadScreen(child.component)
-                    is MainComponent.Child.Glossary -> GlossaryScreen(child.component)
-                    is MainComponent.Child.Resources -> ResourcesScreen(child.component)
-                    is MainComponent.Child.Settings -> SettingsScreen(child.component)
-                }
+        Children(
+            stack = component.childStack,
+            animation = stackAnimation(Utils.slideHorizontally()),
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            when (val child = it.instance) {
+                is MainComponent.Child.Read -> ReadScreen(child.component)
+                is MainComponent.Child.Glossary -> GlossaryScreen(child.component)
+                is MainComponent.Child.Resources -> ResourcesScreen(child.component)
+                is MainComponent.Child.Settings -> SettingsScreen(child.component)
             }
         }
     }

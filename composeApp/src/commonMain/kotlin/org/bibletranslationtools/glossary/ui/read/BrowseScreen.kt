@@ -5,6 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -64,49 +65,6 @@ fun BrowseScreen(component: BrowseComponent) {
     var searchFocused by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        component.setTopAppBar {
-            TopAppBar(
-                title = stringResource(Res.string.browse),
-                actions = {
-                    SearchField(
-                        searchQuery = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        onFocusChange = { searchFocused = it },
-                        colors = CustomTextFieldDefaults.colors(
-                            unfocusedIndicatorColor = Color.Transparent
-                        ),
-                        modifier = Modifier.weight(1f)
-                            .height(48.dp)
-                    )
-
-                    if (!searchFocused) {
-                        Button(
-                            onClick = { /* Handle language change */ },
-                            shape = MaterialTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                contentColor = MaterialTheme.colorScheme.onBackground
-                            ),
-                            border = BorderStroke(
-                                1.dp,
-                                MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-                            )
-                        ) {
-                            Icon(
-                                Icons.Default.Language,
-                                contentDescription = "Language",
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("ENG")
-                        }
-                    }
-                }
-            ) {
-                component.onBackClick()
-            }
-        }
-
         val initialBookIndex = model.books.indexOf(model.book)
         expandedBookIndex = initialBookIndex
         delay(500)
@@ -137,43 +95,87 @@ fun BrowseScreen(component: BrowseComponent) {
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize(),
-        state = lazyListState
-    ) {
-        itemsIndexed(filteredBooks) { index, book ->
-            BookItem(
-                book = book,
-                isExpanded = expandedBookIndex == index,
-                onToggle = {
-                    expandedBookIndex = if (expandedBookIndex == index) -1 else index
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-            AnimatedVisibility(
-                visible = expandedBookIndex == index,
-                enter = expandVertically(
-                    expandFrom = Alignment.Top,
-                    animationSpec = tween(durationMillis = 500)
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = stringResource(Res.string.browse),
+            actions = {
+                SearchField(
+                    searchQuery = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    onFocusChange = { searchFocused = it },
+                    colors = CustomTextFieldDefaults.colors(
+                        unfocusedIndicatorColor = Color.Transparent
+                    ),
+                    modifier = Modifier.weight(1f)
+                        .height(48.dp)
                 )
+
+                if (!searchFocused) {
+                    Button(
+                        onClick = { /* Handle language change */ },
+                        shape = MaterialTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            contentColor = MaterialTheme.colorScheme.onBackground
+                        ),
+                        border = BorderStroke(
+                            1.dp,
+                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                        )
+                    ) {
+                        Icon(
+                            Icons.Default.Language,
+                            contentDescription = "Language",
+                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("ENG")
+                    }
+                }
+            }
+        ) {
+            component.onBackClick()
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                state = lazyListState
             ) {
-                ChapterGrid(
-                    chapters = book.chapters.size,
-                    activeChapter = if (book == model.book) model.chapter?.number else null,
-                    bringIntoViewRequester = bringIntoViewRequester,
-                    modifier = Modifier.fillMaxWidth(),
-                    onChapterClick = { chapter ->
-                        component.onRefClick(
-                            RefOption(
-                                book = book.slug,
-                                chapter = chapter
-                            )
+                itemsIndexed(filteredBooks) { index, book ->
+                    BookItem(
+                        book = book,
+                        isExpanded = expandedBookIndex == index,
+                        onToggle = {
+                            expandedBookIndex = if (expandedBookIndex == index) -1 else index
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                    AnimatedVisibility(
+                        visible = expandedBookIndex == index,
+                        enter = expandVertically(
+                            expandFrom = Alignment.Top,
+                            animationSpec = tween(durationMillis = 500)
+                        )
+                    ) {
+                        ChapterGrid(
+                            chapters = book.chapters.size,
+                            activeChapter = if (book == model.book) model.chapter?.number else null,
+                            bringIntoViewRequester = bringIntoViewRequester,
+                            modifier = Modifier.fillMaxWidth(),
+                            onChapterClick = { chapter ->
+                                component.onRefClick(
+                                    RefOption(
+                                        book = book.slug,
+                                        chapter = chapter
+                                    )
+                                )
+                            }
                         )
                     }
-                )
+                    HorizontalDivider()
+                }
             }
-            HorizontalDivider()
         }
     }
 }

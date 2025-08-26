@@ -21,8 +21,8 @@ import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.AppComponent
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject

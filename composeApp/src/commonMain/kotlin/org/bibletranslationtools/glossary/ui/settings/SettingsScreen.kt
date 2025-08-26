@@ -69,129 +69,133 @@ fun SettingsScreen(component: SettingsComponent) {
         }
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.fillMaxWidth()
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
             ) {
-                Text(
-                    text = "\uD83D\uDE00",
-                    fontSize = 40.sp
-                )
-                Text(
-                    text = "User",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "user@mail.net",
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(Res.string.admin),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-                Card(
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    modifier = Modifier.fillMaxWidth()
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                        .padding(16.dp)
                 ) {
-                    Column {
-                        SettingsClickableItem(
-                            icon = painterResource(Res.drawable.format_list_bulleted_add),
-                            text = stringResource(Res.string.new_glossary),
-                            onClick = {
-                                component.onCreateGlossaryClick()
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        HorizontalDivider(
-                            Modifier,
-                            DividerDefaults.Thickness,
-                            DividerDefaults.color
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "\uD83D\uDE00",
+                            fontSize = 40.sp
                         )
-
-                        SettingsClickableItem(
-                            icon = painterResource(Res.drawable.developer_guide),
-                            text = stringResource(Res.string.edit_rules),
-                            onClick = {}
+                        Text(
+                            text = "User",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "user@mail.net",
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                         )
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(32.dp))
+                    Spacer(modifier = Modifier.height(32.dp))
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = stringResource(Res.string.display),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                )
-                Card(
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Column {
-                        SettingsClickableItem(
-                            icon = Icons.Default.Translate,
-                            text = stringResource(Res.string.language),
-                            onClick = {}
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.admin),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                         )
+                        Card(
+                            shape = MaterialTheme.shapes.medium,
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column {
+                                SettingsClickableItem(
+                                    icon = painterResource(Res.drawable.format_list_bulleted_add),
+                                    text = stringResource(Res.string.new_glossary),
+                                    onClick = {
+                                        component.onCreateGlossaryClick()
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
 
-                        HorizontalDivider(
-                            Modifier,
-                            DividerDefaults.Thickness,
-                            DividerDefaults.color
-                        )
+                                HorizontalDivider(
+                                    Modifier,
+                                    DividerDefaults.Thickness,
+                                    DividerDefaults.color
+                                )
 
-                        SettingsClickableItem(
-                            icon = Icons.Default.TextFields,
-                            text = stringResource(Res.string.typography),
-                            onClick = {}
-                        )
+                                SettingsClickableItem(
+                                    icon = painterResource(Res.drawable.developer_guide),
+                                    text = stringResource(Res.string.edit_rules),
+                                    onClick = {}
+                                )
+                            }
+                        }
+                    }
 
-                        HorizontalDivider(
-                            Modifier,
-                            DividerDefaults.Thickness,
-                            DividerDefaults.color
-                        )
+                    Spacer(modifier = Modifier.height(32.dp))
 
-                        SettingsSwitchItem(
-                            icon = Icons.Outlined.DarkMode,
-                            text = stringResource(Res.string.dark_mode),
-                            checked = isDarkModeEnabled,
-                            onCheckedChange = { isDarkModeEnabled = it }
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.display),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
                         )
+                        Card(
+                            shape = MaterialTheme.shapes.medium,
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column {
+                                SettingsClickableItem(
+                                    icon = Icons.Default.Translate,
+                                    text = stringResource(Res.string.language),
+                                    onClick = {}
+                                )
+
+                                HorizontalDivider(
+                                    Modifier,
+                                    DividerDefaults.Thickness,
+                                    DividerDefaults.color
+                                )
+
+                                SettingsClickableItem(
+                                    icon = Icons.Default.TextFields,
+                                    text = stringResource(Res.string.typography),
+                                    onClick = {}
+                                )
+
+                                HorizontalDivider(
+                                    Modifier,
+                                    DividerDefaults.Thickness,
+                                    DividerDefaults.color
+                                )
+
+                                SettingsSwitchItem(
+                                    icon = Icons.Outlined.DarkMode,
+                                    text = stringResource(Res.string.dark_mode),
+                                    checked = isDarkModeEnabled,
+                                    onCheckedChange = { isDarkModeEnabled = it }
+                                )
+                            }
+                        }
                     }
                 }
             }

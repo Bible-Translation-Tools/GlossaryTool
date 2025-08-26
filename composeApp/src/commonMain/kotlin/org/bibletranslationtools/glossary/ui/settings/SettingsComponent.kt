@@ -1,8 +1,8 @@
 package org.bibletranslationtools.glossary.ui.settings
 
 import com.arkivanov.decompose.ComponentContext
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.AppComponent
 
 interface SettingsComponent: ParentContext {
     fun onCreateGlossaryClick()

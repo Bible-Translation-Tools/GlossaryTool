@@ -12,8 +12,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -32,7 +32,6 @@ interface SearchPhrasesComponent : ParentContext {
         val results: List<String> = emptyList()
     )
 
-    fun onBackClicked()
     fun onSearchQueryChanged(query: String)
     fun onEditClick(phrase: String)
 }
@@ -80,7 +79,7 @@ class DefaultSearchPhrasesComponent(
         }
     }
 
-    override fun onBackClicked() {
+    override fun onBackClick() {
         onNavigateBack()
     }
 

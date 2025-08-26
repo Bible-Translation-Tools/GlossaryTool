@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary
+package org.bibletranslationtools.glossary.ui
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack

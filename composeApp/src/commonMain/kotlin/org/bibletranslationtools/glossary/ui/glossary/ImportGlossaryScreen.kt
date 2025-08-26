@@ -14,7 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,112 +57,112 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
 
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        component.setTopAppBar {
-            TopAppBar(
-                title = stringResource(Res.string.add_glossary)
-            ) {
-                component.onBackClicked()
-            }
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
-                .padding(16.dp)
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = stringResource(Res.string.add_glossary)
         ) {
-            Spacer(modifier = Modifier.height(128.dp))
+            component.onBackClick()
+        }
 
-            if (model.progress == null) {
-                Text(
-                    text = stringResource(Res.string.import_glossary_title),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = stringResource(Res.string.import_glossary_hint),
-                    fontSize = 16.sp
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                OtpInput(
-                    code = model.otpCode,
-                    enabled = false,
-                    focusRequesters = focusRequesters,
-                    onAction = { component.onOtpAction(it) },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = { /* Handle download logic */ },
-                    enabled = false,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = MaterialTheme.shapes.medium,
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
+        Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize()
+                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = stringResource(Res.string.download),
-                        fontSize = 18.sp
-                    )
-                }
+                    Spacer(modifier = Modifier.height(128.dp))
 
-                Spacer(modifier = Modifier.height(16.dp))
+                    if (model.progress == null) {
+                        Text(
+                            text = stringResource(Res.string.import_glossary_title),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center
+                        )
 
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            FileKit.openFilePicker()?.let {
-                                component.onImportClicked(it)
-                            }
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = stringResource(Res.string.import_glossary_hint),
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        OtpInput(
+                            code = model.otpCode,
+                            enabled = false,
+                            focusRequesters = focusRequesters,
+                            onAction = { component.onOtpAction(it) },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Button(
+                            onClick = { /* Handle download logic */ },
+                            enabled = false,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp),
+                            shape = MaterialTheme.shapes.medium,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            )
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.download),
+                                fontSize = 18.sp
+                            )
                         }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        TextButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    FileKit.openFilePicker()?.let {
+                                        component.onImportClicked(it)
+                                    }
+                                }
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.import_glossary_manually),
+                                color = MaterialTheme.colorScheme.primary,
+                                fontSize = 16.sp,
+                                textDecoration = TextDecoration.Underline
+                            )
+                        }
+                    } else {
+                        Text(
+                            text = stringResource(Res.string.downloading_glossary),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Start,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = stringResource(Res.string.downloading_glossary_hint),
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        LinearProgressIndicator(
+                            trackColor = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
-                ) {
-                    Text(
-                        text = stringResource(Res.string.import_glossary_manually),
-                        color = MaterialTheme.colorScheme.primary,
-                        fontSize = 16.sp,
-                        textDecoration = TextDecoration.Underline
-                    )
                 }
-            } else {
-                Text(
-                    text = stringResource(Res.string.downloading_glossary),
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = stringResource(Res.string.downloading_glossary_hint),
-                    fontSize = 16.sp
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                LinearProgressIndicator(
-                    trackColor = MaterialTheme.colorScheme.surfaceVariant,
-                    modifier = Modifier.fillMaxWidth()
-                )
             }
         }
     }

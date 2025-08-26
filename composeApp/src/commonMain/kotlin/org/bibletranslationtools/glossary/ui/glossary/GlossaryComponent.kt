@@ -13,12 +13,11 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Glossary
-import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.main.GlossaryIntent
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.koin.core.component.KoinComponent
 
 interface GlossaryComponent : ParentContext {
@@ -57,7 +56,7 @@ class DefaultGlossaryComponent(
             serializer = Config.serializer(),
             initialConfiguration = when (intent) {
                 is GlossaryIntent.Index -> Config.Index
-                is GlossaryIntent.ViewPhrase -> Config.ViewPhrase(intent.phrase)
+                is GlossaryIntent.ViewPhrase -> Config.ViewPhrase(intent.phraseId)
                 is GlossaryIntent.EditPhrase -> Config.EditPhrase(intent.phrase)
                 is GlossaryIntent.CreateGlossary -> Config.CreateGlossary
             },
@@ -80,8 +79,8 @@ class DefaultGlossaryComponent(
                     onNavigateSearchPhrases = {
                         navigation.bringToFront(Config.SearchPhrases)
                     },
-                    onNavigateViewPhrase = { phrase ->
-                        navigation.bringToFront(Config.ViewPhrase(phrase))
+                    onNavigateViewPhrase = { phraseId ->
+                        navigation.bringToFront(Config.ViewPhrase(phraseId))
                     }
                 )
             )
@@ -118,7 +117,7 @@ class DefaultGlossaryComponent(
                 DefaultViewPhraseComponent(
                     componentContext = context,
                     parentContext = parentContext,
-                    phrase = config.phrase,
+                    phraseId = config.phraseId,
                     onNavigateBack = {
                         if (childStack.value.backStack.isEmpty()) {
                             onNavigateBack()
@@ -194,7 +193,7 @@ class DefaultGlossaryComponent(
         @Serializable
         data object CreateGlossary : Config
         @Serializable
-        data class ViewPhrase(val phrase: Phrase) : Config
+        data class ViewPhrase(val phraseId: String) : Config
         @Serializable
         data class EditPhrase(val phrase: String) : Config
         @Serializable

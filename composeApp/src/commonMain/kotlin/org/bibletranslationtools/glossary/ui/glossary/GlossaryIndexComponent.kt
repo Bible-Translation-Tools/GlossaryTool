@@ -17,8 +17,8 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
+import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -36,7 +36,7 @@ interface GlossaryIndexComponent : ParentContext {
     fun navigateImportGlossary()
     fun navigateGlossaryList()
     fun navigateSearchPhrases()
-    fun navigateViewPhrase(phrase: Phrase)
+    fun navigateViewPhrase(phraseId: String)
     fun onExportGlossaryClicked(glossary: Glossary, file: PlatformFile)
 }
 
@@ -46,7 +46,7 @@ class DefaultGlossaryIndexComponent(
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateGlossaryList: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
-    private val onNavigateViewPhrase: (phrase: Phrase) -> Unit
+    private val onNavigateViewPhrase: (phraseId: String) -> Unit
 ) : AppComponent(componentContext, parentContext),
     GlossaryIndexComponent, KoinComponent {
 
@@ -62,9 +62,7 @@ class DefaultGlossaryIndexComponent(
         componentScope.launch {
             _model.update { it.copy(isLoading = true) }
 
-            val phrases = withContext(Dispatchers.Default) {
-                glossaryRepository.getPhrases(glossary.id)
-            }
+            val phrases = glossaryRepository.getPhrases(glossary.id)
 
             _model.update {
                 it.copy(
@@ -87,8 +85,8 @@ class DefaultGlossaryIndexComponent(
         onNavigateSearchPhrases()
     }
 
-    override fun navigateViewPhrase(phrase: Phrase) {
-        onNavigateViewPhrase(phrase)
+    override fun navigateViewPhrase(phraseId: String) {
+        onNavigateViewPhrase(phraseId)
     }
 
     override fun onExportGlossaryClicked(glossary: Glossary, file: PlatformFile) {

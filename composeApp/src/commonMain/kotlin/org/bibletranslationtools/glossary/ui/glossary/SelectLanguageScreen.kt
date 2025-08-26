@@ -43,19 +43,6 @@ fun SelectLanguageScreen(component: SelectLanguageComponent) {
         mutableStateOf("")
     }
 
-    LaunchedEffect(Unit) {
-        component.setTopAppBar {
-            val title = if (model.type == LanguageType.SOURCE) {
-                stringResource(Res.string.source_language)
-            } else {
-                stringResource(Res.string.target_language)
-            }
-            TopAppBar(title = title) {
-                component.onBackClick()
-            }
-        }
-    }
-
     LaunchedEffect(searchQuery) {
         filteredLanguages = if (searchQuery.isNotEmpty()) {
             model.languages.filter { language ->
@@ -66,42 +53,55 @@ fun SelectLanguageScreen(component: SelectLanguageComponent) {
         } else model.languages
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp),
-            modifier = Modifier.fillMaxSize()
-                .padding(16.dp)
-        ) {
-            SearchField(
-                searchQuery = searchQuery,
-                onValueChange = { searchQuery = it },
-                placeholder = {
-                    Text(
-                        text = stringResource(Res.string.search_placeholder),
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                    )
-                },
-                colors = CustomTextFieldDefaults.colors(
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            )
+    Column(modifier = Modifier.fillMaxSize()) {
+        val title = if (model.type == LanguageType.SOURCE) {
+            stringResource(Res.string.source_language)
+        } else {
+            stringResource(Res.string.target_language)
+        }
+        TopAppBar(title = title) {
+            component.onBackClick()
+        }
 
-            HorizontalDivider()
-
-            LazyColumn {
-                items(filteredLanguages) { language ->
-                    LanguageItem(
-                        language = language,
+        Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    SearchField(
+                        searchQuery = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = {
+                            Text(
+                                text = stringResource(Res.string.search_placeholder),
+                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                            )
+                        },
+                        colors = CustomTextFieldDefaults.colors(
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
+                        ),
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = {
-                            component.onLanguageClick(language)
-                        }
                     )
+
+                    HorizontalDivider()
+
+                    LazyColumn {
+                        items(filteredLanguages) { language ->
+                            LanguageItem(
+                                language = language,
+                                modifier = Modifier.fillMaxWidth(),
+                                onClick = {
+                                    component.onLanguageClick(language)
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }

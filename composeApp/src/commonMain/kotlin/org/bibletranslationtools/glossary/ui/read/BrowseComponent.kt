@@ -12,8 +12,8 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -28,7 +28,6 @@ interface BrowseComponent: ParentContext {
         val books: List<Workbook> = emptyList()
     )
 
-    fun onBackClick()
     fun onRefClick(ref: RefOption)
 }
 

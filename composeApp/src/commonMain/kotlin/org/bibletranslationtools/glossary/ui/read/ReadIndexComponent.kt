@@ -14,8 +14,8 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
+import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -43,7 +43,7 @@ interface ReadIndexComponent : ParentContext {
     fun loadRef(ref: RefOption?)
     fun clearRef()
     fun onEditPhraseSelected(phrase: String)
-    fun selectPhraseForView(phrase: Phrase)
+    fun selectPhraseForView(phraseId: String)
     fun onPhraseClick(phrase: Phrase, verse: String?)
 }
 
@@ -51,7 +51,7 @@ class DefaultReadIndexComponent(
     componentContext: ComponentContext,
     parentContext: ParentContext,
     private val ref: RefOption? = null,
-    private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
+    private val onNavigateViewPhrase: (phraseId: String) -> Unit,
     private val onNavigateEditPhrase: (phrase: String) -> Unit,
     private val onPhraseSelected: (
         phrase: Phrase,
@@ -126,8 +126,8 @@ class DefaultReadIndexComponent(
         onPhraseSelected(phrase, phrases, book, chapter, verse)
     }
 
-    override fun selectPhraseForView(phrase: Phrase) {
-        onNavigateViewPhrase(phrase)
+    override fun selectPhraseForView(phraseId: String) {
+        onNavigateViewPhrase(phraseId)
     }
 
     private fun navigateChapter(dir: NavDir) {

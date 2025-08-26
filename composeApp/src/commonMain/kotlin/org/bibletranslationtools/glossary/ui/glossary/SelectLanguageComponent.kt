@@ -11,8 +11,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Language
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.ParentContext
-import org.bibletranslationtools.glossary.ui.main.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.AppComponent
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -30,7 +30,6 @@ interface SelectLanguageComponent : ParentContext {
     )
 
     fun onLanguageClick(language: Language)
-    fun onBackClick()
 }
 
 class DefaultSelectLanguageComponent(

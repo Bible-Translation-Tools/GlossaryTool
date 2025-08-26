@@ -1,6 +1,5 @@
 package org.bibletranslationtools.glossary.ui.main
 
-import androidx.compose.runtime.Composable
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
@@ -26,6 +25,7 @@ import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.components.PhraseNavDir
 import org.bibletranslationtools.glossary.ui.glossary.DefaultGlossaryComponent
 import org.bibletranslationtools.glossary.ui.glossary.GlossaryComponent
@@ -39,9 +39,6 @@ import org.bibletranslationtools.glossary.ui.settings.SettingsComponent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-
-typealias ComposableSlot = @Composable () -> Unit
-val NoOpSlot: ComposableSlot = {}
 
 data class PhraseDetails(
     val phrase: Phrase,
@@ -67,14 +64,13 @@ sealed class GlossaryIntent {
     @Serializable
     data class EditPhrase(val phrase: String) : GlossaryIntent()
     @Serializable
-    data class ViewPhrase(val phrase: Phrase) : GlossaryIntent()
+    data class ViewPhrase(val phraseId: String) : GlossaryIntent()
     @Serializable
     data object CreateGlossary : GlossaryIntent()
 }
 
 interface MainComponent: ParentContext {
     val model: Value<Model>
-    val topBarSlot: Value<ComposableSlot>
 
     data class Model(
         val phraseDetails: PhraseDetails? = null,
@@ -88,7 +84,7 @@ interface MainComponent: ParentContext {
     fun navigatePhrase(dir: PhraseNavDir)
     fun navigateRef(dir: PhraseNavDir)
     fun clearPhraseDetails()
-    fun onViewPhraseClick(phrase: Phrase)
+    fun onViewPhraseClick(phraseId: String)
     fun onEditPhraseClick(phrase: String)
 
     sealed class Child {
@@ -112,9 +108,6 @@ class DefaultMainComponent(
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private val navigation = StackNavigation<Config>()
-
-    private val _topBarSlot = MutableValue(NoOpSlot)
-    override val topBarSlot: Value<ComposableSlot> = _topBarSlot
 
     override val childStack: Value<ChildStack<*, MainComponent.Child>> =
         childStack(
@@ -197,9 +190,9 @@ class DefaultMainComponent(
         _model.update { it.copy(phraseDetails = null) }
     }
 
-    override fun onViewPhraseClick(phrase: Phrase) {
+    override fun onViewPhraseClick(phraseId: String) {
         navigation.bringToFront(
-            Config.Glossary(GlossaryIntent.ViewPhrase(phrase))
+            Config.Glossary(GlossaryIntent.ViewPhrase(phraseId))
         )
     }
 
@@ -209,8 +202,8 @@ class DefaultMainComponent(
         )
     }
 
-    override fun setTopAppBar(slot: ComposableSlot?) {
-        _topBarSlot.value = slot ?: NoOpSlot
+    override fun onBackClick() {
+        navigation.pop()
     }
 
     private fun onNavigateBack() {

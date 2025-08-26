@@ -154,89 +154,93 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
         }
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(
-                start = 16.dp,
-                end = 16.dp,
-                top = 16.dp,
-                bottom = 8.dp
-            )
-            .pointerInput(Unit) {
-                awaitPointerEventScope {
-                    while (true) {
-                        val event = awaitPointerEvent()
-                        if (event.type == PointerEventType.Press
-                            && model.currentRef != null) {
-                            component.clearRef()
-                        }
-                    }
-                }
-            }
-    ) {
-        Column {
-            Column(
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(1f)) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .verticalScroll(scrollState),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold
+                    .fillMaxSize()
+                    .padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = 16.dp,
+                        bottom = 8.dp
                     )
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                model.activeChapter?.let { chapter ->
-                    SelectableText(
-                        chapter = chapter,
-                        phrases = model.chapterPhrases,
-                        selectedText = selectedText,
-                        currentVerse = model.currentRef?.verse,
-                        onSelectedTextChanged = { selectedText = it },
-                        onSaveSelection = { component.onEditPhraseSelected(it) },
-                        onPhraseClick = { phrase, verse ->
-                            component.onPhraseClick(phrase, verse)
-                        },
-                        onVersePosition = { versePosition = it }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ChapterNavigation(
-                title = title,
-                onBrowse = {
-                    model.activeBook?.let { book ->
-                        model.activeChapter?.let { chapter ->
-                            component.onBrowseClick(book.slug, chapter.number)
+                    .pointerInput(Unit) {
+                        awaitPointerEventScope {
+                            while (true) {
+                                val event = awaitPointerEvent()
+                                if (event.type == PointerEventType.Press
+                                    && model.currentRef != null) {
+                                    component.clearRef()
+                                }
+                            }
                         }
                     }
-                },
-                onPrevClick = {
-                    component.prevChapter()
-                },
-                onNextClick = {
-                    component.nextChapter()
-                }
-            )
-        }
+            ) {
+                Column {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .verticalScroll(scrollState),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(16.dp))
 
-        if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize()) {
-                Text(
-                    text = stringResource(Res.string.loading),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineMedium.copy(
+                                fontWeight = FontWeight.Bold
+                            )
+                        )
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        model.activeChapter?.let { chapter ->
+                            SelectableText(
+                                chapter = chapter,
+                                phrases = model.chapterPhrases,
+                                selectedText = selectedText,
+                                currentVerse = model.currentRef?.verse,
+                                onSelectedTextChanged = { selectedText = it },
+                                onSaveSelection = { component.onEditPhraseSelected(it) },
+                                onPhraseClick = { phrase, verse ->
+                                    component.onPhraseClick(phrase, verse)
+                                },
+                                onVersePosition = { versePosition = it }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    ChapterNavigation(
+                        title = title,
+                        onBrowse = {
+                            model.activeBook?.let { book ->
+                                model.activeChapter?.let { chapter ->
+                                    component.onBrowseClick(book.slug, chapter.number)
+                                }
+                            }
+                        },
+                        onPrevClick = {
+                            component.prevChapter()
+                        },
+                        onNextClick = {
+                            component.nextChapter()
+                        }
+                    )
+                }
+
+                if (isLoading) {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = stringResource(Res.string.loading),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
             }
         }
     }

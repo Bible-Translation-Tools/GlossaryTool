@@ -14,9 +14,9 @@ import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.ui.main.ParentContext
+import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.main.ReadIntent
-import org.bibletranslationtools.glossary.ui.main.AppComponent
 import org.koin.core.component.KoinComponent
 
 interface ReadComponent: ParentContext {
@@ -38,7 +38,7 @@ class DefaultReadComponent(
     componentContext: ComponentContext,
     private val parentContext: ParentContext,
     intent: ReadIntent,
-    private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
+    private val onNavigateViewPhrase: (phraseId: String) -> Unit,
     private val onPhraseDetails: (
         phrase: Phrase,
         phrases: List<Phrase>,
