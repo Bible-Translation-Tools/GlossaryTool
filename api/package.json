@@ -1,0 +1,23 @@
+{
+	"name": "glossary",
+	"type": "module",
+	"scripts": {
+		"dev": "wrangler dev",
+		"deploy": "wrangler deploy --minify",
+		"cf-typegen": "wrangler types --env-interface CloudflareBindings",
+		"db:generate": "drizzle-kit generate",
+		"db:migrate": "tsx migrate.ts"
+	},
+	"dependencies": {
+		"drizzle-orm": "^0.43.1",
+		"hono": "^4.9.6",
+		"uuid": "^11.1.0"
+	},
+	"devDependencies": {
+		"dotenv": "^16.5.0",
+		"drizzle-kit": "^0.31.1",
+		"postgres": "^3.4.5",
+		"tsx": "^4.19.4",
+		"wrangler": "^4.35.0"
+	}
+}
