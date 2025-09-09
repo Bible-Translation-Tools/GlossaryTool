@@ -19,7 +19,9 @@ import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
+import org.bibletranslationtools.glossary.ui.glossary.GlossaryComponent
 import org.bibletranslationtools.glossary.ui.glossary.GlossaryScreen
+import org.bibletranslationtools.glossary.ui.read.ReadComponent
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
 import org.bibletranslationtools.glossary.ui.resources.ResourcesScreen
 import org.bibletranslationtools.glossary.ui.settings.SettingsScreen
@@ -54,6 +56,22 @@ fun MainScreen(component: MainComponent) {
         1
     )
 
+    val showBottomBar = when (val child = activeChild) {
+        is MainComponent.Child.Read -> {
+            val readStack by child.component.childStack.subscribeAsState()
+            readStack.active.instance is ReadComponent.Child.Index
+        }
+        is MainComponent.Child.Glossary -> {
+            val glossaryStack by child.component.childStack.subscribeAsState()
+            when (glossaryStack.active.instance) {
+                is GlossaryComponent.Child.SearchPhrases -> false
+                else -> true
+            }
+        }
+        is MainComponent.Child.Resources,
+        is MainComponent.Child.Settings -> true
+    }
+
     LaunchedEffect(model.activeResource) {
         model.activeResource?.let { resource ->
             if (resource.toString() != selectedResource) {
@@ -72,8 +90,10 @@ fun MainScreen(component: MainComponent) {
 
     Scaffold(
         bottomBar = {
-            BottomNavBar(activeChild) { tab ->
-                component.onTabClicked(tab)
+            if (showBottomBar) {
+                BottomNavBar(activeChild) { tab ->
+                    component.onTabClicked(tab)
+                }
             }
         }
     ) { paddingValues ->

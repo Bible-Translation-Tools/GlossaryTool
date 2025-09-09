@@ -14,16 +14,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
@@ -49,13 +46,16 @@ import org.jetbrains.compose.resources.stringResource
 fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
     val model by component.model.subscribeAsState()
 
-    var code by remember { mutableStateOf("") }
     val focusRequesters = remember { List(5) { FocusRequester() } }
-
-    val focusManager = LocalFocusManager.current
-    val keyboardManager = LocalSoftwareKeyboardController.current
-
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(model.focusedIndex) {
+        model.focusedIndex?.let { index ->
+            if (index in focusRequesters.indices) {
+                focusRequesters[index].requestFocus()
+            }
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         TopAppBar(
@@ -95,7 +95,6 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
 
                         OtpInput(
                             code = model.otpCode,
-                            enabled = false,
                             focusRequesters = focusRequesters,
                             onAction = { component.onOtpAction(it) },
                             modifier = Modifier.fillMaxWidth()
@@ -104,8 +103,8 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
                         Spacer(modifier = Modifier.height(32.dp))
 
                         Button(
-                            onClick = { /* Handle download logic */ },
-                            enabled = false,
+                            onClick = component::onDownloadClicked,
+                            enabled = model.otpCode.none { it == null },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(56.dp),
