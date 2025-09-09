@@ -61,7 +61,7 @@ fun PhraseDetailsBar(
     resource: Resource,
     onNavPhrase: (PhraseNavDir) -> Unit,
     onNavRef: (PhraseNavDir) -> Unit,
-    onViewDetails: (Phrase) -> Unit,
+    onViewDetails: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     val currentPhrase by rememberUpdatedState(details.phrase)
@@ -233,7 +233,9 @@ fun PhraseDetailsBar(
                     Button(
                         onClick = {
                             onDismiss()
-                            onViewDetails(currentPhrase)
+                            currentPhrase.id?.let {
+                                onViewDetails(it)
+                            }
                         },
                         shape = MaterialTheme.shapes.medium,
                         modifier = Modifier.height(48.dp)

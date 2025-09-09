@@ -1,6 +1,5 @@
 package org.bibletranslationtools.glossary.ui.main
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
@@ -11,17 +10,18 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.stack.Children
-import com.arkivanov.decompose.extensions.compose.stack.animation.fade
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
+import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.BottomNavBar
-import org.bibletranslationtools.glossary.ui.components.KeyboardAware
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
+import org.bibletranslationtools.glossary.ui.glossary.GlossaryComponent
 import org.bibletranslationtools.glossary.ui.glossary.GlossaryScreen
+import org.bibletranslationtools.glossary.ui.read.ReadComponent
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
 import org.bibletranslationtools.glossary.ui.resources.ResourcesScreen
 import org.bibletranslationtools.glossary.ui.settings.SettingsScreen
@@ -32,7 +32,6 @@ import org.koin.compose.koinInject
 @Composable
 fun MainScreen(component: MainComponent) {
     val model by component.model.subscribeAsState()
-    val topBarContent by component.topBarSlot.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
     val resourceState by appStateStore.resourceStateHolder.resourceState
@@ -57,6 +56,22 @@ fun MainScreen(component: MainComponent) {
         1
     )
 
+    val showBottomBar = when (val child = activeChild) {
+        is MainComponent.Child.Read -> {
+            val readStack by child.component.childStack.subscribeAsState()
+            readStack.active.instance is ReadComponent.Child.Index
+        }
+        is MainComponent.Child.Glossary -> {
+            val glossaryStack by child.component.childStack.subscribeAsState()
+            when (glossaryStack.active.instance) {
+                is GlossaryComponent.Child.SearchPhrases -> false
+                else -> true
+            }
+        }
+        is MainComponent.Child.Resources,
+        is MainComponent.Child.Settings -> true
+    }
+
     LaunchedEffect(model.activeResource) {
         model.activeResource?.let { resource ->
             if (resource.toString() != selectedResource) {
@@ -73,29 +88,25 @@ fun MainScreen(component: MainComponent) {
         }
     }
 
-    KeyboardAware {
-        Scaffold(
-            topBar = {
-                topBarContent()
-            },
-            bottomBar = {
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
                 BottomNavBar(activeChild) { tab ->
                     component.onTabClicked(tab)
                 }
             }
-        ) { paddingValues ->
-            Box(modifier = Modifier.padding(paddingValues)) {
-                Children(
-                    stack = component.childStack,
-                    animation = stackAnimation(fade())
-                ) {
-                    when (val child = it.instance) {
-                        is MainComponent.Child.Read -> ReadScreen(child.component)
-                        is MainComponent.Child.Glossary -> GlossaryScreen(child.component)
-                        is MainComponent.Child.Resources -> ResourcesScreen(child.component)
-                        is MainComponent.Child.Settings -> SettingsScreen(child.component)
-                    }
-                }
+        }
+    ) { paddingValues ->
+        Children(
+            stack = component.childStack,
+            animation = stackAnimation(Utils.slideHorizontally()),
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            when (val child = it.instance) {
+                is MainComponent.Child.Read -> ReadScreen(child.component)
+                is MainComponent.Child.Glossary -> GlossaryScreen(child.component)
+                is MainComponent.Child.Resources -> ResourcesScreen(child.component)
+                is MainComponent.Child.Settings -> SettingsScreen(child.component)
             }
         }
     }

@@ -72,10 +72,6 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
     var searchQuery by remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
 
-    LaunchedEffect(Unit) {
-        component.setTopBar(null)
-    }
-
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let {
             component.loadPhrases(it)
@@ -91,162 +87,166 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
         }
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-            .background(MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.fillMaxSize()
-                .padding(16.dp)
-        ) {
-            glossaryState.glossary?.let { glossary ->
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.clickable {
-                        component.navigateGlossaryList()
-                    }
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier.fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize()
+                        .padding(16.dp)
                 ) {
-                    Text(
-                        text = stringResource(
-                            Res.string.glossary_code,
-                            glossary.code
-                        ),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 24.sp
-                    )
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowDown,
-                        contentDescription = "available glossaries"
-                    )
-                }
+                    glossaryState.glossary?.let { glossary ->
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                TextButton(
-                    onClick = {
-                        coroutineScope.launch {
-                            glossaryState.glossary?.let { glossary ->
-                                FileKit.openFileSaver(
-                                    suggestedName = "glossary-${glossary.code}",
-                                    extension = "zip"
-                                )?.let { file ->
-                                    component.onExportGlossaryClicked(glossary, file)
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable {
+                                component.navigateGlossaryList()
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(
+                                    Res.string.glossary_code,
+                                    glossary.code
+                                ),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp
+                            )
+                            Icon(
+                                imageVector = Icons.Default.KeyboardArrowDown,
+                                contentDescription = "available glossaries"
+                            )
+                        }
+
+                        TextButton(
+                            onClick = {
+                                coroutineScope.launch {
+                                    glossaryState.glossary?.let { glossary ->
+                                        FileKit.openFileSaver(
+                                            suggestedName = "glossary-${glossary.code}",
+                                            extension = "zip"
+                                        )?.let { file ->
+                                            component.onExportGlossaryClicked(glossary, file)
+                                        }
+                                    }
                                 }
+                            }
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.export_glossary)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(32.dp))
+
+                        Card(
+                            shape = MaterialTheme.shapes.medium,
+                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = component::navigateSearchPhrases
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(18.dp)
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.create_new_phrase),
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "add new word",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(
+                                top = 8.dp,
+                                bottom = BOTTOM_SEARCH_BAR_HEIGHT
+                            )
+                        ) {
+                            items(filteredPhrases) { phrase ->
+                                PhraseItem(
+                                    phrase = phrase,
+                                    modifier = Modifier.fillMaxWidth(),
+                                    onClick = {
+                                        phrase.id?.let(component::navigateViewPhrase)
+                                    }
+                                )
                             }
                         }
                     }
-                ) {
-                    Text(
-                        text = stringResource(Res.string.export_glossary)
-                    )
+
+                    if (glossaryState.glossary == null && !model.isLoading) {
+                        Text("Download Glossary. Coming soon...")
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Card(
-                    shape = MaterialTheme.shapes.medium,
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surface
-                    ),
-                    modifier = Modifier.fillMaxWidth(),
-                    onClick = component::navigateSearchPhrases
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(18.dp)
+                if (glossaryState.glossary != null) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.surface)
+                            .height(BOTTOM_SEARCH_BAR_HEIGHT)
+                            .align(Alignment.BottomCenter)
                     ) {
-                        Text(
-                            text = stringResource(Res.string.create_new_phrase),
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "add new word",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                }
+                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-                Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(
-                        top = 8.dp,
-                        bottom = BOTTOM_SEARCH_BAR_HEIGHT
-                    )
-                ) {
-                    items(filteredPhrases) { phrase ->
-                        PhraseItem(
-                            phrase = phrase,
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = {
-                                component.navigateViewPhrase(phrase)
-                            }
-                        )
-                    }
-                }
-            }
-
-            if (glossaryState.glossary == null && !model.isLoading) {
-                Text("Download Glossary. Coming soon...")
-            }
-        }
-
-        if (glossaryState.glossary != null) {
-            Column(
-                modifier = Modifier.fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface)
-                    .height(BOTTOM_SEARCH_BAR_HEIGHT)
-                    .align(Alignment.BottomCenter)
-            ) {
-                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 16.dp)
-                ) {
-                    SearchField(
-                        searchQuery = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholder = {
-                            Text(
-                                text = stringResource(Res.string.search),
-                                color = MaterialTheme.colorScheme.onSurface.copy(
-                                    alpha = 0.5f
-                                )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            SearchField(
+                                searchQuery = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                placeholder = {
+                                    Text(
+                                        text = stringResource(Res.string.search),
+                                        color = MaterialTheme.colorScheme.onSurface.copy(
+                                            alpha = 0.5f
+                                        )
+                                    )
+                                },
+                                colors = CustomTextFieldDefaults.colors(
+                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+                                ),
+                                modifier = Modifier.weight(1f)
+                                    .height(56.dp)
                             )
-                        },
-                        colors = CustomTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surface,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-                        ),
-                        modifier = Modifier.weight(1f)
-                            .height(56.dp)
-                    )
-                    IconButton(
-                        onClick = {}
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.FilterAlt,
-                            contentDescription = "Filter"
-                        )
+                            IconButton(
+                                onClick = {}
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.FilterAlt,
+                                    contentDescription = "Filter"
+                                )
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        model.progress?.let { progress ->
-            ProgressDialog(progress)
+                model.progress?.let { progress ->
+                    ProgressDialog(progress)
+                }
+            }
         }
     }
 }

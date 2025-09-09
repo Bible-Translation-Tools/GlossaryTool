@@ -41,17 +41,6 @@ fun OtpInputField(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-//    var text by remember {
-//        mutableStateOf(
-//            TextFieldValue(
-//                text = char ?: "",
-//                selection = TextRange(
-//                    index = if (char != null) 1 else 0
-//                )
-//            )
-//        )
-//    }
-
     var isFocused by remember { mutableStateOf(false) }
 
     val borderColor = if (isFocused) {
@@ -76,7 +65,9 @@ fun OtpInputField(
             value = char?.uppercase() ?: "",
             onValueChange = { newText ->
                 if (newText.length <= 1) {
-                    onCharChanged(newText.uppercase())
+                    if (newText.isNotEmpty()) {
+                        onCharChanged(newText.uppercase())
+                    }
                 }
             },
             enabled = enabled,

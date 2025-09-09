@@ -18,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -42,84 +41,84 @@ fun SearchPhrasesScreen(component: SearchPhrasesComponent) {
     val model by component.model.subscribeAsState()
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
-    LaunchedEffect(Unit) {
-        component.setTopBar {
-            TopAppBar(
-                actions = {
-                    SearchField(
-                        searchQuery = searchQuery,
-                        onValueChange = {
-                            searchQuery = it
-                            component.onSearchQueryChanged(searchQuery)
-                        },
-                        placeholder = {
-                            Text(
-                                text = stringResource(Res.string.search_placeholder),
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onSurface.copy(
-                                    alpha = 0.5f
-                                )
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            actions = {
+                SearchField(
+                    searchQuery = searchQuery,
+                    onValueChange = {
+                        searchQuery = it
+                        component.onSearchQueryChanged(searchQuery)
+                    },
+                    placeholder = {
+                        Text(
+                            text = stringResource(Res.string.search_placeholder),
+                            fontSize = 16.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.5f
                             )
-                        },
-                        colors = CustomTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
-                        ),
-                        modifier = Modifier.weight(1f)
-                            .height(56.dp)
-                    )
-                }
-            ) {
-                component.onBackClicked()
-            }
-        }
-    }
-
-    Column(
-        modifier = Modifier.fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(16.dp)
-        ) {
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = stringResource(Res.string.search_word_hint),
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            if (model.isSearching) {
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    },
+                    colors = CustomTextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
+                    ),
+                    modifier = Modifier.weight(1f)
+                        .height(56.dp)
                 )
-            } else {
-                LazyColumn {
-                    items(model.results) { phrase ->
-                        Row(
-                            modifier = Modifier.padding(12.dp)
-                                .clickable {
-                                    component.onEditClick(phrase)
+            }
+        ) {
+            component.onBackClick()
+        }
+
+        Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.surface)
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                        .padding(16.dp)
+                ) {
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Text(
+                        text = stringResource(Res.string.search_word_hint),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    if (model.isSearching) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    } else {
+                        LazyColumn {
+                            items(model.results) { phrase ->
+                                Row(
+                                    modifier = Modifier.padding(12.dp)
+                                        .clickable {
+                                            component.onEditClick(phrase)
+                                        }
+                                ) {
+                                    Text(
+                                        text = phrase,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                        contentDescription = "create"
+                                    )
                                 }
-                        ) {
-                            Text(
-                                text = phrase,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.weight(1f)
-                            )
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                contentDescription = "create"
-                            )
+                            }
                         }
                     }
                 }

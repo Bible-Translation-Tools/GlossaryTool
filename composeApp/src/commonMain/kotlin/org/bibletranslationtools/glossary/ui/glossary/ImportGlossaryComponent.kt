@@ -4,7 +4,6 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.arkivanov.essenty.lifecycle.doOnDestroy
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.importing_glossary
 import io.github.vinceglb.filekit.PlatformFile
@@ -17,37 +16,37 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.ImportGlossary
+import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.components.OtpAction
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface ImportGlossaryComponent {
+interface ImportGlossaryComponent : ParentContext {
     val model: Value<Model>
 
     data class Model(
         val isLoading: Boolean = false,
         val otpCode: List<String?> = (1..5).map { null },
         val focusedIndex: Int? = null,
-        val isOtpValid: Boolean? = null,
         val progress: Progress? = null
     )
 
-    fun onBackClicked()
     fun onOtpAction(action: OtpAction)
+    fun onDownloadClicked()
     fun onImportClicked(file: PlatformFile)
-    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultImportGlossaryComponent(
     componentContext: ComponentContext,
+    parentContext: ParentContext,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onImportFinished: () -> Unit,
-    private val onNavigateBack: () -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : ImportGlossaryComponent, KoinComponent, ComponentContext by componentContext {
+    private val onNavigateBack: () -> Unit
+) : AppComponent(componentContext, parentContext),
+    ImportGlossaryComponent, KoinComponent {
 
     private val importGlossary: ImportGlossary by inject()
 
@@ -56,45 +55,63 @@ class DefaultImportGlossaryComponent(
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    init {
-        lifecycle.doOnDestroy {
-            setTopBar(null)
-        }
-    }
-
-    override fun onBackClicked() {
+    override fun onBackClick() {
         onNavigateBack()
     }
 
     override fun onOtpAction(action: OtpAction) {
+        val currentModel = _model.value
+        val currentFocusIndex = currentModel.focusedIndex ?: 0
+
         when (action) {
             is OtpAction.OnChangeFieldFocused -> {
-                _model.update {
-                    it.copy(
-                        focusedIndex = action.index
-                    )
-                }
+                _model.update { it.copy(focusedIndex = action.index) }
             }
 
             is OtpAction.OnEnterChar -> {
-                enterChar(action.char, action.index)
-            }
+                val newOtpCode = currentModel.otpCode.toMutableList()
+                newOtpCode[action.index] = action.char?.takeIf { it.isNotEmpty() }
 
-            OtpAction.OnKeyboardBack -> {
-                val previousIndex = getPreviousFocusedIndex(_model.value.focusedIndex)
+                val nextFocusIndex = if (action.char?.isNotEmpty() == true && action.index < newOtpCode.lastIndex) {
+                    action.index + 1
+                } else {
+                    action.index
+                }
+
                 _model.update {
                     it.copy(
-                        otpCode = it.otpCode.mapIndexed { index, number ->
-                            if (index == previousIndex) {
-                                null
-                            } else {
-                                number
-                            }
-                        },
-                        focusedIndex = previousIndex
+                        otpCode = newOtpCode,
+                        focusedIndex = nextFocusIndex
                     )
                 }
             }
+            OtpAction.OnKeyboardBack -> {
+                val codeAtIndex = currentModel.otpCode.getOrNull(currentFocusIndex)
+                val newOtpCode = currentModel.otpCode.toMutableList()
+                var previousFocusIndex = currentFocusIndex
+
+                if (codeAtIndex != null) {
+                    newOtpCode[currentFocusIndex] = null
+                } else if (currentFocusIndex > 0) {
+                    previousFocusIndex = currentFocusIndex - 1
+                    newOtpCode[previousFocusIndex] = null
+                }
+
+                _model.update {
+                    it.copy(
+                        otpCode = newOtpCode,
+                        focusedIndex = previousFocusIndex
+                    )
+                }
+            }
+        }
+    }
+
+    override fun onDownloadClicked() {
+        println(model.value.otpCode)
+        if (model.value.otpCode.none { it == null }) {
+            val code = model.value.otpCode.joinToString("")
+            println("downloading $code...")
         }
     }
 
@@ -117,70 +134,5 @@ class DefaultImportGlossaryComponent(
 
             onImportFinished()
         }
-    }
-
-    override fun setTopBar(slot: ComposableSlot?) {
-        onSetTopBar(slot)
-    }
-
-    private fun enterChar(char: String?, index: Int) {
-        val newCode = _model.value.otpCode.mapIndexed { currentIndex, currentChar ->
-            if (currentIndex == index && char?.any { it.isLetterOrDigit() } == true) {
-                char
-            } else {
-                currentChar
-            }
-        }
-        val wasCharRemoved = char == null
-        _model.update {
-            it.copy(
-                otpCode = newCode,
-                focusedIndex = if (wasCharRemoved || it.otpCode.getOrNull(index) != null) {
-                    it.focusedIndex
-                } else {
-                    getNextFocusedTextFieldIndex(
-                        currentCode = it.otpCode,
-                        currentFocusedIndex = it.focusedIndex
-                    )
-                }
-            )
-        }
-    }
-
-    private fun getPreviousFocusedIndex(currentIndex: Int?): Int? {
-        return currentIndex?.minus(1)?.coerceAtLeast(0)
-    }
-
-    private fun getNextFocusedTextFieldIndex(
-        currentCode: List<String?>,
-        currentFocusedIndex: Int?
-    ): Int? {
-        if (currentFocusedIndex == null) {
-            return null
-        }
-
-        if (currentFocusedIndex == 4) {
-            return currentFocusedIndex
-        }
-
-        return getFirstEmptyFieldIndexAfterFocusedIndex(
-            code = currentCode,
-            currentFocusedIndex = currentFocusedIndex
-        )
-    }
-
-    private fun getFirstEmptyFieldIndexAfterFocusedIndex(
-        code: List<String?>,
-        currentFocusedIndex: Int
-    ): Int {
-        code.forEachIndexed { index, number ->
-            if (index <= currentFocusedIndex) {
-                return@forEachIndexed
-            }
-            if (number == null) {
-                return index
-            }
-        }
-        return currentFocusedIndex
     }
 }

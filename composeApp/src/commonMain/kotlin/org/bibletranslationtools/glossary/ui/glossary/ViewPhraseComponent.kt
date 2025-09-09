@@ -4,21 +4,21 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
-import com.arkivanov.essenty.lifecycle.doOnDestroy
+import com.arkivanov.essenty.lifecycle.doOnResume
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.ComposableSlot
+import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface ViewPhraseComponent {
+interface ViewPhraseComponent : ParentContext {
     val model: Value<Model>
 
     data class Model(
@@ -27,20 +27,19 @@ interface ViewPhraseComponent {
         val refs: List<Ref> = emptyList()
     )
 
-    fun onBackClick()
     fun onRefClick(ref: RefOption)
     fun onEditClick(phrase: String)
-    fun setTopBar(slot: ComposableSlot?)
 }
 
 class DefaultViewPhraseComponent(
     componentContext: ComponentContext,
-    private val phrase: Phrase,
+    parentContext: ParentContext,
+    private val phraseId: String,
     private val onNavigateBack: () -> Unit,
     private val onNavigateRef: (RefOption) -> Unit,
-    private val onNavigateEdit: (String) -> Unit,
-    private val onSetTopBar: (ComposableSlot?) -> Unit
-) : ViewPhraseComponent, KoinComponent, ComponentContext by componentContext {
+    private val onNavigateEdit: (String) -> Unit
+) : AppComponent(componentContext, parentContext),
+    ViewPhraseComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
 
@@ -50,23 +49,22 @@ class DefaultViewPhraseComponent(
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     init {
-        componentScope.launch {
-            _model.update { it.copy(isLoading = true) }
+        doOnResume {
+            componentScope.launch {
+                _model.update { it.copy(isLoading = true) }
 
-            val refs = withContext(Dispatchers.Default) {
-                phrase.id?.let { glossaryRepository.getRefs(it) }
-            } ?: emptyList()
+                val phrase = glossaryRepository.getPhrase(phraseId)
+                val refs = phrase?.id?.let { glossaryRepository.getRefs(it) }
+                    ?: emptyList()
 
-            _model.update {
-                it.copy(
-                    isLoading = false,
-                    phrase = phrase,
-                    refs = refs
-                )
+                _model.update {
+                    it.copy(
+                        isLoading = false,
+                        phrase = phrase,
+                        refs = refs
+                    )
+                }
             }
-        }
-        lifecycle.doOnDestroy {
-            setTopBar(null)
         }
     }
 
@@ -80,9 +78,5 @@ class DefaultViewPhraseComponent(
 
     override fun onEditClick(phrase: String) {
         onNavigateEdit(phrase)
-    }
-
-    override fun setTopBar(slot: ComposableSlot?) {
-        onSetTopBar(slot)
     }
 }
