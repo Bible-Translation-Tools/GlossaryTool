@@ -3,10 +3,7 @@ package org.bibletranslationtools.glossary.domain
 import glossary.composeapp.generated.resources.Res
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.get
-import kotlinx.io.IOException
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.Utils
 
@@ -37,11 +34,6 @@ data class CatalogFormat(
     val url: String
 )
 
-sealed class NetworkResult<out T> {
-    data class Success<T>(val data: T) : NetworkResult<T>()
-    data class Error(val status: Int, val message: String?) : NetworkResult<Nothing>()
-}
-
 interface CatalogApi {
     suspend fun updateCatalog()
     suspend fun getCatalog(): NetworkResult<Catalog>
@@ -49,9 +41,7 @@ interface CatalogApi {
     suspend fun downloadResource(url: String): NetworkResult<ByteArray>
 }
 
-class CatalogApiImpl(
-    private val httpClient: HttpClient
-): CatalogApi {
+class CatalogApiImpl(private val httpClient: HttpClient): CatalogApi {
 
     companion object {
         const val CATALOG_URL = "https://api.bibletranslationtools.org/v3/catalog.json"
@@ -62,7 +52,7 @@ class CatalogApiImpl(
     }
 
     override suspend fun getCatalog(): NetworkResult<Catalog> {
-        return callApi {
+        return ApiHelper.callApi {
             httpClient.get(CATALOG_URL).body()
         }
     }
@@ -74,34 +64,8 @@ class CatalogApiImpl(
     }
 
     override suspend fun downloadResource(url: String): NetworkResult<ByteArray> {
-        return callApi {
+        return ApiHelper.callApi {
             httpClient.get(url).body()
-        }
-    }
-
-    private suspend fun <T> callApi(block: suspend () -> T): NetworkResult<T> {
-        return try {
-            NetworkResult.Success(block())
-        } catch (e: ClientRequestException) {
-            NetworkResult.Error(
-                status = e.response.status.value,
-                message = e.response.body()
-            )
-        } catch (e: ServerResponseException) {
-            NetworkResult.Error(
-                status = e.response.status.value,
-                message = e.response.body()
-            )
-        } catch (e: IOException) {
-            NetworkResult.Error(
-                status = -1,
-                message = e.message
-            )
-        } catch (e: Exception) {
-            NetworkResult.Error(
-                status = -1,
-                message = e.message
-            )
         }
     }
 }

@@ -9,14 +9,6 @@ CREATE TABLE "glossaries" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "languages" (
-	"slug" text PRIMARY KEY NOT NULL,
-	"name" text NOT NULL,
-	"ang_name" text NOT NULL,
-	"direction" text NOT NULL,
-	"gw" integer NOT NULL
-);
---> statement-breakpoint
 CREATE TABLE "phrases" (
 	"id" text PRIMARY KEY NOT NULL,
 	"phrase" text NOT NULL,
@@ -38,12 +30,9 @@ CREATE TABLE "refs" (
 --> statement-breakpoint
 CREATE TABLE "resources" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"lang" text NOT NULL,
+	"language" text NOT NULL,
 	"type" text NOT NULL,
 	"version" text NOT NULL,
-	"format" text NOT NULL,
-	"url" text NOT NULL,
-	"filename" text NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"modified_at" timestamp with time zone DEFAULT now() NOT NULL
 );
@@ -61,13 +50,10 @@ CREATE TABLE "users" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "glossaries" ADD CONSTRAINT "glossaries_source_language_languages_slug_fk" FOREIGN KEY ("source_language") REFERENCES "public"."languages"("slug") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "glossaries" ADD CONSTRAINT "glossaries_target_language_languages_slug_fk" FOREIGN KEY ("target_language") REFERENCES "public"."languages"("slug") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "glossaries" ADD CONSTRAINT "glossaries_resource_id_resources_id_fk" FOREIGN KEY ("resource_id") REFERENCES "public"."resources"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "phrases" ADD CONSTRAINT "phrases_glossary_id_glossaries_id_fk" FOREIGN KEY ("glossary_id") REFERENCES "public"."glossaries"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "refs" ADD CONSTRAINT "refs_phrase_id_phrases_id_fk" FOREIGN KEY ("phrase_id") REFERENCES "public"."phrases"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "resources" ADD CONSTRAINT "resources_lang_languages_slug_fk" FOREIGN KEY ("lang") REFERENCES "public"."languages"("slug") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_unique_glossary" ON "glossaries" USING btree ("code");--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_unique_glossary" ON "glossaries" USING btree ("code","author");--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_unique_phrase" ON "phrases" USING btree ("phrase","glossary_id");--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_unique_resource" ON "resources" USING btree ("lang","type");--> statement-breakpoint
+CREATE UNIQUE INDEX "idx_unique_resource" ON "resources" USING btree ("language","type");--> statement-breakpoint
 CREATE UNIQUE INDEX "idx_unique_user" ON "users" USING btree ("email");

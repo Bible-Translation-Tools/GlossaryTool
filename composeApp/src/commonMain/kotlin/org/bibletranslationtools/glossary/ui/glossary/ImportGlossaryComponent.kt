@@ -5,6 +5,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.downloading_glossary
 import glossary.composeapp.generated.resources.importing_glossary
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.CoroutineScope
@@ -12,10 +13,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.SystemFileSystem
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.domain.DirectoryProvider
+import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.ImportGlossary
+import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.components.OtpAction
@@ -49,6 +54,8 @@ class DefaultImportGlossaryComponent(
     ImportGlossaryComponent, KoinComponent {
 
     private val importGlossary: ImportGlossary by inject()
+    private val glossaryApi: GlossaryApi by inject()
+    private val directoryProvider: DirectoryProvider by inject()
 
     private val _model = MutableValue(ImportGlossaryComponent.Model())
     override val model: Value<ImportGlossaryComponent.Model> = _model
@@ -108,10 +115,39 @@ class DefaultImportGlossaryComponent(
     }
 
     override fun onDownloadClicked() {
-        println(model.value.otpCode)
-        if (model.value.otpCode.none { it == null }) {
-            val code = model.value.otpCode.joinToString("")
-            println("downloading $code...")
+        componentScope.launch {
+            if (model.value.otpCode.none { it == null }) {
+                val progress = Progress(
+                    value = -1f,
+                    message = getString(Res.string.downloading_glossary)
+                )
+                _model.update { it.copy(progress = progress) }
+
+                val code = model.value.otpCode.joinToString("")
+
+                val result: ImportGlossary.Result? = withContext(Dispatchers.IO) {
+                    val result = glossaryApi.downloadGlossary(code)
+                    if (result is NetworkResult.Success) {
+                        val target = directoryProvider.createTempFile("download", ".zip")
+                        directoryProvider.writeFile(result.data, target)
+
+                        if (SystemFileSystem.exists(target)) {
+                            importGlossary(PlatformFile(target))
+                        } else null
+                    } else {
+                        println(result)
+                        null
+                    }
+                }
+
+                result?.let {
+                    onSelectResource(it.resource)
+                    onSelectGlossary(it.glossary)
+                    onImportFinished()
+                }
+
+                _model.update { it.copy(progress = null) }
+            }
         }
     }
 

@@ -26,26 +26,13 @@ export const usersTable = pgTable(
   (table) => [uniqueIndex("idx_unique_user").on(table.email)]
 );
 
-export const languageTable = pgTable("languages", {
-  slug: text("slug").primaryKey(),
-  name: text("name").notNull(),
-  angName: text("ang_name").notNull(),
-  direction: text("direction").notNull(),
-  gw: integer("gw").notNull(),
-});
-
 export const resourceTable = pgTable(
   "resources",
   {
     id: serial("id").primaryKey(),
-    lang: text("lang")
-      .notNull()
-      .references(() => languageTable.slug),
+    language: text("language").notNull(),
     type: text("type").notNull(),
     version: text("version").notNull(),
-    format: text("format").notNull(),
-    url: text("url").notNull(),
-    filename: text("filename").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -54,7 +41,7 @@ export const resourceTable = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("idx_unique_resource").on(table.lang, table.type)]
+  (table) => [uniqueIndex("idx_unique_resource").on(table.language, table.type)]
 );
 
 export const glossaryTable = pgTable(
@@ -63,12 +50,8 @@ export const glossaryTable = pgTable(
     id: text("id").primaryKey(),
     code: text("code").notNull(),
     author: text("author").notNull(),
-    sourceLanguage: text("source_language")
-      .notNull()
-      .references(() => languageTable.slug),
-    targetLanguage: text("target_language")
-      .notNull()
-      .references(() => languageTable.slug),
+    sourceLanguage: text("source_language").notNull(),
+    targetLanguage: text("target_language").notNull(),
     resourceId: integer("resource_id")
       .notNull()
       .references(() => resourceTable.id),
@@ -80,7 +63,7 @@ export const glossaryTable = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("idx_unique_glossary").on(table.code)]
+  (table) => [uniqueIndex("idx_unique_glossary").on(table.code, table.author)]
 );
 
 export const phraseTable = pgTable(
@@ -117,36 +100,13 @@ export const refTable = pgTable("refs", {
     .references(() => phraseTable.id, { onDelete: "cascade" }),
 });
 
-export const languageEntityRelations = relations(languageTable, ({ many }) => ({
-  resources: many(resourceTable),
-  sourceGlossaries: many(glossaryTable, { relationName: "sourceLanguage" }),
-  targetGlossaries: many(glossaryTable, { relationName: "targetLanguage" }),
+export const resourceEntityRelations = relations(resourceTable, ({ many }) => ({
+  glossaries: many(glossaryTable),
 }));
-
-export const resourceEntityRelations = relations(
-  resourceTable,
-  ({ one, many }) => ({
-    language: one(languageTable, {
-      fields: [resourceTable.lang],
-      references: [languageTable.slug],
-    }),
-    glossaries: many(glossaryTable),
-  })
-);
 
 export const glossaryEntityRelations = relations(
   glossaryTable,
   ({ one, many }) => ({
-    sourceLanguage: one(languageTable, {
-      fields: [glossaryTable.sourceLanguage],
-      references: [languageTable.slug],
-      relationName: "sourceLanguage",
-    }),
-    targetLanguage: one(languageTable, {
-      fields: [glossaryTable.targetLanguage],
-      references: [languageTable.slug],
-      relationName: "targetLanguage",
-    }),
     resource: one(resourceTable, {
       fields: [glossaryTable.resourceId],
       references: [resourceTable.id],

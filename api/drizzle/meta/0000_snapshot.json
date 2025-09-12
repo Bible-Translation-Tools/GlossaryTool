@@ -1,5 +1,5 @@
 {
-  "id": "f04eb580-8c45-42b3-8760-684c84edce0a",
+  "id": "3e3ff7fa-f4c3-4cd4-9ce3-094e9b28d90d",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -68,6 +68,12 @@
               "isExpression": false,
               "asc": true,
               "nulls": "last"
+            },
+            {
+              "expression": "author",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
             }
           ],
           "isUnique": true,
@@ -77,32 +83,6 @@
         }
       },
       "foreignKeys": {
-        "glossaries_source_language_languages_slug_fk": {
-          "name": "glossaries_source_language_languages_slug_fk",
-          "tableFrom": "glossaries",
-          "tableTo": "languages",
-          "columnsFrom": [
-            "source_language"
-          ],
-          "columnsTo": [
-            "slug"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
-        "glossaries_target_language_languages_slug_fk": {
-          "name": "glossaries_target_language_languages_slug_fk",
-          "tableFrom": "glossaries",
-          "tableTo": "languages",
-          "columnsFrom": [
-            "target_language"
-          ],
-          "columnsTo": [
-            "slug"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        },
         "glossaries_resource_id_resources_id_fk": {
           "name": "glossaries_resource_id_resources_id_fk",
           "tableFrom": "glossaries",
@@ -117,49 +97,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.languages": {
-      "name": "languages",
-      "schema": "",
-      "columns": {
-        "slug": {
-          "name": "slug",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "ang_name": {
-          "name": "ang_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "direction": {
-          "name": "direction",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "gw": {
-          "name": "gw",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -332,8 +269,8 @@
           "primaryKey": true,
           "notNull": true
         },
-        "lang": {
-          "name": "lang",
+        "language": {
+          "name": "language",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -346,24 +283,6 @@
         },
         "version": {
           "name": "version",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "format": {
-          "name": "format",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "url": {
-          "name": "url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "filename": {
-          "name": "filename",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -388,7 +307,7 @@
           "name": "idx_unique_resource",
           "columns": [
             {
-              "expression": "lang",
+              "expression": "language",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -406,21 +325,7 @@
           "with": {}
         }
       },
-      "foreignKeys": {
-        "resources_lang_languages_slug_fk": {
-          "name": "resources_lang_languages_slug_fk",
-          "tableFrom": "resources",
-          "tableTo": "languages",
-          "columnsFrom": [
-            "lang"
-          ],
-          "columnsTo": [
-            "slug"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
-        }
-      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},

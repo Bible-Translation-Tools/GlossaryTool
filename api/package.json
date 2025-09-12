@@ -10,10 +10,13 @@
 	},
 	"dependencies": {
 		"drizzle-orm": "^0.43.1",
+		"fflate": "^0.8.2",
 		"hono": "^4.9.6",
+		"js-yaml": "^4.1.0",
 		"uuid": "^11.1.0"
 	},
 	"devDependencies": {
+		"@types/js-yaml": "^4.0.9",
 		"dotenv": "^16.5.0",
 		"drizzle-kit": "^0.31.1",
 		"postgres": "^3.4.5",

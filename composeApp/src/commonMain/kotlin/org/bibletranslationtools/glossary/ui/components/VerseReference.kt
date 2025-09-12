@@ -97,13 +97,13 @@ fun VerseReference(
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
+        modifier = modifier.clickable { onClick() }
     ) {
         Text(
             text = annotatedText,
             style = style,
             inlineContent = mapOf("reference" to referenceView),
-            modifier = Modifier.weight(0.9f).clickable { onClick() }
+            modifier = Modifier.weight(0.9f)
         )
         Icon(
             imageVector = Icons.Default.ChevronRight,

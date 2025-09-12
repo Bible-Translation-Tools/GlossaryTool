@@ -6,6 +6,8 @@ import org.bibletranslationtools.glossary.domain.CatalogApiImpl
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
 import org.bibletranslationtools.glossary.domain.ExportGlossary
+import org.bibletranslationtools.glossary.domain.GlossaryApi
+import org.bibletranslationtools.glossary.domain.GlossaryApiImpl
 import org.bibletranslationtools.glossary.domain.GlossaryDataSource
 import org.bibletranslationtools.glossary.domain.GlossaryDataSourceImpl
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
@@ -41,6 +43,7 @@ val sharedModule = module {
     single { GlossaryDatabase(createSqlDriver()) }
     single { ResourceContainerAccessor(get()) }
     single { CatalogApiImpl(createHttpClient(httpClientEngine)) }.bind<CatalogApi>()
+    single { GlossaryApiImpl(createHttpClient(httpClientEngine)) }.bind<GlossaryApi>()
 
     singleOf(::GlossaryDataSourceImpl).bind<GlossaryDataSource>()
     singleOf(::PhraseDataSourceImpl).bind<PhraseDataSource>()
