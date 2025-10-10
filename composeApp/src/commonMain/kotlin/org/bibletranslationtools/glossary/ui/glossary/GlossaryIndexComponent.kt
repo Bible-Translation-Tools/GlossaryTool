@@ -72,6 +72,7 @@ class DefaultGlossaryIndexComponent(
             _model.update { it.copy(isLoading = true) }
 
             val phrases = glossaryRepository.getPhrases(glossary.id)
+                .sortedBy { it.phrase.lowercase() }
 
             _model.update {
                 it.copy(
