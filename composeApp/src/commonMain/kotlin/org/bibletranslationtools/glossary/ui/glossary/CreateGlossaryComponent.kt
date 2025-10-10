@@ -250,14 +250,18 @@ class DefaultCreateGlossaryComponent(
                 val phraseId = glossaryRepository.addPhrase(phrase)
                 if (item.references.isNotEmpty()) {
                     item.references.map {
-                        val (book, chapter, verse) = it.split(":")
-                        val ref = Ref(
-                            book = book,
-                            chapter = chapter,
-                            verse = verse,
-                            phraseId = phraseId
-                        )
-                        glossaryRepository.addRef(ref)
+                        try {
+                            val (book, chapter, verse) = it.split(":")
+                            val ref = Ref(
+                                book = book,
+                                chapter = chapter,
+                                verse = verse,
+                                phraseId = phraseId
+                            )
+                            glossaryRepository.addRef(ref)
+                        } catch (_: Exception) {
+                            println("Invalid reference: $it")
+                        }
                     }
                 }
             }
