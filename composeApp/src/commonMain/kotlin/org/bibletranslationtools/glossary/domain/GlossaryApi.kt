@@ -8,7 +8,6 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsChannel
-import io.ktor.client.statement.bodyAsText
 import io.ktor.utils.io.toByteArray
 
 interface GlossaryApi {
@@ -35,9 +34,6 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
             val resp = httpClient.post(API_URL) {
                 setBody(file.readBytes())
             }
-
-            println(resp.bodyAsText())
-
             resp.body()
         }
     }
