@@ -17,6 +17,7 @@ import org.bibletranslationtools.glossary.platform.applyLocale
 import org.bibletranslationtools.glossary.ui.DarkColorScheme
 import org.bibletranslationtools.glossary.ui.LightColorScheme
 import org.bibletranslationtools.glossary.ui.MainAppTheme
+import org.bibletranslationtools.glossary.ui.RootComponent
 import org.bibletranslationtools.glossary.ui.main.MainScreen
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.splash.SplashScreen

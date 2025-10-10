@@ -22,7 +22,7 @@ import org.jetbrains.compose.resources.stringResource
 fun BottomNavBar(currentTab: MainComponent.Child, onTabSelected: (MainTab) -> Unit) {
     val tabs = MainTab.entries
     val activeColor = MaterialTheme.colorScheme.primary
-    val borderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+    val borderColor = MaterialTheme.colorScheme.outline
 
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,

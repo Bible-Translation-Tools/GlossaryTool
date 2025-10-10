@@ -14,6 +14,7 @@ import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.app_name
 import org.bibletranslationtools.glossary.di.initKoin
+import org.bibletranslationtools.glossary.ui.DefaultRootComponent
 import org.jetbrains.compose.resources.stringResource
 
 fun main() {

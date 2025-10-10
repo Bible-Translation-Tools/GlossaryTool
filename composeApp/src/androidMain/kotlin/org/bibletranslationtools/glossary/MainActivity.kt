@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import com.arkivanov.decompose.retainedComponent
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
+import org.bibletranslationtools.glossary.ui.DefaultRootComponent
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

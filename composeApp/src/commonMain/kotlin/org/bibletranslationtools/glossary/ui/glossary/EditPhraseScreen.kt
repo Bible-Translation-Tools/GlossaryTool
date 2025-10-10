@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -49,19 +52,6 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
         mutableStateOf("")
     }
 
-    LaunchedEffect(Unit) {
-        component.setTopBar {
-            TopAppBar(
-                title = stringResource(
-                    Res.string.editing_phrase,
-                    model.phrase?.phrase ?: ""
-                )
-            ) {
-                component.onBackClick()
-            }
-        }
-    }
-
     LaunchedEffect(model.phrase) {
         model.phrase?.let { phrase ->
             if (spelling.isEmpty()) {
@@ -73,134 +63,149 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
         }
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize()
-            .background(color = MaterialTheme.colorScheme.surface)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(16.dp)
+    Column(modifier = Modifier.fillMaxSize()) {
+        TopAppBar(
+            title = stringResource(
+                Res.string.editing_phrase,
+                model.phrase?.phrase ?: ""
+            )
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            component.onBackClick()
+        }
 
-            Text(
-                text = stringResource(Res.string.spelling),
-                fontWeight = FontWeight.W600
-            )
-            OutlinedTextField(
-                value = spelling,
-                onValueChange = { spelling = it },
-                singleLine = true,
-                textStyle = TextStyle.Default.copy(
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold
-                ),
-                enabled = !model.isSaving,
-                shape = MaterialTheme.shapes.medium,
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.8f
-                    ),
-                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.12f
-                    ),
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.1f
-                    )
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = stringResource(Res.string.description),
-                fontWeight = FontWeight.W600
-            )
-            OutlinedTextField(
-                value = description,
-                onValueChange = { description = it },
-                minLines = 5,
-                maxLines = 10,
-                enabled = !model.isSaving,
-                shape = MaterialTheme.shapes.medium,
-                colors = TextFieldDefaults.colors(
-                    focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.8f
-                    ),
-                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.12f
-                    ),
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
-                        alpha = 0.1f
-                    )
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
+        Column(modifier = Modifier.weight(1f)) {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.surface)
+                    .verticalScroll(rememberScrollState())
+                    .imePadding()
             ) {
-                Button(
-                    enabled = spelling.isNotEmpty()
-                            && !model.isSaving,
-                    onClick = {
-                        component.savePhrase(
-                            spelling = spelling,
-                            description = description
-                        )
-                    },
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(stringResource(Res.string.save_exit))
-                }
-                Button(
-                    onClick = { component.onBackClick() },
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                        contentColor = MaterialTheme.colorScheme.primary
-                    )
-                ) {
-                    Text(stringResource(Res.string.cancel))
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            model.error?.let { error ->
                 Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxSize()
+                        .padding(16.dp)
                 ) {
+                    Spacer(modifier = Modifier.height(12.dp))
+
                     Text(
-                        text = error,
-                        color = MaterialTheme.colorScheme.error
+                        text = stringResource(Res.string.spelling),
+                        fontWeight = FontWeight.W600
                     )
-                    Spacer(modifier = Modifier.height(24.dp))
-                }
-            }
+                    OutlinedTextField(
+                        value = spelling,
+                        onValueChange = { spelling = it },
+                        singleLine = true,
+                        textStyle = TextStyle.Default.copy(
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold
+                        ),
+                        enabled = !model.isSaving,
+                        shape = MaterialTheme.shapes.medium,
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.8f
+                            ),
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.12f
+                            ),
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.1f
+                            )
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
-            if (model.isSaving) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    CircularProgressIndicator()
-                    Text(stringResource(Res.string.saving))
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Text(
+                        text = stringResource(Res.string.description),
+                        fontWeight = FontWeight.W600
+                    )
+                    OutlinedTextField(
+                        value = description,
+                        onValueChange = { description = it },
+                        minLines = 5,
+                        maxLines = 10,
+                        enabled = !model.isSaving,
+                        shape = MaterialTheme.shapes.medium,
+                        colors = TextFieldDefaults.colors(
+                            focusedTextColor = MaterialTheme.colorScheme.onBackground,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.8f
+                            ),
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.12f
+                            ),
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            disabledContainerColor = MaterialTheme.colorScheme.onSurface.copy(
+                                alpha = 0.1f
+                            )
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Button(
+                            enabled = spelling.isNotEmpty()
+                                    && !model.isSaving,
+                            onClick = {
+                                component.savePhrase(
+                                    spelling = spelling,
+                                    description = description
+                                )
+                            },
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(Res.string.save_exit))
+                        }
+                        Button(
+                            onClick = { component.onBackClick() },
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
+                                contentColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            Text(stringResource(Res.string.cancel))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    model.error?.let { error ->
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+                    }
+
+                    if (model.isSaving) {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            CircularProgressIndicator()
+                            Text(stringResource(Res.string.saving))
+                        }
+                    }
                 }
             }
         }

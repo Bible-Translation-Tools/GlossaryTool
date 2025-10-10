@@ -5,6 +5,7 @@ import org.bibletranslationtools.glossary.PhraseEntity
 
 interface PhraseDataSource {
     suspend fun getByGlossary(glossaryId: String): List<PhraseEntity>
+    suspend fun getById(id: String): PhraseEntity?
     suspend fun getByPhrase(phrase: String, glossaryId: String): PhraseEntity?
     suspend fun insert(phrase: PhraseEntity): String?
     suspend fun delete(id: String): Long
@@ -15,6 +16,10 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
 
     override suspend fun getByGlossary(glossaryId: String) =
         queries.getByGlossary(glossaryId).executeAsList()
+
+    override suspend fun getById(id: String): PhraseEntity? {
+        return queries.getById(id).executeAsOneOrNull()
+    }
 
     override suspend fun getByPhrase(phrase: String, glossaryId: String): PhraseEntity? {
         return queries.getByPhrase(phrase, glossaryId).executeAsOneOrNull()

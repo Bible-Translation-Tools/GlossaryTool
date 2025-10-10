@@ -10,11 +10,17 @@ import androidx.compose.ui.Modifier
 
 @Composable
 fun ResourcesScreen(component: ResourcesComponent) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Text("Resources Screen")
+    Column(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier.weight(1f)) {
+
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Text("Resources Screen")
+        }
     }
 }

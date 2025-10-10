@@ -12,6 +12,7 @@ interface GlossaryRepository {
     suspend fun getGlossary(code: String): Glossary?
     suspend fun getGlossaries(): List<Glossary>
     suspend fun addGlossary(glossary: Glossary): String?
+    suspend fun getPhrase(id: String): Phrase?
     suspend fun getPhrase(phrase: String, glossaryId: String): Phrase?
     suspend fun getPhrases(glossaryId: String?): List<Phrase>
     suspend fun addPhrase(phrase: Phrase): String?
@@ -69,6 +70,10 @@ class GlossaryRepositoryImpl(
 
     override suspend fun addGlossary(glossary: Glossary): String? {
         return glossaryDataSource.insert(glossary.toEntity())
+    }
+
+    override suspend fun getPhrase(id: String): Phrase? {
+        return phraseDataSource.getById(id)?.toModel()
     }
 
     override suspend fun getPhrase(phrase: String, glossaryId: String): Phrase? {
