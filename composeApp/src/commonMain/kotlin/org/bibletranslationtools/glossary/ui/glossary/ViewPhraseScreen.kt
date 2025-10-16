@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Edit
@@ -28,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -87,7 +89,16 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(model.phrase?.description ?: "")
+                    BasicTextField(
+                        value = model.phrase?.description ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        maxLines = 5,
+                        textStyle = TextStyle.Default.copy(
+                            fontSize = 16.sp,
+                            lineHeight = 32.sp
+                        )
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
