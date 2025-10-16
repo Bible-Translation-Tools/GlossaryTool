@@ -1,30 +1,34 @@
 package org.bibletranslationtools.glossary.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.foundation.text.appendInlineContent
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.Placeholder
 import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.read_more
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun VerseReference(
@@ -32,7 +36,7 @@ fun VerseReference(
     phrase: String,
     text: String,
     modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
+    onClick: (() -> Unit)? = null
 ) {
     val style = TextStyle.Default.copy(
         lineHeight = 28.sp,
@@ -64,6 +68,12 @@ fun VerseReference(
         }
     }
 
+    var currentVerseText by remember { mutableStateOf(text) }
+
+    LaunchedEffect(text) {
+        currentVerseText = shortenVerseText(text, phrase)
+    }
+
     val annotatedText = buildAnnotatedString {
         appendInlineContent(referenceTag, reference)
 
@@ -72,11 +82,11 @@ fun VerseReference(
             pattern = "\\b${Regex.escape(phrase)}\\b",
             option = RegexOption.IGNORE_CASE
         )
-        regex.findAll(text).forEach { match ->
+        regex.findAll(currentVerseText).forEach { match ->
             val startIndex = match.range.first
             val endIndex = match.range.last + 1
 
-            append(text.substring(lastIndex, startIndex))
+            append(currentVerseText.substring(lastIndex, startIndex))
 
             withStyle(
                 style = SpanStyle(
@@ -89,26 +99,53 @@ fun VerseReference(
 
             lastIndex = endIndex
         }
-        if (lastIndex < text.length) {
-            append(text.substring(lastIndex))
+        if (lastIndex < currentVerseText.length) {
+            append(currentVerseText.substring(lastIndex))
+        }
+
+        onClick?.let { func ->
+            append(" ")
+            withLink(
+                link = LinkAnnotation.Clickable(
+                    tag = "read_more",
+                    linkInteractionListener = { func() }
+                )
+            ) {
+                withStyle(
+                    style = SpanStyle(
+                        color = MaterialTheme.colorScheme.primary,
+                        textDecoration = TextDecoration.Underline
+                    )
+                ) {
+                    append(stringResource(Res.string.read_more))
+                }
+            }
         }
     }
 
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.clickable { onClick() }
-    ) {
-        Text(
-            text = annotatedText,
-            style = style,
-            inlineContent = mapOf("reference" to referenceView),
-            modifier = Modifier.weight(0.9f)
-        )
-        Icon(
-            imageVector = Icons.Default.ChevronRight,
-            contentDescription = "go ref",
-            modifier = Modifier.weight(0.1f)
-        )
+    Text(
+        text = annotatedText,
+        style = style,
+        inlineContent = mapOf("reference" to referenceView),
+        modifier = modifier
+    )
+}
+
+private fun shortenVerseText(text: String, phrase: String): String {
+    val maxLength = 100
+    if (text.length <= maxLength) return text
+
+    val wordIndex = text.indexOf(phrase, ignoreCase = true)
+
+    if (wordIndex == -1) return "${text.take(maxLength)}..."
+
+    val desiredStartIndex = wordIndex - (maxLength - phrase.length) / 2
+    val startIndex = desiredStartIndex.coerceIn(0, text.length - maxLength)
+    val endIndex = startIndex + maxLength
+
+    return buildString {
+        if (startIndex > 0) append("...")
+        append(text.substring(startIndex, endIndex))
+        if (endIndex < text.length) append("...")
     }
 }

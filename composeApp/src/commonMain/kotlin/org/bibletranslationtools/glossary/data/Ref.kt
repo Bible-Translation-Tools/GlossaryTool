@@ -1,8 +1,10 @@
 package org.bibletranslationtools.glossary.data
 
+import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.RefEntity
 import org.bibletranslationtools.glossary.Utils.generateUUID
 
+@Serializable
 data class Ref(
     val book: String,
     val chapter: String,
@@ -10,12 +12,19 @@ data class Ref(
     val phraseId: String? = null,
     val id: String? = null
 ) {
-    fun getText(resource: Resource): String {
+    fun getVerseText(resource: Resource): String {
         return resource.books
             .single { it.slug == book }
             .chapters.single { it.number.toString() == chapter }
             .verses.single { it.number == verse }
             .text
+    }
+
+    fun getChapterVerses(resource: Resource): List<Verse> {
+        return resource.books
+            .single { it.slug == book }
+            .chapters.single { it.number.toString() == chapter }
+            .verses
     }
 
     override fun toString(): String {

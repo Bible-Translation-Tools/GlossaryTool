@@ -82,7 +82,6 @@ interface MainComponent: ParentContext {
 
     fun onTabClicked(tab: MainTab)
     fun navigatePhrase(dir: PhraseNavDir)
-    fun navigateRef(dir: PhraseNavDir)
     fun clearPhraseDetails()
     fun onViewPhraseClick(phraseId: String)
     fun onEditPhraseClick(phrase: String)
@@ -144,7 +143,6 @@ class DefaultMainComponent(
                     componentContext = context,
                     parentContext = this,
                     intent = config.intent,
-                    onNavigateRef = ::navigateToReadAndLoadRef,
                     onSelectResource = ::selectActiveResource,
                     onSelectGlossary = ::selectActiveGlossary,
                     onNavigateBack = navigation::pop
@@ -177,12 +175,6 @@ class DefaultMainComponent(
     override fun navigatePhrase(dir: PhraseNavDir) {
         componentScope.launch {
             navigatePhrase(dir.value)
-        }
-    }
-
-    override fun navigateRef(dir: PhraseNavDir) {
-        componentScope.launch {
-            navigateRef(dir.value)
         }
     }
 
@@ -316,24 +308,6 @@ class DefaultMainComponent(
                 it.book == book.slug
                         && it.chapter == chapter.number.toString()
                         && (verse == null || it.verse == verse)
-            }
-        }
-    }
-
-    private suspend fun navigateRef(incr: Int) {
-        withContext(Dispatchers.Default) {
-            _model.value.phraseDetails?.let { details ->
-                val refs = glossaryRepository.getRefs(details.phrase.id)
-                refs.getOrNull(refs.indexOf(details.ref) + incr)
-                    ?.let { ref ->
-                        _model.update { state ->
-                            state.copy(
-                                phraseDetails = details.copy(
-                                    ref = ref
-                                )
-                            )
-                        }
-                    }
             }
         }
     }

@@ -37,7 +37,6 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_audio
 import glossary.composeapp.generated.resources.edit
-import org.bibletranslationtools.glossary.data.toOption
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -163,7 +162,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                             items(model.refs) { ref ->
                                 resourceState.resource?.let { resource ->
                                     val reference = "${ref.book.uppercase()} ${ref.chapter}:${ref.verse}"
-                                    val text = ref.getText(resource)
+                                    val text = ref.getVerseText(resource)
 
                                     model.phrase?.let { phrase ->
                                         VerseReference(
@@ -172,7 +171,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                             text = text,
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            component.onRefClick(ref.toOption())
+                                            component.onRefClick(ref)
                                         }
                                     }
                                 }

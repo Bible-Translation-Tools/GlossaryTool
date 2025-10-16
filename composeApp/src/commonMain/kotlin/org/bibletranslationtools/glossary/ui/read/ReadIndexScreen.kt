@@ -17,12 +17,10 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -35,16 +33,12 @@ import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.loading
-import kotlinx.coroutines.flow.drop
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.components.SelectableText
 import org.jetbrains.compose.resources.stringResource
-
-private const val TITLE_GAP = 300
 
 @OptIn(InternalTextApi::class)
 @Composable
@@ -91,8 +85,6 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
         }
     }
 
-    var versePosition by remember { mutableIntStateOf(0) }
-
     LaunchedEffect(Unit) {
         if (model.currentRef == null) {
             component.loadRef(
@@ -136,21 +128,6 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                 bookSlug = ref.book,
                 chapter = ref.chapter
             )
-        }
-    }
-
-    LaunchedEffect(bookChapterChanged, model.currentRef) {
-        val ref = model.currentRef ?: return@LaunchedEffect
-
-        if (model.activeBook?.slug == ref.book
-            && model.activeChapter?.number == ref.chapter
-        ) {
-            snapshotFlow { versePosition }
-                .drop(1)
-                .first()
-                .let { newPosition ->
-                    scrollState.animateScrollTo(versePosition - TITLE_GAP)
-                }
         }
     }
 
@@ -206,8 +183,7 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                                 onSaveSelection = { component.onEditPhraseSelected(it) },
                                 onPhraseClick = { phrase, verse ->
                                     component.onPhraseClick(phrase, verse)
-                                },
-                                onVersePosition = { versePosition = it }
+                                }
                             )
                         }
                     }
