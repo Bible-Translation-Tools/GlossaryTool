@@ -28,7 +28,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,11 +50,11 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
     val resourceState by appStateStore.resourceStateHolder.resourceState
         .collectAsStateWithLifecycle()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = model.phrase?.phrase,
-            backgroundColor = MaterialTheme.colorScheme.surfaceVariant
-        ) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        TopAppBar(title = model.phrase?.phrase) {
             component.onBackClick()
         }
 
@@ -140,11 +139,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Box(
-                    modifier = Modifier
-                        .background(Color.Transparent)
-                        .weight(1f)
-                ) {
+                Box(modifier = Modifier.weight(1f)) {
                     if (model.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)

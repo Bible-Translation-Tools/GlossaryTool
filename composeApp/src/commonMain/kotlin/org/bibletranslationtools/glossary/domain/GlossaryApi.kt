@@ -4,6 +4,7 @@ import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -24,8 +25,16 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
     override suspend fun downloadGlossary(code: String): NetworkResult<ByteArray> {
         return ApiHelper.callApi {
             val response = httpClient.get("$API_URL/$code")
-            val channel = response.bodyAsChannel()
-            channel.toByteArray()
+
+            if (response.status.value in 200..299) {
+                val channel = response.bodyAsChannel()
+                channel.toByteArray()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error downloading glossary"
+                )
+            }
         }
     }
 

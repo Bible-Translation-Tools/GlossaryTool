@@ -90,11 +90,13 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
         Column(modifier = Modifier.weight(1f)) {
             Box(
                 modifier = Modifier.fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .positionAwareImePadding()
             ) {
                 glossaryState.glossary?.let { glossary ->

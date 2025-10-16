@@ -30,6 +30,7 @@ import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
@@ -132,6 +133,7 @@ fun SelectableText(
                         withLink(
                             link = LinkAnnotation.Clickable(
                                 tag = match.value,
+                                styles = TextLinkStyles(),
                                 linkInteractionListener = {
                                     currentPhrases.firstOrNull {
                                         it.phrase.lowercase() == match.value.lowercase()

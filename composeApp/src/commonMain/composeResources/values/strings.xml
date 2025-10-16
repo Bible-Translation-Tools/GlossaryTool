@@ -67,4 +67,5 @@
     <string name="users_count">%1$d users</string>
     <string name="no_phrases_found">No phrases found</string>
     <string name="read_more">Read More</string>
+    <string name="reference_not_found">Reference text not found</string>
 </resources>

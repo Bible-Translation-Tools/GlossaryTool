@@ -19,7 +19,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
@@ -46,11 +45,11 @@ fun ViewChapterScreen(component: ViewChapterComponent) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = model.phrase?.phrase,
-            backgroundColor = MaterialTheme.colorScheme.surfaceVariant
-        ) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        TopAppBar(title = model.phrase?.phrase) {
             component.onBackClick()
         }
 
@@ -58,7 +57,6 @@ fun ViewChapterScreen(component: ViewChapterComponent) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
-                        .background(Color.Transparent)
                         .weight(1f)
                         .pointerInput(Unit) {
                             awaitPointerEventScope {

@@ -40,8 +40,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.reference_not_found
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.main.PhraseDetails
+import org.jetbrains.compose.resources.stringResource
 
 enum class PhraseNavDir(val value: Int) {
     PREV(-1),
@@ -62,7 +65,7 @@ fun PhraseDetailsBar(
 
     val reference = currentRef?.let {
         "${it.book.uppercase()} ${it.chapter}:${it.verse}"
-    } ?: "ref"
+    }
 
     LaunchedEffect(currentPhrase, currentRef) {
         currentVerseText = currentRef?.getVerseText(resource) ?: ""
@@ -176,12 +179,16 @@ fun PhraseDetailsBar(
 
                 Spacer(Modifier.height(16.dp))
 
-                VerseReference(
-                    reference = reference,
-                    phrase = currentPhrase.phrase,
-                    text = currentVerseText,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                reference?.let { ref ->
+                    VerseReference(
+                        reference = ref,
+                        phrase = currentPhrase.phrase,
+                        text = currentVerseText,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } ?: run {
+                    Text(text = stringResource(Res.string.reference_not_found))
+                }
             }
         }
     }

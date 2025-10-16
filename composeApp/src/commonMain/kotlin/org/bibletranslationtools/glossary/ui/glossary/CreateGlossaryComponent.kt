@@ -240,6 +240,9 @@ class DefaultCreateGlossaryComponent(
         }
         stet?.forEach { item ->
             val words = item.alternatives.ifEmpty { listOf(item.word) }
+                .sortedWith(compareBy({ it.lowercase() }, { it }))
+                .distinctBy { it.lowercase() }
+
             words.forEach { word ->
                 val phrase = Phrase(
                     phrase = word,
