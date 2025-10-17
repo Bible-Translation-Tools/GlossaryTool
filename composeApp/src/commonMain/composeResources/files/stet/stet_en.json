@@ -1,0 +1,2843 @@
+[
+  {
+    "word": "Abba",
+    "strongs": [
+      "G5"
+    ],
+    "description": "This Greek word is used for “father” by a beloved child.\n- Jesus used this word when speaking to God, his Father.\n- Christians can use this word when talking to God.\nMost translations transliterate this from the Greek word.",
+    "references": [
+      "mrk:14:36",
+      "rom:8:15",
+      "gal:4:6"
+    ],
+    "alternatives": [
+      "Abba"
+    ]
+  },
+  {
+    "word": "adoption",
+    "strongs": [
+      "G5206"
+    ],
+    "description": "This word is used to describe when a person accepts into the family a child who was not their son or daughter. This child then is loved and accepted as a son or a daughter.",
+    "references": [
+      "rom:8:15",
+      "rom:8:23",
+      "rom:9:4",
+      "gal:4:5",
+      "eph:1:5"
+    ],
+    "alternatives": [
+      "adoption"
+    ]
+  },
+  {
+    "word": "angel",
+    "strongs": [
+      "G32"
+    ],
+    "description": "This word can mean:\n- Someone who has been sent by someone else, usually to deliver a message.\n- An angel who delivers messages from God or does things for God. Most New Testament uses of this word refer to these supernatural beings.\n- A demon. A demon is an angel who does not obey God.",
+    "references": [
+      "mat:1:20",
+      "mat:4:11",
+      "mrk:1:13",
+      "luk:16:22",
+      "act:12:10",
+      "1co:13:1",
+      "gal:3:19",
+      "2th:1:7",
+      "1ti:5:21",
+      "heb:1:5",
+      "1pe:3:22",
+      "2pe:2:4",
+      "rev:5:11"
+    ],
+    "alternatives": [
+      "angel",
+      "angels"
+    ]
+  },
+  {
+    "word": "anger",
+    "strongs": [
+      "G3709",
+      "G3710",
+      "G3949"
+    ],
+    "description": "This word can mean feeling or showing strong displeasure, hostility, or wrath.",
+    "references": [
+      "mrk:3:5",
+      "luk:3:7",
+      "rom:1:18",
+      "rom:5:9",
+      "eph:2:3",
+      "eph:4:26",
+      "eph:6:4",
+      "col:3:6",
+      "1th:1:10",
+      "1th:5:9",
+      "rev:11:18"
+    ],
+    "alternatives": [
+      "anger",
+      "wrath"
+    ]
+  },
+  {
+    "word": "apostle",
+    "strongs": [
+      "G652"
+    ],
+    "description": "This word can mean a person that someone has sent, especially a person that God sent to people with a special message. The apostles were men that Jesus sent to tell people about him.",
+    "references": [
+      "mat:10:2",
+      "mrk:6:30",
+      "luk:6:13",
+      "act:1:26",
+      "act:5:2",
+      "rom:1:1",
+      "rom:16:7",
+      "1co:1:1",
+      "1co:12:29",
+      "2co:1:1",
+      "2co:11:13",
+      "gal:1:1",
+      "eph:1:1",
+      "1ti:1:1",
+      "1pe:1:1"
+    ],
+    "alternatives": [
+      "apostle",
+      "apostles"
+    ]
+  },
+  {
+    "word": "ashamed",
+    "strongs": [
+      "G1870",
+      "G153"
+    ],
+    "description": "This word can mean:\n- Discomfort due to being associated with another group or individual.\n- A feeling of dishonor or disgrace.",
+    "references": [
+      "mrk:8:38",
+      "luk:9:26",
+      "luk:16:3",
+      "rom:1:16",
+      "php:1:20",
+      "2ti:1:8",
+      "2ti:1:12",
+      "heb:2:11",
+      "heb:11:16",
+      "1pe:4:16",
+      "1jn:2:28"
+    ],
+    "alternatives": [
+      "ashamed"
+    ]
+  },
+  {
+    "word": "authority",
+    "strongs": [
+      "G1849",
+      "G2715"
+    ],
+    "description": "This word can mean:\n- The right or permission that someone has to rule over someone else.\n- The right (or power or ability) that someone has to do something or decide something.",
+    "references": [
+      "mat:8:9",
+      "mat:10:1",
+      "mat:20:25",
+      "mrk:1:22",
+      "mrk:10:42",
+      "luk:7:8",
+      "jhn:5:27",
+      "jhn:10:18",
+      "act:1:7",
+      "rom:13:1",
+      "1co:7:4",
+      "eph:1:21",
+      "col:2:10",
+      "jud:1:25",
+      "rev:12:10"
+    ],
+    "alternatives": [
+      "authority"
+    ]
+  },
+  {
+    "word": "baptize",
+    "strongs": [
+      "G907",
+      "G908",
+      "G909"
+    ],
+    "description": "This word can mean:\n- To baptize someone else.\n- To dip something or someone under the water.\n- To wash or purify oneself.",
+    "references": [
+      "mat:3:6",
+      "mat:3:11",
+      "mat:3:13",
+      "mat:3:14",
+      "mat:3:16",
+      "mrk:1:4",
+      "mrk:1:5",
+      "mrk:1:8",
+      "luk:3:3",
+      "jhn:3:22",
+      "act:1:22",
+      "rom:6:4",
+      "gal:3:27",
+      "col:2:12",
+      "1pe:3:21"
+    ],
+    "alternatives": [
+      "baptize",
+      "baptized",
+      "baptizing",
+      "baptism"
+    ]
+  },
+  {
+    "word": "believe",
+    "strongs": [
+      "G4100"
+    ],
+    "description": "This word can mean:\n- To think something is true, right, or good.\n- To trust someone.",
+    "references": [
+      "mat:8:13",
+      "mat:21:22",
+      "mrk:16:16",
+      "luk:1:45",
+      "jhn:1:7",
+      "jhn:6:69",
+      "jhn:14:1",
+      "jhn:20:31",
+      "act:9:42",
+      "rom:3:22",
+      "1co:1:21",
+      "1co:15:11",
+      "2co:4:13",
+      "gal:3:6",
+      "php:1:29"
+    ],
+    "alternatives": [
+      "believe",
+      "believed",
+      "believes",
+      "believing"
+    ]
+  },
+  {
+    "word": "beloved",
+    "strongs": [
+      "G27"
+    ],
+    "description": "This word describes a person or people whom God or another person loves.\nNote: Verses with * symbols should all use the same meaning of the word.",
+    "references": [
+      "mat:3:17",
+      "mrk:1:11",
+      "luk:3:22",
+      "act:15:25",
+      "rom:1:7",
+      "1co:4:17",
+      "eph:5:1",
+      "php:2:12",
+      "col:4:14",
+      "2ti:1:2",
+      "heb:6:9",
+      "jas:1:16",
+      "jas:1:19",
+      "1pe:2:11",
+      "2pe:3:14",
+      "1jn:3:21"
+    ],
+    "alternatives": [
+      "beloved"
+    ]
+  },
+  {
+    "word": "blameless",
+    "strongs": [
+      "G273",
+      "G299",
+      "G298",
+      "G410"
+    ],
+    "description": "This word can describe:\n- Someone who does not deserve blame. Someone is blameless if they have not done anything wrong, or if the person lives in a way that honors God.\n- An action that is done perfectly.\n- Someone or something that is without blemish or defect.",
+    "references": [
+      "luk:1:6",
+      "1co:1:8",
+      "eph:5:27",
+      "php:2:15",
+      "php:3:6",
+      "col:1:22",
+      "1th:2:10",
+      "1th:3:13",
+      "1th:5:23",
+      "heb:9:14",
+      "1pe:1:19",
+      "2pe:3:14",
+      "jud:1:24"
+    ],
+    "alternatives": [
+      "blameless",
+      "blamelessly",
+      "unblemished",
+      "without blemish",
+      "faultless"
+    ]
+  },
+  {
+    "word": "blaspheme",
+    "strongs": [
+      "G987",
+      "G988"
+    ],
+    "description": "This word means to insult God, or to speak in a wrong way that greatly dishonors God.",
+    "references": [
+      "mat:27:39",
+      "mrk:15:29",
+      "luk:22:65",
+      "jhn:10:36",
+      "act:26:11",
+      "1ti:1:20",
+      "rev:13:6",
+      "rev:17:3"
+    ],
+    "alternatives": [
+      "blaspheme",
+      "blaspheming",
+      "blasphemous",
+      "insulted"
+    ]
+  },
+  {
+    "word": "bless",
+    "strongs": [
+      "G3107",
+      "G3106",
+      "G3105",
+      "G2129",
+      "G2128",
+      "G2127",
+      "G1757"
+    ],
+    "description": "This word can mean:\n- To praise.\n- To ask God to do good for someone or to someone.\n- To thank and praise God for providing a food or a meal.\n- When God shows favor to someone.\nNote: Verses with * symbols should all use the same meaning of the word.",
+    "references": [
+      "mat:5:3",
+      "mat:5:4",
+      "mat:5:5",
+      "mat:5:6",
+      "mat:5:7",
+      "mat:5:8",
+      "mat:5:9",
+      "mat:5:10",
+      "mat:5:11",
+      "mrk:11:9",
+      "mrk:14:22",
+      "luk:1:45",
+      "luk:1:48",
+      "luk:2:28",
+      "luk:2:34",
+      "luk:6:20",
+      "luk:6:21",
+      "luk:6:22",
+      "luk:7:23",
+      "luk:10:23",
+      "luk:24:50",
+      "luk:24:51",
+      "luk:24:53",
+      "rom:1:25",
+      "gal:3:8",
+      "2co:1:3",
+      "eph:1:3",
+      "1pe:1:3",
+      "rev:5:13"
+    ],
+    "alternatives": [
+      "bless",
+      "blessed",
+      "blessing",
+      "praise",
+      "praised"
+    ]
+  },
+  {
+    "word": "blood",
+    "strongs": [
+      "G129"
+    ],
+    "description": "This is the red liquid that comes out when a person or animal is cut.\n- In the Bible, blood is emphasized as necessary for life.\n- In the Bible, people are described as made of flesh and blood.\n- In the Bible, when someone kills a person, it says they shed that person’s blood. A person’s blood does not have to be removed from their body to say that their blood has been shed.\nNote: The number of * symbols next to verses represents a particular meaning of the Greek word. Verses with the same number of * symbols should all use the same meaning of the word.",
+    "references": [
+      "mat:23:30",
+      "mat:23:35",
+      "mat:27:24",
+      "mat:27:25",
+      "luk:22:20",
+      "luk:22:44",
+      "jhn:6:53",
+      "jhn:6:54",
+      "jhn:6:55",
+      "jhn:6:56",
+      "jhn:19:34",
+      "act:5:28",
+      "act:20:28",
+      "rom:5:9",
+      "1co:11:25",
+      "1co:11:27",
+      "heb:9:7",
+      "heb:9:12",
+      "heb:9:13",
+      "heb:9:14",
+      "heb:9:18",
+      "heb:9:19",
+      "heb:9:20",
+      "heb:9:21",
+      "heb:9:22"
+    ],
+    "alternatives": [
+      "blood"
+    ]
+  },
+  {
+    "word": "Christ",
+    "strongs": [
+      "G5547"
+    ],
+    "description": "Christ is the name of the title given to Jesus. Its literal meaning is the Anointed One.",
+    "references": [
+      "mat:1:1",
+      "mat:1:16",
+      "mat:2:4",
+      "mrk:8:29",
+      "luk:2:11",
+      "luk:23:35",
+      "jhn:1:17",
+      "jhn:1:20",
+      "jhn:11:27",
+      "jhn:17:3",
+      "jhn:20:31",
+      "act:2:31",
+      "rom:3:24",
+      "rom:5:6",
+      "rom:5:8",
+      "1co:1:6",
+      "1co:1:7",
+      "1co:1:8",
+      "1co:1:9",
+      "2co:2:12",
+      "2co:2:14",
+      "2co:2:15",
+      "gal:2:16",
+      "gal:2:17"
+    ],
+    "alternatives": [
+      "Christ"
+    ]
+  },
+  {
+    "word": "Christian",
+    "strongs": [
+      "G5546"
+    ],
+    "description": "The name “Christian” is the word used for a person who believes in Jesus.",
+    "references": [
+      "act:11:26",
+      "act:26:28",
+      "1pe:4:16"
+    ],
+    "alternatives": [
+      "Christian",
+      "Christians"
+    ]
+  },
+  {
+    "word": "church",
+    "strongs": [
+      "G1577"
+    ],
+    "description": "This word can be used to describe:\n- A group of people in a certain location connected by their belief in Jesus.\n- All people everywhere who believe in Jesus.",
+    "references": [
+      "mat:16:18",
+      "act:5:11",
+      "act:9:31",
+      "rom:16:4",
+      "rom:16:5",
+      "1co:1:2",
+      "2co:1:1",
+      "gal:1:2",
+      "gal:1:13",
+      "eph:3:21",
+      "php:3:6",
+      "col:4:15",
+      "col:4:16",
+      "1th:1:1",
+      "2th:1:1",
+      "2th:1:4",
+      "1ti:3:15",
+      "phm:1:2",
+      "rev:22:16"
+    ],
+    "alternatives": [
+      "church",
+      "churches"
+    ]
+  },
+  {
+    "word": "compassion",
+    "strongs": [
+      "G4697",
+      "G3627"
+    ],
+    "description": "This word means to take pity on someone or to have mercy on someone.",
+    "references": [
+      "mat:9:36",
+      "mat:14:14",
+      "mat:15:32",
+      "mat:18:27",
+      "mat:20:34",
+      "mrk:1:41",
+      "mrk:6:34",
+      "mrk:8:2",
+      "luk:7:13",
+      "luk:10:33",
+      "luk:15:20",
+      "rom:9:15",
+      "php:2:1"
+    ],
+    "alternatives": [
+      "compassion",
+      "compassions"
+    ]
+  },
+  {
+    "word": "condemn, condemnation",
+    "strongs": [
+      "G2613",
+      "G2632",
+      "G2631"
+    ],
+    "description": "This word means to judge someone to be guilty and to deserve punishment for doing something wrong.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:12:7",
+      "mat:12:37",
+      "mat:12:41",
+      "mat:12:42",
+      "mrk:10:33",
+      "mrk:14:64",
+      "mrk:16:16",
+      "luk:6:37",
+      "rom:8:1",
+      "rom:8:34",
+      "rom:14:23",
+      "2co:3:9",
+      "2co:7:3",
+      "heb:11:7",
+      "2pe:2:6"
+    ],
+    "alternatives": [
+      "condemn",
+      "condemned",
+      "condemns",
+      "condemnation"
+    ]
+  },
+  {
+    "word": "confess, confession",
+    "strongs": [
+      "G1843",
+      "G3670",
+      "G3671"
+    ],
+    "description": "This word can mean:\n- To admit something.\n- To declare that something is true.\n- To praise someone or acknowledge that someone deserves to be honored.\n- To publicly state what one believes and agrees with.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:3:6",
+      "mrk:1:5",
+      "luk:12:8",
+      "jhn:1:20",
+      "act:19:18",
+      "rom:10:9",
+      "rom:10:10",
+      "rom:14:11",
+      "php:2:11",
+      "1ti:6:12",
+      "1ti:6:13",
+      "heb:4:14",
+      "jas:5:16",
+      "1jn:1:9",
+      "2jn:1:7"
+    ],
+    "alternatives": [
+      "confess",
+      "confessed",
+      "confesses",
+      "confessing",
+      "confession"
+    ]
+  },
+  {
+    "word": "cross",
+    "strongs": [
+      "G4716"
+    ],
+    "description": "A cross was a wooden post with a cross beam. The Romans used crosses to execute criminals.\nThis word can be used to talk about Jesus’s sacrificial death on the cross.\nA word picture of “taking up a cross” refers to someone who accepts suffering, even to the point of death, as a follower of Jesus.",
+    "references": [
+      "mat:10:38",
+      "mat:16:24",
+      "mat:27:32",
+      "mrk:8:34",
+      "mrk:15:21",
+      "luk:9:23",
+      "luk:14:27",
+      "luk:23:26",
+      "jhn:19:25",
+      "1co:1:18",
+      "gal:6:14",
+      "eph:2:16",
+      "php:2:8",
+      "col:2:14",
+      "heb:12:2"
+    ],
+    "alternatives": [
+      "cross"
+    ]
+  },
+  {
+    "word": "crucify",
+    "strongs": [
+      "G4717",
+      "G4957",
+      "G388"
+    ],
+    "description": "This word means to kill someone by nailing or tying them to a cross. In some passages, this word can also mean to do something that is in some way like crucifying someone.\nThe number of * symbols next to verses represents a particular meaning of the Greek word. Verses with the same number of * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:20:19",
+      "mrk:15:13",
+      "mrk:15:14",
+      "mrk:15:15",
+      "mrk:15:25",
+      "luk:23:21",
+      "jhn:19:6",
+      "jhn:19:15",
+      "jhn:19:18",
+      "act:2:36",
+      "rom:6:6",
+      "1co:2:8",
+      "gal:2:19",
+      "gal:3:1",
+      "gal:6:14",
+      "heb:6:6",
+      "rev:11:8"
+    ],
+    "alternatives": [
+      "crucify",
+      "crucified"
+    ]
+  },
+  {
+    "word": "death",
+    "strongs": [
+      "G2288",
+      "G2289"
+    ],
+    "description": "This word can mean:\n- Physical death.\n- Spiritual death.\n- Someone or something that causes physical or spiritual death.",
+    "references": [
+      "mat:26:66",
+      "mrk:10:33",
+      "luk:23:15",
+      "luk:24:20",
+      "jhn:8:51",
+      "act:23:29",
+      "rom:1:32",
+      "rom:8:2",
+      "1co:11:26",
+      "2co:4:11",
+      "php:1:20",
+      "php:2:8",
+      "1pe:3:18",
+      "heb:2:9",
+      "1jn:3:14"
+    ],
+    "alternatives": [
+      "death"
+    ]
+  },
+  {
+    "word": "demon",
+    "strongs": [
+      "G1140",
+      "G1139"
+    ],
+    "description": "This word can mean:\nAn evil spirit, which might possess, control, or torment a person.\nAn angel that does not obey God and that serves Satan instead.\nA (false) god, divine power, or deity—a powerful spirit that people worship.\nNote: The number of * symbols next to verses represents a particular meaning of the Greek word. Verses with the same number of * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:8:28",
+      "mat:9:34",
+      "mat:12:28",
+      "mrk:1:34",
+      "mrk:7:26",
+      "mrk:7:29",
+      "mrk:7:30",
+      "luk:8:36",
+      "jhn:10:20",
+      "jhn:10:21",
+      "1co:10:20",
+      "1co:10:21",
+      "1ti:4:1",
+      "jas:2:19",
+      "rev:9:20",
+      "rev:16:14"
+    ],
+    "alternatives": [
+      "demon",
+      "demons"
+    ]
+  },
+  {
+    "word": "discipline",
+    "strongs": [
+      "G3809",
+      "G3811"
+    ],
+    "description": "This word can mean:\nTo train, teach, or instruct someone.\nTo correct someone.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "1co:11:32",
+      "eph:6:4",
+      "2ti:2:25",
+      "2ti:3:16",
+      "tit:2:12",
+      "heb:12:5",
+      "heb:12:6",
+      "heb:12:7",
+      "heb:12:8",
+      "heb:12:10",
+      "heb:12:11",
+      "rev:3:19"
+    ],
+    "alternatives": [
+      "discipline",
+      "disciplined",
+      "disciplines",
+      "correcting",
+      "correction",
+      "training",
+      "trains"
+    ]
+  },
+  {
+    "word": "dishonor",
+    "strongs": [
+      "G818",
+      "G819"
+    ],
+    "description": "This word means to treat someone shamefully or with reproach.",
+    "references": [
+      "mrk:12:4",
+      "luk:20:11",
+      "jhn:8:49",
+      "act:5:41",
+      "rom:1:24",
+      "rom:2:23",
+      "rom:9:21",
+      "1co:11:14",
+      "1co:15:43",
+      "2co:6:8",
+      "2co:11:21",
+      "2ti:2:20",
+      "jas:2:6"
+    ],
+    "alternatives": [
+      "dishonor",
+      "dishonored",
+      "dishonorable",
+      "shame",
+      "treated him shamefully"
+    ]
+  },
+  {
+    "word": "divine",
+    "strongs": [
+      "G2304",
+      "G2305"
+    ],
+    "description": "This word can describe:\n- What belongs to God.\n- The nature or qualities that God has because he is God.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "rom:1:20",
+      "2pe:1:3",
+      "2pe:1:4"
+    ],
+    "alternatives": [
+      "divine"
+    ]
+  },
+  {
+    "word": "elect",
+    "strongs": [
+      "G1588",
+      "G1589",
+      "G1586"
+    ],
+    "description": "This word means chosen or selected. It can be used to describe a person or people that God has chosen.",
+    "references": [
+      "mat:22:14",
+      "luk:23:35",
+      "mrk:13:20",
+      "jhn:15:16",
+      "jhn:15:19",
+      "rom:8:33",
+      "rom:11:5",
+      "eph:1:4",
+      "col:3:12",
+      "2ti:2:10",
+      "tit:1:1",
+      "1pe:1:1",
+      "1pe:2:9",
+      "2pe:1:10",
+      "2jn:1:1"
+    ],
+    "alternatives": [
+      "elect",
+      "election",
+      "chose",
+      "chosen",
+      "choose",
+      "choice"
+    ]
+  },
+  {
+    "word": "endure",
+    "strongs": [
+      "G5278",
+      "G5281",
+      "G5297"
+    ],
+    "description": "This word can mean:\n- To patiently bear a difficult situation.\n- To be steadfast or have perseverance, which means to continue doing something patiently or to wait for something patiently.",
+    "references": [
+      "mat:10:22",
+      "mrk:13:13",
+      "rom:12:12",
+      "1co:10:13",
+      "2co:1:6",
+      "col:1:11",
+      "1th:1:3",
+      "2th:3:5",
+      "1ti:6:11",
+      "2ti:2:10",
+      "heb:12:2",
+      "jas:1:12",
+      "1pe:2:20",
+      "2pe:1:6",
+      "rev:2:3"
+    ],
+    "alternatives": [
+      "endure",
+      "endured",
+      "endures",
+      "endurance",
+      "enduring"
+    ]
+  },
+  {
+    "word": "eternal",
+    "strongs": [
+      "G166"
+    ],
+    "description": "This word can describe:\n- Something that will not end.\n- Something that will last forever, but that started at some point.\n- Something that does not begin or end: God has always and will always exist.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:19:16",
+      "mrk:10:17",
+      "luk:10:25",
+      "luk:18:18",
+      "jhn:3:15",
+      "jhn:3:16",
+      "act:13:48",
+      "rom:6:22",
+      "rom:6:23",
+      "2co:4:18",
+      "gal:6:8",
+      "2th:2:16",
+      "1ti:1:16",
+      "2ti:2:10",
+      "heb:5:9",
+      "rev:14:6"
+    ],
+    "alternatives": [
+      "eternal"
+    ]
+  },
+  {
+    "word": "evil",
+    "strongs": [
+      "G4190",
+      "G2554",
+      "G2555",
+      "G2556"
+    ],
+    "description": "This word can describe:\n- Someone, something, or an action that is bad or wicked or harmful.\n- The evil one, who is Satan or the Devil.\n- To strongly insult someone who has done no wrong.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:5:45",
+      "mrk:3:4",
+      "luk:6:9",
+      "jhn:17:15",
+      "rom:12:9",
+      "eph:5:16",
+      "col:1:21",
+      "1th:5:22",
+      "2th:3:3",
+      "2ti:4:18",
+      "heb:3:12",
+      "1pe:2:12",
+      "1pe:2:14",
+      "1pe:3:17",
+      "3jn:1:11"
+    ],
+    "alternatives": [
+      "evil",
+      "evildoer",
+      "evildoers",
+      "harm"
+    ]
+  },
+  {
+    "word": "faith",
+    "strongs": [
+      "G4102"
+    ],
+    "description": "This word can mean:\n- Trust or belief.\n- A set of things that people believe.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:9:2",
+      "mrk:5:34",
+      "luk:17:5",
+      "luk:17:6",
+      "act:3:16",
+      "rom:3:22",
+      "rom:9:30",
+      "1co:13:2",
+      "1co:13:13",
+      "2co:5:7",
+      "gal:2:16",
+      "eph:2:8",
+      "php:3:9",
+      "col:2:12",
+      "1th:3:6",
+      "2th:3:2",
+      "1ti:6:12",
+      "1pe:1:21"
+    ],
+    "alternatives": [
+      "faith"
+    ]
+  },
+  {
+    "word": "faithful",
+    "strongs": [
+      "G4103"
+    ],
+    "description": "This word can describe:\n- A person who keeps believing or trusting in someone or something.\n- A person who does what he says he will do.\n- Someone or something that can be trusted or believed.",
+    "references": [
+      "mat:25:23",
+      "luk:16:10",
+      "jhn:20:27",
+      "act:16:1",
+      "1co:1:9",
+      "2co:1:18",
+      "col:4:9",
+      "1th:5:24",
+      "2th:3:3",
+      "1ti:1:12",
+      "2ti:2:2",
+      "heb:2:17",
+      "3jn:1:5",
+      "rev:1:5"
+    ],
+    "alternatives": [
+      "faithful",
+      "faithfulness",
+      "believe",
+      "believer"
+    ]
+  },
+  {
+    "word": "father",
+    "strongs": [
+      "G3962",
+      "G3971"
+    ],
+    "description": "This word can mean:\n- A father.\n- God the Father.\n- An ancestor.\n- Someone who is like a father in some way.\n- Multiple ancestors, if it is plural.",
+    "references": [
+      "mat:4:22",
+      "mat:5:16",
+      "mrk:10:7",
+      "mrk:10:19",
+      "luk:2:48",
+      "luk:2:49",
+      "jhn:6:31",
+      "jhn:6:32",
+      "act:5:30",
+      "rom:15:6",
+      "2co:1:3",
+      "eph:6:4",
+      "php:2:22",
+      "1ti:1:2",
+      "heb:12:9",
+      "1pe:1:2",
+      "1pe:1:3",
+      "rev:3:5"
+    ],
+    "alternatives": [
+      "father",
+      "fathers"
+    ]
+  },
+  {
+    "word": "flesh",
+    "strongs": [
+      "G4561"
+    ],
+    "description": "This word requires care when it is translated, because it has many meanings that are very different from each other. This word can mean:\n- The skin of a person or an animal.\n- The whole body.\n- A person or all people.\n- Something that is material or physical.\n- Someone who is in the same family as another person. This can include ancestors and descendants.\n- The part of someone that makes them want to sin. This is sometimes called a person’s sinful nature.\nIn the Bible, human beings are said to be made of flesh and blood.",
+    "references": [
+      "mat:16:17",
+      "mat:26:41",
+      "mrk:14:38",
+      "luk:24:39",
+      "jhn:1:14",
+      "act:2:17",
+      "rom:3:20",
+      "rom:6:19",
+      "rom:8:3",
+      "1co:1:29",
+      "2co:10:3",
+      "gal:2:16",
+      "gal:2:20",
+      "gal:5:19",
+      "gal:5:24",
+      "php:3:4",
+      "1pe:3:18"
+    ],
+    "alternatives": [
+      "flesh"
+    ]
+  },
+  {
+    "word": "foreknow",
+    "strongs": [
+      "G4267",
+      "G4268"
+    ],
+    "description": "This word means to know about something in advance or before it happens.",
+    "references": [
+      "act:2:23",
+      "rom:8:29",
+      "rom:11:2",
+      "1pe:1:2",
+      "1pe:1:20"
+    ],
+    "alternatives": [
+      "foreknow",
+      "foreknowledge",
+      "foreknew",
+      "foreknown"
+    ]
+  },
+  {
+    "word": "forgive",
+    "strongs": [
+      "G863",
+      "G5483"
+    ],
+    "description": "This word can mean:\n- To pardon sins, rather than punish them.\n- To stop being angry with someone who has done something wrong.\n- To cancel a debt, meaning no payment will be required.\n- To release a prisoner, allowing him to go free.\n- To show a person undeserved favor and kindness, without requiring anything in return.\n- To rescue someone.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:6:12",
+      "mat:6:14",
+      "mat:6:15",
+      "mrk:2:7",
+      "luk:5:21",
+      "luk:5:23",
+      "luk:7:42",
+      "luk:7:43",
+      "jhn:20:23",
+      "act:8:22",
+      "2co:2:10",
+      "eph:4:32",
+      "col:2:13",
+      "col:3:13",
+      "jas:5:15",
+      "1jn:1:9"
+    ],
+    "alternatives": [
+      "forgive",
+      "forgiven",
+      "forgave",
+      "forgiving"
+    ]
+  },
+  {
+    "word": "fulfill",
+    "strongs": [
+      "G4137",
+      "G1603"
+    ],
+    "description": "This word can mean:\n- To complete.\n- To complete the requirements of something.\n- To fill or make full.\n- An occurrence of a previously prophesied event.\nIt can also be used to talk about someone causing something to happen.",
+    "references": [
+      "mat:4:14",
+      "luk:1:20",
+      "luk:4:21",
+      "jhn:15:25",
+      "jhn:17:12",
+      "act:1:16",
+      "act:13:33",
+      "rom:8:4",
+      "rom:13:8",
+      "gal:5:14",
+      "php:2:2",
+      "col:1:25",
+      "2th:1:11",
+      "jas:2:23",
+      "rev:6:11"
+    ],
+    "alternatives": [
+      "fulfill",
+      "fulfilled",
+      "full",
+      "complete"
+    ]
+  },
+  {
+    "word": "glory, glorify",
+    "strongs": [
+      "G1391",
+      "G1392",
+      "G1740"
+    ],
+    "description": "This word can mean:\n- Greatness, magnificence, or excellence.\n- The praise or honor that someone gives to someone else, and especially the praise and honor that belongs to God.",
+    "references": [
+      "mat:25:31",
+      "mrk:13:26",
+      "luk:2:9",
+      "luk:2:20",
+      "jhn:1:14",
+      "act:4:21",
+      "rom:3:23",
+      "1co:10:31",
+      "2co:3:18",
+      "eph:3:21",
+      "php:4:20",
+      "col:3:4",
+      "2th:1:12",
+      "1ti:1:11",
+      "2ti:4:18"
+    ],
+    "alternatives": [
+      "glory",
+      "glorified",
+      "glorifying",
+      "glorious"
+    ]
+  },
+  {
+    "word": "godly, godliness",
+    "strongs": [
+      "G2150",
+      "G2152",
+      "G2153",
+      "G2317"
+    ],
+    "description": "This word describes someone who is devoted to loving, serving, and honoring God.\nThe number of * symbols next to verses represents a particular meaning of the Greek word. Verses with the same number of * symbols should all use the same meaning of this word.",
+    "references": [
+      "1ti:2:10",
+      "1ti:4:7",
+      "1ti:4:8",
+      "1ti:6:3",
+      "1ti:6:5",
+      "1ti:6:6",
+      "1ti:6:11",
+      "2ti:3:5",
+      "2ti:3:12",
+      "tit:1:1",
+      "tit:2:12",
+      "2pe:1:3",
+      "2pe:1:6",
+      "2pe:1:7",
+      "2pe:2:9",
+      "2pe:3:11"
+    ],
+    "alternatives": [
+      "godly",
+      "godliness"
+    ]
+  },
+  {
+    "word": "good",
+    "strongs": [
+      "G18",
+      "G16"
+    ],
+    "description": "This word can mean someone or something:\n- That is right or fair.\n- That honors God.\n- That helps other people.\n- That is noble or honorable.\n- That is beneficial.\n- That is completely without evil. (Only God is good in this way.)\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:5:45",
+      "mrk:10:18",
+      "luk:18:18",
+      "luk:18:19",
+      "jhn:7:12",
+      "act:9:36",
+      "rom:8:28",
+      "2co:9:8",
+      "gal:6:10",
+      "eph:2:10",
+      "php:1:6",
+      "col:1:10",
+      "2th:2:16",
+      "1ti:5:10",
+      "tit:1:16",
+      "1pe:4:19"
+    ],
+    "alternatives": [
+      "good",
+      "well-doing"
+    ]
+  },
+  {
+    "word": "Good News",
+    "strongs": [
+      "G2098",
+      "G2097"
+    ],
+    "description": "This is the gospel, which is the good news about Jesus Christ, the promised Messiah.",
+    "references": [
+      "mat:4:23",
+      "mrk:1:15",
+      "luk:2:10",
+      "act:13:32",
+      "act:20:24",
+      "rom:1:16",
+      "1co:15:1",
+      "2co:4:4",
+      "gal:1:8",
+      "php:1:27",
+      "col:1:5",
+      "2th:2:14",
+      "2ti:1:8",
+      "1pe:4:17",
+      "rev:14:6"
+    ],
+    "alternatives": [
+      "good news",
+      "gospel"
+    ]
+  },
+  {
+    "word": "grace",
+    "strongs": [
+      "G5485"
+    ],
+    "description": "This word can mean:\n- Favor. If people have favor with someone, that person thinks well of them and is pleased with them.\n- A gift. This gift can be salvation, or it can be the ability to do the work God gives a person to do.\n- Kindness.\n- Care and protection.\n- Blessing.",
+    "references": [
+      "luk:1:30",
+      "jhn:1:17",
+      "act:4:33",
+      "rom:3:24",
+      "1co:15:10",
+      "2co:4:15",
+      "gal:2:21",
+      "eph:2:8",
+      "php:4:23",
+      "col:4:6",
+      "2th:2:16",
+      "2ti:2:1",
+      "tit:2:11",
+      "tit:3:7",
+      "heb:2:9",
+      "1pe:1:13"
+    ],
+    "alternatives": [
+      "grace",
+      "favor"
+    ]
+  },
+  {
+    "word": "heart",
+    "strongs": [
+      "G2588"
+    ],
+    "description": "This word can mean:\n- The center of a person's thoughts, desires, and emotions.\n- The center or the innermost part of someone or something.\n- Something that is like a heart in some way.\nIn the New Testament, a person who is stubborn may be described as having a hard heart. This means the person refuses to listen to someone, to do something, or to change how they think about something.",
+    "references": [
+      "mat:6:21",
+      "mrk:7:19",
+      "luk:2:19",
+      "jhn:14:1",
+      "act:8:21",
+      "rom:2:5",
+      "2co:1:22",
+      "gal:4:6",
+      "php:4:7",
+      "col:3:15",
+      "2th:3:5",
+      "2ti:2:22",
+      "heb:3:8",
+      "1pe:3:15",
+      "1jn:3:19"
+    ],
+    "alternatives": [
+      "heart",
+      "hearts"
+    ]
+  },
+  {
+    "word": "heaven",
+    "strongs": [
+      "G3772"
+    ],
+    "description": "This word can mean:\n- The place where God and the angels live.\n- The place above the earth where there is air, or the sky.\n- The place where there are stars, or the universe.\n- The heavenly places or the heavens, which sometimes means the sky or universe instead of where God and the angels live.\nWhen something is described as revealed from heaven, this is a word picture meaning it is from God.",
+    "references": [
+      "mat:3:16",
+      "mat:3:17",
+      "mrk:16:19",
+      "luk:2:15",
+      "jhn:3:27",
+      "act:2:34",
+      "rom:1:18",
+      "php:3:20",
+      "col:1:5",
+      "2th:1:7",
+      "heb:7:26",
+      "1pe:1:4",
+      "2pe:1:18",
+      "rev:3:12"
+    ],
+    "alternatives": [
+      "heaven",
+      "heavens"
+    ]
+  },
+  {
+    "word": "heir",
+    "strongs": [
+      "G2818",
+      "G4789"
+    ],
+    "description": "This word means someone who receives something, or someone who will come to possess something in the future.\n- An heir often receives money, land, or property from a parent or benefactor.\n- Sometimes the New Testament mentions joint heirs or fellow heirs. These words are used when talking about what two or more people will receive from God.",
+    "references": [
+      "mat:21:38",
+      "mrk:12:7",
+      "luk:20:14",
+      "rom:4:13",
+      "rom:4:14",
+      "rom:8:17",
+      "gal:4:1",
+      "gal:4:7",
+      "eph:3:6",
+      "tit:3:7",
+      "heb:1:2",
+      "heb:6:17",
+      "jas:2:5",
+      "1pe:3:7"
+    ],
+    "alternatives": [
+      "heir",
+      "heirs"
+    ]
+  },
+  {
+    "word": "hell",
+    "strongs": [
+      "G1067"
+    ],
+    "description": "This is the word most often used for the name “Gehenna” in the Bible. Gehenna was literally a valley near Jerusalem where people burned trash, but this name was used in the Bible as a symbol for the place where ungodly people go after God judges all people. They are punished there forever.",
+    "references": [
+      "mat:5:22",
+      "mat:5:29",
+      "mat:5:30",
+      "mat:10:28",
+      "mat:18:9",
+      "mat:23:15",
+      "mat:23:33",
+      "mrk:9:43",
+      "mrk:9:45",
+      "mrk:9:47",
+      "luk:12:5",
+      "jas:3:6"
+    ],
+    "alternatives": [
+      "hell"
+    ]
+  },
+  {
+    "word": "holy",
+    "strongs": [
+      "G40"
+    ],
+    "description": "This word most often describes God as different from everything he created. He is perfect, and he deserves to be honored. He never does anything that is evil.\nWhen this word is used to describe anyone or anything else, it can mean:\n- Someone who is right with God.\n- Someone or something that is set apart and dedicated to serve God.",
+    "references": [
+      "mrk:8:38",
+      "luk:1:49",
+      "jhn:6:69",
+      "act:4:27",
+      "rom:12:1",
+      "1co:3:17",
+      "eph:1:4",
+      "col:1:22",
+      "1th:3:13",
+      "2ti:1:9",
+      "phm:1:5",
+      "heb:3:1",
+      "1pe:1:15",
+      "jud:1:20",
+      "rev:4:8"
+    ],
+    "alternatives": [
+      "holy"
+    ]
+  },
+  {
+    "word": "Holy Spirit",
+    "strongs": [],
+    "description": "This is the name of the Holy Spirit, who is God. The one true God exists eternally as the Father, the Son, and the Holy Spirit.",
+    "references": [
+      "mat:3:11",
+      "mrk:12:36",
+      "luk:12:12",
+      "jhn:20:22",
+      "act:1:8",
+      "rom:5:5",
+      "1co:12:3",
+      "2co:6:6",
+      "eph:1:13",
+      "1th:1:6",
+      "2ti:1:14",
+      "tit:3:5",
+      "heb:2:4",
+      "2pe:1:21",
+      "jud:1:20"
+    ],
+    "alternatives": [
+      "Holy Spirit"
+    ]
+  },
+  {
+    "word": "honor",
+    "strongs": [
+      "G5091",
+      "G5092"
+    ],
+    "description": "This word can mean:\n- Respect, admiration, or deference that is shown to someone.\n- Value.\n- Price, which is the amount someone pays for something.",
+    "references": [
+      "mat:15:8",
+      "mrk:7:6",
+      "luk:18:20",
+      "jhn:5:23",
+      "jhn:12:26",
+      "act:28:10",
+      "rom:13:7",
+      "1co:12:24",
+      "eph:6:2",
+      "1ti:1:17",
+      "heb:2:9",
+      "1pe:2:17",
+      "2pe:1:17",
+      "rev:4:11",
+      "rev:7:12"
+    ],
+    "alternatives": [
+      "honor",
+      "honors",
+      "honored"
+    ]
+  },
+  {
+    "word": "hope",
+    "strongs": [
+      "G1680",
+      "G1679"
+    ],
+    "description": "This word means a person’s desire for something good to happen, or an expectation and trust that something good will happen.\n- It is sometimes used when a person is certain that what is hoped for will happen.\n- It is sometimes used when a person desires for something good to happen but is not certain that it will.\n- It is sometimes used to mean the reason why a person is hoping for something.",
+    "references": [
+      "mat:12:21",
+      "luk:24:21",
+      "act:24:15",
+      "rom:15:13",
+      "1co:13:13",
+      "2co:3:12",
+      "eph:1:18",
+      "php:1:20",
+      "col:1:27",
+      "1th:4:13",
+      "1ti:1:1",
+      "tit:2:13",
+      "heb:10:23",
+      "1pe:1:13",
+      "1jn:3:3"
+    ],
+    "alternatives": [
+      "hope",
+      "hoped"
+    ]
+  },
+  {
+    "word": "inheritance",
+    "strongs": [
+      "G2817"
+    ],
+    "description": "This word means what is given to a person who is an heir. It can be money, land, or other kinds of property.\n- This word can also mean a spiritual inheritance from God, or a reward from God.",
+    "references": [
+      "luk:12:13",
+      "act:7:5",
+      "act:20:32",
+      "gal:3:18",
+      "eph:1:14",
+      "eph:1:18",
+      "eph:5:5",
+      "col:3:24",
+      "heb:9:15",
+      "heb:11:8",
+      "1pe:1:4"
+    ],
+    "alternatives": [
+      "inheritance"
+    ]
+  },
+  {
+    "word": "Jesus Christ",
+    "strongs": [],
+    "description": "This is the name of the Son of God, who is God. This form of his name that includes the word “Christ” indicates that Jesus is also the promised Messiah. The one true God exists eternally as the Father, the Son, and the Holy Spirit.",
+    "references": [
+      "mat:1:18",
+      "jhn:1:17",
+      "act:2:38",
+      "rom:5:15",
+      "1co:2:2",
+      "2co:4:6",
+      "gal:1:1",
+      "eph:1:3",
+      "php:2:11",
+      "1ti:4:6",
+      "heb:13:8",
+      "1pe:1:3",
+      "1jn:2:1",
+      "jud:1:25",
+      "rev:1:1"
+    ],
+    "alternatives": [
+      "Jesus Christ"
+    ]
+  },
+  {
+    "word": "joy",
+    "strongs": [
+      "G5479"
+    ],
+    "description": "This word can mean delight or gladness. It can also mean something or someone who brings joy.",
+    "references": [
+      "mat:2:10",
+      "mrk:4:16",
+      "luk:15:10",
+      "jhn:15:11",
+      "act:13:52",
+      "rom:15:13",
+      "2co:7:4",
+      "gal:5:22",
+      "php:4:1",
+      "1th:2:20",
+      "2ti:1:4",
+      "phm:1:7",
+      "heb:12:2",
+      "1pe:1:8",
+      "3jn:1:4"
+    ],
+    "alternatives": [
+      "joy"
+    ]
+  },
+  {
+    "word": "judge",
+    "strongs": [
+      "G2919"
+    ],
+    "description": "This word can mean:\n- To think, regard, or consider.\n- To decide or determine.\n- To make a judgment.\n- To condemn, which means to sentence someone or declare what punishment a person will receive for doing something wrong.",
+    "references": [
+      "mat:19:28",
+      "luk:6:37",
+      "luk:19:22",
+      "jhn:7:24",
+      "act:17:31",
+      "rom:2:1",
+      "rom:14:13",
+      "1co:11:32",
+      "col:2:16",
+      "2ti:4:1",
+      "heb:13:4",
+      "jas:2:12",
+      "1pe:2:23",
+      "1pe:4:5",
+      "rev:16:5"
+    ],
+    "alternatives": [
+      "judge",
+      "judged",
+      "judges",
+      "judging"
+    ]
+  },
+  {
+    "word": "justify",
+    "strongs": [
+      "G1344"
+    ],
+    "description": "This word can mean:\n- To vindicate, which means to prove or show that someone has done the right thing.\n- To declare someone to be righteous, then treat them as if they have done the right thing.\n- To cause a person to have a right relationship with God.",
+    "references": [
+      "mat:12:37",
+      "luk:18:14",
+      "rom:3:28",
+      "rom:5:1",
+      "rom:8:30",
+      "1co:6:11",
+      "gal:2:16",
+      "gal:3:24",
+      "gal:5:4",
+      "tit:3:7",
+      "jas:2:21"
+    ],
+    "alternatives": [
+      "justify",
+      "justified"
+    ]
+  },
+  {
+    "word": "kingdom",
+    "strongs": [
+      "G932"
+    ],
+    "description": "This word can mean:\n- The royal power that a king has over his people or over his land.\n- The land or territory over which a king has power.\n- The kingdom over which the Messiah will reign. (This is the way this word is used most often in the New Testament.) Sometimes this kingdom is described as being in the present. Sometimes it is described as something that will be completed in the future.",
+    "references": [
+      "mat:4:8",
+      "mrk:10:14",
+      "luk:9:11",
+      "jhn:3:3",
+      "act:8:12",
+      "rom:14:17",
+      "1co:15:50",
+      "eph:5:5",
+      "col:1:13",
+      "2th:1:5",
+      "2ti:4:18",
+      "heb:12:28",
+      "jas:2:5",
+      "2pe:1:11",
+      "rev:11:15"
+    ],
+    "alternatives": [
+      "Kingdom",
+      "kingdom",
+      "kingdoms"
+    ]
+  },
+  {
+    "word": "lamb",
+    "strongs": [
+      "G721",
+      "G286"
+    ],
+    "description": "This word literally means a young sheep that is less than 1 year old. The word can also mean:\n- Sheep.\n- Ram.\n- Someone or something that is like a sheep or lamb in some way.",
+    "references": [
+      "jhn:1:29",
+      "jhn:21:15",
+      "act:8:32",
+      "1pe:1:19",
+      "rev:5:12",
+      "rev:12:11",
+      "rev:21:14"
+    ],
+    "alternatives": [
+      "Lamb",
+      "lamb",
+      "lambs"
+    ]
+  },
+  {
+    "word": "law",
+    "strongs": [
+      "G3551",
+      "G3544"
+    ],
+    "description": "This word can mean:\n- The Law of Moses or the laws that Moses taught. (In English, “Law” is capitalized when it means all of the Law of Moses.)\n- The first five books of the Old Testament. Moses wrote these books.\n- All of the Old Testament.\n- God’s standard for how people should live.\n- A human rule or custom that demands how people should live.",
+    "references": [
+      "mat:5:17",
+      "mat:23:23",
+      "luk:16:16",
+      "jhn:1:17",
+      "act:13:15",
+      "rom:2:14",
+      "rom:13:10",
+      "1co:15:56",
+      "gal:5:14",
+      "eph:2:15",
+      "php:3:9",
+      "1ti:1:8",
+      "tit:3:9",
+      "heb:9:22",
+      "jas:2:8"
+    ],
+    "alternatives": [
+      "Law",
+      "law",
+      "lawfully"
+    ]
+  },
+  {
+    "word": "life",
+    "strongs": [
+      "G2222"
+    ],
+    "description": "This can mean:\n- Physical life.\n- Spiritual life. Spiritual life is the life that God gives to believers.",
+    "references": [
+      "mat:19:16",
+      "mrk:10:30",
+      "luk:12:15",
+      "jhn:20:31",
+      "act:5:20",
+      "rom:5:10",
+      "2co:4:12",
+      "gal:6:8",
+      "eph:4:18",
+      "col:3:4",
+      "1ti:4:8",
+      "jas:4:14",
+      "1pe:3:10",
+      "2pe:1:3",
+      "rev:2:10"
+    ],
+    "alternatives": [
+      "life"
+    ]
+  },
+  {
+    "word": "lion",
+    "strongs": [
+      "G3023"
+    ],
+    "description": "This is the name for an animal that is a very large type of cat. This word can also mean someone or something that is like a lion in some way.",
+    "references": [
+      "2ti:4:17",
+      "heb:11:33",
+      "1pe:5:8",
+      "rev:4:7",
+      "rev:5:5",
+      "rev:9:8",
+      "rev:9:17",
+      "rev:10:3",
+      "rev:13:2"
+    ],
+    "alternatives": [
+      "Lion",
+      "lion",
+      "lions",
+      "lion’s",
+      "lions’"
+    ]
+  },
+  {
+    "word": "Lord, lord",
+    "strongs": [
+      "G2962"
+    ],
+    "description": "This word means a master, or someone that a person respects and obeys. In the New Testament, this word is most often used as a title for God and Jesus. (In English, it is then capitalized: Lord.)",
+    "references": [
+      "mat:8:25",
+      "mrk:5:19",
+      "luk:1:46",
+      "jhn:13:13",
+      "act:7:60",
+      "rom:6:23",
+      "1co:11:23",
+      "eph:6:10",
+      "php:2:29",
+      "1th:3:12",
+      "1ti:1:14",
+      "phm:1:20",
+      "jas:5:7",
+      "2pe:3:9",
+      "rev:17:14"
+    ],
+    "alternatives": [
+      "Lord",
+      "Lord’s",
+      "lords"
+    ]
+  },
+  {
+    "word": "love",
+    "strongs": [
+      "G26",
+      "G27"
+    ],
+    "description": "This word can mean:\n- To care for someone unselfishly and to do things that will benefit that person.\n- To love like God does, caring for people regardless of what they do. This includes forgiving them and sacrificing for them.",
+    "references": [
+      "mat:5:46",
+      "mrk:10:21",
+      "luk:10:27",
+      "jhn:14:21",
+      "rom:8:28",
+      "1co:13:4",
+      "gal:2:20",
+      "eph:5:25",
+      "php:1:9",
+      "1th:4:9",
+      "1ti:4:12",
+      "jas:1:12",
+      "1pe:4:8",
+      "1jn:4:8",
+      "jud:1:21"
+    ],
+    "alternatives": [
+      "love",
+      "loved",
+      "loves"
+    ]
+  },
+  {
+    "word": "mediator",
+    "strongs": [
+      "G3316"
+    ],
+    "description": "This is a person who helps two or more persons who have been disagreeing to agree.",
+    "references": [
+      "gal:3:19",
+      "gal:3:20",
+      "1ti:2:5",
+      "heb:8:6",
+      "heb:9:15",
+      "heb:12:24"
+    ],
+    "alternatives": [
+      "mediator",
+      "intermediary"
+    ]
+  },
+  {
+    "word": "mercy",
+    "strongs": [
+      "G1656",
+      "G1653"
+    ],
+    "description": "This word can mean kindness, pity, or compassion, especially shown toward someone who has great need or someone who has done wrong.",
+    "references": [
+      "mat:9:13",
+      "mrk:10:47",
+      "luk:1:58",
+      "rom:11:30",
+      "2co:4:1",
+      "gal:6:16",
+      "eph:2:4",
+      "php:2:27",
+      "1ti:1:2",
+      "tit:3:5",
+      "heb:4:16",
+      "jas:2:13",
+      "1pe:1:3",
+      "2jn:1:3",
+      "jud:1:21"
+    ],
+    "alternatives": [
+      "mercy"
+    ]
+  },
+  {
+    "word": "miracle",
+    "strongs": [
+      "G1411"
+    ],
+    "description": "This word can mean:\n- A wondrous deed or work that shows God’s power or strength.\n- Something amazing that would not be possible unless God caused it to happen.",
+    "references": [
+      "mat:7:22",
+      "mat:11:20",
+      "mat:13:58",
+      "mrk:6:2",
+      "mrk:9:39",
+      "luk:10:13",
+      "luk:19:37",
+      "act:2:22",
+      "act:8:13",
+      "act:19:11",
+      "1co:12:28",
+      "2co:12:12",
+      "gal:3:5",
+      "heb:2:4"
+    ],
+    "alternatives": [
+      "miracle",
+      "miracles",
+      "mighty work",
+      "mighty works",
+      "mighty deeds"
+    ]
+  },
+  {
+    "word": "nation",
+    "strongs": [
+      "G1484"
+    ],
+    "description": "This word can mean:\n- A tribe of people.\n- A group of people.\n- All people.\n- Any people who are not Jews.",
+    "references": [
+      "mat:28:19",
+      "mrk:13:10",
+      "luk:12:30",
+      "act:2:5",
+      "act:10:35",
+      "act:17:26",
+      "rom:16:26",
+      "gal:3:8",
+      "1ti:3:16",
+      "1pe:2:9",
+      "rev:7:9",
+      "rev:15:4",
+      "rev:22:2"
+    ],
+    "alternatives": [
+      "nation",
+      "nations"
+    ]
+  },
+  {
+    "word": "obey, obedience",
+    "strongs": [
+      "G5219",
+      "G5218"
+    ],
+    "description": "This word can mean:\n- To submit to someone and do what that person says to do.\n- To do what is required or commanded.\n- To listen or to pay attention to someone or something.",
+    "references": [
+      "mat:8:27",
+      "mrk:1:27",
+      "luk:8:25",
+      "luk:17:6",
+      "rom:6:16",
+      "rom:10:16",
+      "2co:10:5",
+      "eph:6:1",
+      "php:2:12",
+      "col:3:20",
+      "2th:3:14",
+      "phm:1:21",
+      "heb:5:9",
+      "heb:11:8",
+      "1pe:3:6"
+    ],
+    "alternatives": [
+      "obey",
+      "obeyed",
+      "obeys",
+      "obedience"
+    ]
+  },
+  {
+    "word": "peace",
+    "strongs": [
+      "G1515"
+    ],
+    "description": "This word can mean:\n- Assurance that one is safe and secure.\n- Being free from conflict, fear, or anxiety.\n- In a good relationship with other people.\n- The opposite of being at war.\n- A good or right relationship between God and a person whom God has saved from sin.",
+    "references": [
+      "mat:10:34",
+      "luk:2:14",
+      "jhn:14:27",
+      "act:10:36",
+      "rom:14:19",
+      "2co:13:11",
+      "gal:5:22",
+      "eph:2:14",
+      "php:4:7",
+      "col:3:15",
+      "2ti:2:22",
+      "heb:12:14",
+      "jas:2:16",
+      "2jn:1:3",
+      "rev:6:4"
+    ],
+    "alternatives": [
+      "peace"
+    ]
+  },
+  {
+    "word": "praise",
+    "strongs": [
+      "G1868",
+      "G1867",
+      "G134"
+    ],
+    "description": "This means words expressing admiration and honor.",
+    "references": [
+      "luk:2:13",
+      "act:3:8",
+      "rom:13:3",
+      "rom:15:11",
+      "1co:4:5",
+      "1co:11:2",
+      "1co:11:22",
+      "2co:8:18",
+      "eph:1:12",
+      "php:1:11",
+      "php:4:8",
+      "1pe:1:7",
+      "1pe:2:14",
+      "rev:19:5"
+    ],
+    "alternatives": [
+      "praise",
+      "praised",
+      "praising"
+    ]
+  },
+  {
+    "word": "pray",
+    "strongs": [
+      "G4336"
+    ],
+    "description": "This word can mean:\n- To talk to God or to communicate with God, either with thoughts or with words.\n- To ask God to do something.\n- To desire something from God, especially something that God also would desire.",
+    "references": [
+      "mat:6:6",
+      "mrk:14:38",
+      "luk:6:28",
+      "act:16:25",
+      "rom:8:26",
+      "1co:14:15",
+      "eph:6:18",
+      "php:1:9",
+      "col:1:3",
+      "1th:5:17",
+      "2th:3:1",
+      "1ti:2:8",
+      "heb:13:18",
+      "jas:5:13",
+      "jud:1:20"
+    ],
+    "alternatives": [
+      "pray",
+      "praying",
+      "prayer",
+      "prayers"
+    ]
+  },
+  {
+    "word": "promise",
+    "strongs": [
+      "G1860"
+    ],
+    "description": "This word can mean:\n- To declare that someone will act faithfully by doing what they said they would do.\n- To announce or guarantee something before an event or situation happens.\n- Something a person receives as a result of a fulfilled promise.\nThe New Testament mostly talks about God’s promises to people.",
+    "references": [
+      "luk:24:49",
+      "act:1:4",
+      "act:13:23",
+      "rom:4:16",
+      "2co:7:1",
+      "gal:4:28",
+      "eph:1:13",
+      "eph:3:6",
+      "1ti:4:8",
+      "2ti:1:1",
+      "heb:6:12",
+      "heb:8:6",
+      "2pe:3:9",
+      "1jn:2:25"
+    ],
+    "alternatives": [
+      "promise",
+      "promised",
+      "promises"
+    ]
+  },
+  {
+    "word": "prophecy, prophesy",
+    "strongs": [
+      "G4394",
+      "G4395"
+    ],
+    "description": "This word means a message that God gives to one person, in order for that person to tell it to more people. Sometimes this includes information about what will happen in the future.\nThis word can also mean the act of speaking such a message to other people.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:7:22",
+      "mat:11:13",
+      "mrk:7:6",
+      "luk:22:64",
+      "jhn:11:51",
+      "act:2:17",
+      "rom:12:6",
+      "1co:13:2",
+      "1th:5:20",
+      "1ti:1:18",
+      "1pe:1:10",
+      "2pe:1:20",
+      "2pe:1:21",
+      "jud:1:14",
+      "rev:1:3",
+      "rev:11:3"
+    ],
+    "alternatives": [
+      "prophecy",
+      "prophecies",
+      "prophesy",
+      "prophesied",
+      "prophesying"
+    ]
+  },
+  {
+    "word": "redeem",
+    "strongs": [
+      "G3084",
+      "G1805"
+    ],
+    "description": "This word can mean:\n- To release someone from bondage by paying what is required.\n- To buy back.\n- To use time or an opportunity in a wise way to do something good.",
+    "references": [
+      "luk:24:21",
+      "gal:3:13",
+      "gal:4:5",
+      "eph:5:16",
+      "col:4:5",
+      "tit:2:14",
+      "1pe:1:18"
+    ],
+    "alternatives": [
+      "redeem",
+      "redeemed"
+    ]
+  },
+  {
+    "word": "redemption",
+    "strongs": [
+      "G3085",
+      "G629"
+    ],
+    "description": "This word means a rescue and freedom made possible because of a price that was paid. Redemption is the result of being redeemed.",
+    "references": [
+      "luk:1:68",
+      "luk:2:38",
+      "luk:21:28",
+      "rom:3:24",
+      "rom:8:23",
+      "1co:1:30",
+      "eph:1:7",
+      "eph:1:14",
+      "eph:4:30",
+      "col:1:14",
+      "heb:9:12"
+    ],
+    "alternatives": [
+      "redemption"
+    ]
+  },
+  {
+    "word": "repent",
+    "strongs": [
+      "G3340",
+      "G3338"
+    ],
+    "description": "This word can mean:\n- To change one’s mind. When people repent from sin, this means they change their minds about doing or believing what is evil, and they start to obey God instead.\n- To regret something that was done.",
+    "references": [
+      "mat:4:17",
+      "mat:11:20",
+      "mat:21:32",
+      "mrk:1:15",
+      "mrk:6:12",
+      "luk:13:3",
+      "luk:15:7",
+      "luk:17:3",
+      "act:2:38",
+      "act:17:30",
+      "act:26:20",
+      "2co:12:21",
+      "rev:2:5",
+      "rev:9:20",
+      "rev:16:9"
+    ],
+    "alternatives": [
+      "repent",
+      "repented",
+      "repents",
+      "repentance"
+    ]
+  },
+  {
+    "word": "resurrection",
+    "strongs": [
+      "G386",
+      "G1454"
+    ],
+    "description": "This word means to become alive again after having died. Only God has the power to do this.\n- This word is often used to talk about Jesus becoming alive again after he died.\n- It is also used about the end of time, when all will be raised again to life and judged.",
+    "references": [
+      "mat:27:53",
+      "mrk:12:18",
+      "luk:14:14",
+      "luk:20:35",
+      "jhn:11:25",
+      "act:4:33",
+      "act:24:15",
+      "rom:1:4",
+      "rom:6:5",
+      "1co:15:42",
+      "php:3:10",
+      "heb:11:35",
+      "1pe:1:3",
+      "rev:20:6"
+    ],
+    "alternatives": [
+      "resurrection"
+    ]
+  },
+  {
+    "word": "righteous",
+    "strongs": [
+      "G1342"
+    ],
+    "description": "This word can mean:\n- Always completely good (this is only true about God).\n- Obedient to God.\n- Doing what is morally good, just, or fair.\n- Declared good by God because all sin has been cleansed by him.\n- Something (such as judgment) that is right, just, or fair.",
+    "references": [
+      "mat:27:19",
+      "mrk:2:17",
+      "luk:1:6",
+      "jhn:17:25",
+      "act:22:14",
+      "rom:3:10",
+      "gal:3:11",
+      "2th:1:5",
+      "1ti:1:9",
+      "2ti:4:8",
+      "heb:11:4",
+      "1pe:3:18",
+      "2pe:2:8",
+      "1jn:2:1",
+      "rev:16:5"
+    ],
+    "alternatives": [
+      "righteous",
+      "righteousness",
+      "innocent"
+    ]
+  },
+  {
+    "word": "sacrifice",
+    "strongs": [
+      "G2378",
+      "G2380"
+    ],
+    "description": "This word can mean:\n- An offering, which is something that a person presents as a gift to God (or to a false god).\n- Something that is given or done at a great cost to the giver.\n- Something that is like an offering or sacrifice in some way.\n- The act of giving something valuable (that can be alive) to someone or to God.\nAt the time of the New Testament, many sacrifices were animals that were killed, so “to sacrifice” can also mean “to kill” when applied to something living.",
+    "references": [
+      "mat:9:13",
+      "mrk:12:33",
+      "luk:13:1",
+      "luk:22:7",
+      "act:14:13",
+      "rom:12:1",
+      "1co:5:7",
+      "1co:10:20",
+      "eph:5:2",
+      "php:4:18",
+      "heb:7:27",
+      "heb:13:15",
+      "heb:13:16",
+      "1pe:2:5"
+    ],
+    "alternatives": [
+      "sacrifice",
+      "sacrificed",
+      "sacrifices"
+    ]
+  },
+  {
+    "word": "salvation",
+    "strongs": [
+      "G4991",
+      "G4992"
+    ],
+    "description": "This word can mean:\n- The way in which God saves people.\n- The process by which a person is rescued, delivered, or preserved.\n- The condition of a person whom someone has rescued, delivered, or preserved.",
+    "references": [
+      "luk:3:6",
+      "jhn:4:22",
+      "act:4:12",
+      "rom:1:16",
+      "2co:6:2",
+      "eph:1:13",
+      "php:1:28",
+      "1th:5:9",
+      "2ti:3:15",
+      "tit:2:11",
+      "heb:2:10",
+      "1pe:1:9",
+      "2pe:3:15",
+      "jud:1:3",
+      "rev:7:10"
+    ],
+    "alternatives": [
+      "salvation"
+    ]
+  },
+  {
+    "word": "sanctify, sanctification",
+    "strongs": [
+      "G37",
+      "G38"
+    ],
+    "description": "This word can mean:\n- To dedicate things or people to God. Those things or people become holy. Things or people that become holy become pure or free from sin.\n- To revere someone or to treat that person as holy.\n- To honor someone because that person deserves to be honored.\n- To revere something or to treat it as holy.",
+    "references": [
+      "act:20:32",
+      "rom:6:22",
+      "rom:15:16",
+      "1co:6:11",
+      "eph:5:26",
+      "1th:5:23",
+      "2th:2:13",
+      "1ti:2:15",
+      "heb:2:11",
+      "heb:13:12",
+      "1pe:1:2"
+    ],
+    "alternatives": [
+      "sanctify",
+      "sanctifying",
+      "sanctified",
+      "sanctification"
+    ]
+  },
+  {
+    "word": "save",
+    "strongs": [
+      "G4982"
+    ],
+    "description": "This word can mean:\n- To keep or deliver someone from harm or suffering.\n- To rescue someone from being punished by God. Instead, that person becomes at peace with God.",
+    "references": [
+      "mat:14:30",
+      "mrk:16:16",
+      "luk:19:10",
+      "jhn:12:27",
+      "act:16:31",
+      "rom:10:9",
+      "1co:1:18",
+      "2co:2:15",
+      "eph:2:8",
+      "2th:2:10",
+      "1ti:2:4",
+      "tit:3:5",
+      "heb:7:25",
+      "jas:1:21",
+      "1pe:4:18"
+    ],
+    "alternatives": [
+      "save",
+      "saved"
+    ]
+  },
+  {
+    "word": "scriptures",
+    "strongs": [
+      "G1124"
+    ],
+    "description": "This word can mean:\n- Everything that was written in the Old Testament.\n- A certain part of the Old Testament.\n- Things written in the New Testament.\nSometimes this word is used to introduce something written in the Old Testament. When used this way, it means that what was written should be trusted and obeyed.",
+    "references": [
+      "mat:21:42",
+      "mrk:12:24",
+      "luk:24:45",
+      "jhn:5:39",
+      "act:18:28",
+      "rom:4:3",
+      "rom:15:4",
+      "1co:15:3",
+      "gal:3:8",
+      "1ti:5:18",
+      "2ti:3:16",
+      "jas:2:8",
+      "2pe:1:20",
+      "2pe:3:16"
+    ],
+    "alternatives": [
+      "scriptures",
+      "scripture"
+    ]
+  },
+  {
+    "word": "shame",
+    "strongs": [
+      "G152",
+      "G2617"
+    ],
+    "description": "This word can mean:\n- A feeling of dishonor or disgrace.\n- Painful feelings or distress because of knowledge that one’s actions are wrong or evil.",
+    "references": [
+      "luk:14:9",
+      "rom:10:11",
+      "2co:4:2",
+      "php:3:19",
+      "heb:12:2",
+      "1pe:3:16",
+      "jud:1:13",
+      "rev:3:18"
+    ],
+    "alternatives": [
+      "shame",
+      "shameful"
+    ]
+  },
+  {
+    "word": "sheep",
+    "strongs": [
+      "G4263"
+    ],
+    "description": "This word is the name for an animal that has four legs and wool all over its body. This word can also mean someone who is like a sheep in some way.\n- A sheep can be protected by a shepherd, who may also lead the sheep to find its food, which is grass.\n- The Israelites often used sheep for sacrifices.",
+    "references": [
+      "mat:10:6",
+      "mat:18:12",
+      "mat:26:31",
+      "mrk:6:34",
+      "mrk:14:27",
+      "luk:15:6",
+      "jhn:10:15",
+      "jhn:21:17",
+      "act:8:32",
+      "rom:8:36",
+      "heb:13:20",
+      "1pe:2:25",
+      "rev:18:13"
+    ],
+    "alternatives": [
+      "sheep"
+    ]
+  },
+  {
+    "word": "shepherd",
+    "strongs": [
+      "G4166",
+      "G4165"
+    ],
+    "description": "This word can mean:\n- A person whose job is to take care of sheep.\n- Someone who is like a shepherd in some way.\n- To act as a shepherd.",
+    "references": [
+      "mat:9:36",
+      "mat:26:31",
+      "mrk:6:34",
+      "mrk:14:27",
+      "luk:2:8",
+      "jhn:10:11",
+      "act:20:28",
+      "1co:9:7",
+      "heb:13:20",
+      "1pe:2:25",
+      "1pe:5:2",
+      "rev:7:17"
+    ],
+    "alternatives": [
+      "shepherd",
+      "shepherds"
+    ]
+  },
+  {
+    "word": "sin",
+    "strongs": [
+      "G266"
+    ],
+    "description": "This word can mean:\n- Anything someone does that God does not want them to do.\n- Anything someone does not do that God wants them to do.\n- The guilt that a person has because of their sin.",
+    "references": [
+      "mat:1:21",
+      "mrk:2:9",
+      "luk:7:47",
+      "jhn:8:24",
+      "act:7:60",
+      "rom:5:12",
+      "2co:5:21",
+      "eph:2:1",
+      "col:1:14",
+      "1ti:5:24",
+      "heb:10:18",
+      "jas:1:15",
+      "2pe:2:14",
+      "1jn:1:9",
+      "rev:1:5"
+    ],
+    "alternatives": [
+      "sin",
+      "sins",
+      "sinned"
+    ]
+  },
+  {
+    "word": "Son of God",
+    "strongs": [],
+    "description": "This phrase refers to Jesus, who came into the world as a human being. He is also referred to as “the Son” as a shortened form of this phrase, especially when it is in the same context as “the Father.” The Son of God, God the Father, and God the Holy Spirit are all fully and equally God.\nBecause Jesus is God’s Son, he loves and obeys his Father, and his Father loves him.\n- The word used to translate “Son” should fit with the word used to translate “Father” and should be the most natural ones used to express a true father-son relationship in the language.",
+    "references": [
+      "mat:4:3",
+      "mat:14:33",
+      "mrk:3:11",
+      "mrk:15:39",
+      "luk:1:35",
+      "luk:22:70",
+      "jhn:1:34",
+      "jhn:20:31",
+      "rom:1:4",
+      "2co:1:19",
+      "gal:2:20",
+      "eph:4:13",
+      "heb:4:14",
+      "1jn:4:15",
+      "rev:2:18"
+    ],
+    "alternatives": [
+      "Son of God"
+    ]
+  },
+  {
+    "word": "Son of Man",
+    "strongs": [],
+    "description": "The title “Son of Man” was used by Jesus to refer to himself. He often used this term instead of saying “I” or “me.”",
+    "references": [
+      "mat:8:20",
+      "mat:16:13",
+      "mat:20:28",
+      "mrk:2:28",
+      "mrk:8:31",
+      "mrk:10:33",
+      "mrk:13:26",
+      "luk:7:34",
+      "luk:19:10",
+      "luk:22:48",
+      "jhn:3:14",
+      "jhn:12:34",
+      "act:7:56",
+      "rev:1:13",
+      "rev:14:14"
+    ],
+    "alternatives": [
+      "Son of Man",
+      "son of man"
+    ]
+  },
+  {
+    "word": "soul",
+    "strongs": [
+      "G5590"
+    ],
+    "description": "This word can mean:\n- A part of a person that cannot be seen but makes the person alive.\n- Mind.\n- Heart.\n- Life.\n- A person or human being.",
+    "references": [
+      "mat:10:28",
+      "mrk:12:30",
+      "luk:12:20",
+      "jhn:12:27",
+      "act:2:27",
+      "rom:2:9",
+      "1co:15:45",
+      "2co:1:23",
+      "1th:5:23",
+      "heb:6:19",
+      "jas:1:21",
+      "1pe:2:11",
+      "2pe:2:14",
+      "3jn:1:2",
+      "rev:6:9"
+    ],
+    "alternatives": [
+      "soul",
+      "souls"
+    ]
+  },
+  {
+    "word": "spirit",
+    "strongs": [
+      "G4151"
+    ],
+    "description": "This word can mean:\n- The part of a person that is not physical and cannot be seen.\n- A person’s attitude or emotional state.\n- Someone who does not have a physical or human body. Angels, demons, and God are spirits.\n- The Holy Spirit.",
+    "references": [
+      "mrk:1:23",
+      "luk:1:17",
+      "jhn:3:6",
+      "act:7:59",
+      "rom:8:15",
+      "rom:8:16",
+      "1co:2:12",
+      "2co:7:13",
+      "gal:5:25",
+      "eph:2:2",
+      "php:4:23",
+      "col:2:5",
+      "heb:4:12",
+      "jas:2:26",
+      "1jn:4:2"
+    ],
+    "alternatives": [
+      "spirit"
+    ]
+  },
+  {
+    "word": "tempt",
+    "strongs": [
+      "G3985"
+    ],
+    "description": "This word can mean:\n- To try to entice someone to do something they should not do (to do what is wrong).\n- To test or put to the test. Sometimes people test someone to discover that person’s true nature or character.\n- Sometimes people test someone because they hope to show that the person’s nature or character is not good.\nNote: Verses with * symbols should all use the same meaning of this word.",
+    "references": [
+      "mat:4:1",
+      "mat:22:18",
+      "mrk:1:13",
+      "luk:4:2",
+      "act:5:9",
+      "1co:10:13",
+      "gal:6:1",
+      "1th:3:5",
+      "heb:2:18",
+      "heb:4:15",
+      "jas:1:13",
+      "jas:1:14",
+      "rev:3:10"
+    ],
+    "alternatives": [
+      "tempt",
+      "tempted",
+      "test",
+      "testing"
+    ]
+  },
+  {
+    "word": "throne",
+    "strongs": [
+      "G2362"
+    ],
+    "description": "This word can mean:\n- The special seat or chair on which a king or other ruler sits.\n- The power or authority of the person who sits on the throne.\n- The place from which the person who sits on the throne rules.",
+    "references": [
+      "mat:5:34",
+      "mat:19:28",
+      "mat:25:31",
+      "luk:1:32",
+      "luk:22:30",
+      "act:7:49",
+      "col:1:16",
+      "heb:4:16",
+      "heb:8:1",
+      "heb:12:2",
+      "rev:3:21",
+      "rev:7:10",
+      "rev:22:1"
+    ],
+    "alternatives": [
+      "throne",
+      "thrones"
+    ]
+  },
+  {
+    "word": "tree (used to mean cross)",
+    "strongs": [],
+    "description": "This word is sometimes used to mean the same thing as “cross,” although it is sometimes said this way, as “a tree.”\nA cross was an upright wooden post stuck into the ground with a wooden beam going across it near the top. During the time of the Roman Empire, the Roman government killed criminals by tying or nailing them to a cross and leaving them there to die.",
+    "references": [
+      "act:5:30",
+      "act:10:39",
+      "act:13:29",
+      "gal:3:13",
+      "1pe:2:24"
+    ],
+    "alternatives": [
+      "tree"
+    ]
+  },
+  {
+    "word": "true, truth",
+    "strongs": [
+      "G227",
+      "G228",
+      "G225"
+    ],
+    "description": "This word can describe:\n- Ideas or words that are not false.\n- People who speak what is not false.\n- Something that actually exists. That is, the thing is not fake.\n- Something that does not have anything wrong with it.\n- What Christians believe and teach about Jesus.",
+    "references": [
+      "mat:22:16",
+      "luk:16:11",
+      "jhn:14:6",
+      "jhn:17:17",
+      "rom:1:25",
+      "1co:13:6",
+      "eph:4:25",
+      "php:4:8",
+      "2ti:2:15",
+      "tit:1:1",
+      "heb:8:2",
+      "jas:1:18",
+      "2pe:2:22",
+      "1jn:2:8",
+      "rev:3:14"
+    ],
+    "alternatives": [
+      "true",
+      "truth",
+      "truthful"
+    ]
+  },
+  {
+    "word": "unbelief, unbelieving",
+    "strongs": [
+      "G570",
+      "G571"
+    ],
+    "description": "This word can mean:\n- A lack of faith.\n- Not believing in God or in the things God has done.\n- Choosing not to believe something.\n- Faithlessness, which means that a person is not acting in a loyal or faithful way to someone else.",
+    "references": [
+      "mat:13:58",
+      "mrk:9:24",
+      "mrk:16:14",
+      "rom:3:3",
+      "rom:11:20",
+      "2co:4:4",
+      "1ti:1:13",
+      "tit:1:15",
+      "heb:3:12"
+    ],
+    "alternatives": [
+      "unbelief",
+      "unbelieving"
+    ]
+  },
+  {
+    "word": "will (of God)",
+    "strongs": [],
+    "description": "This phrase can mean:\n- What God desires.\n- What God plans for the rest of his creation.\n- God’s purpose.\n- What is pleasing to God.\n- How God wants people to respond to him.",
+    "references": [
+      "mat:6:10",
+      "mat:7:21",
+      "mrk:3:35",
+      "jhn:6:40",
+      "rom:12:2",
+      "1co:1:1",
+      "2co:8:5",
+      "gal:1:4",
+      "eph:6:6",
+      "col:4:12",
+      "1th:5:18",
+      "2ti:1:1",
+      "heb:10:36",
+      "1pe:4:2",
+      "1jn:2:17"
+    ],
+    "alternatives": [
+      "your will",
+      "will of my Father",
+      "will of God",
+      "will of our God",
+      "God’s will"
+    ]
+  },
+  {
+    "word": "wisdom",
+    "strongs": [
+      "G4678"
+    ],
+    "description": "This word can mean:\n- Knowledge or skill.\n- Intelligence or learning.\n- Maturity.\n- The ability to make good decisions.\n- God’s own wisdom, which is complete.\nThe New Testament distinguishes between human wisdom and godly wisdom. Human wisdom can include knowledge or intelligence, but also selfishness or pride. Godly wisdom benefits others.",
+    "references": [
+      "mat:13:54",
+      "mrk:6:2",
+      "luk:2:40",
+      "act:6:3",
+      "rom:11:33",
+      "1co:1:20",
+      "1co:2:6",
+      "eph:3:10",
+      "col:1:9",
+      "col:4:5",
+      "jas:1:5",
+      "jas:3:17",
+      "2pe:3:15",
+      "rev:5:12"
+    ],
+    "alternatives": [
+      "wisdom"
+    ]
+  },
+  {
+    "word": "wise",
+    "strongs": [
+      "G4680",
+      "G5429"
+    ],
+    "description": "This word can mean:\n- Being clever or skilled.\n- Having intelligence or knowledge.\n- Making good decisions.\nOnly God is completely wise.",
+    "references": [
+      "mat:7:24",
+      "mat:25:4",
+      "luk:10:21",
+      "rom:1:22",
+      "rom:12:16",
+      "1co:3:18",
+      "eph:5:15",
+      "jas:3:13"
+    ],
+    "alternatives": [
+      "wise"
+    ]
+  },
+  {
+    "word": "word",
+    "strongs": [
+      "G3056"
+    ],
+    "description": "This can be a title for Jesus. (In English, it is then capitalized.) It can also mean:\n- Something that is spoken.\n- The good news about Jesus.\n- Something that has been given in the past as a message from God. This includes the Bible.\n- Something that is asserted or declared.",
+    "references": [
+      "mat:24:35",
+      "mrk:4:20",
+      "luk:11:28",
+      "jhn:1:1",
+      "act:6:4",
+      "rom:9:6",
+      "2co:5:19",
+      "gal:6:6",
+      "php:1:14",
+      "col:3:16",
+      "1th:2:13",
+      "2ti:2:15",
+      "heb:4:12",
+      "jas:1:22",
+      "1pe:1:23"
+    ],
+    "alternatives": [
+      "word",
+      "words",
+      "message"
+    ]
+  },
+  {
+    "word": "worship",
+    "strongs": [
+      "G4352",
+      "G4576",
+      "G4573"
+    ],
+    "description": "This word can mean:\n- To show honor and love towards God (or a false god).\n- To bow to the ground before a person who ranks higher.",
+    "references": [
+      "mat:2:2",
+      "mat:28:9",
+      "mrk:7:7",
+      "luk:4:8",
+      "luk:24:52",
+      "jhn:4:24",
+      "jhn:9:38",
+      "act:8:27",
+      "act:24:11",
+      "rom:1:25",
+      "1co:14:25",
+      "heb:1:6",
+      "heb:11:21",
+      "rev:5:14",
+      "rev:22:9"
+    ],
+    "alternatives": [
+      "worship",
+      "worshiped"
+    ]
+  },
+  {
+    "word": "worthy",
+    "strongs": [
+      "G514",
+      "G515",
+      "G516",
+      "G2661"
+    ],
+    "description": "This word can mean something that is:\n- Worthwhile.\n- Valuable.\n- Fitting.\n- Deserving.\n- Fulfilling a need.",
+    "references": [
+      "mat:10:37",
+      "luk:10:7",
+      "luk:15:19",
+      "jhn:1:27",
+      "act:5:41",
+      "rom:8:18",
+      "eph:4:1",
+      "php:1:27",
+      "col:1:10",
+      "1th:2:12",
+      "2th:1:11",
+      "1ti:5:18",
+      "heb:11:38",
+      "3jn:1:6",
+      "rev:5:12"
+    ],
+    "alternatives": [
+      "worthy",
+      "worthily"
+    ]
+  }
+]
