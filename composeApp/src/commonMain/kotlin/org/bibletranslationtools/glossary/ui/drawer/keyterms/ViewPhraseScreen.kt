@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -57,7 +57,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
             .background(MaterialTheme.colorScheme.surface)
     ) {
         TopAppBar(title = model.phrase?.phrase) {
-            component.onBackClick()
+            component.navigateBack()
         }
 
         Column(modifier = Modifier.weight(1f)) {

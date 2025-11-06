@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -61,7 +61,7 @@ private val BOTTOM_BAR_HEIGHT = 80.dp
 
 
 @Composable
-fun KeyTermsScreen(component: KeyTermsComponent) {
+fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
     val model by component.model.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()

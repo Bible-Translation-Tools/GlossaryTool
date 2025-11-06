@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -15,14 +15,13 @@ import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.AppComponent
-import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.main.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface EditPhraseComponent : ParentContext {
+interface EditPhraseComponent : DrawerContext {
 
     val model: Value<Model>
 
@@ -37,12 +36,10 @@ interface EditPhraseComponent : ParentContext {
 
 class DefaultEditPhraseComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
+    private val parentContext: DrawerContext,
     private val phrase: String,
-    private val onPhraseSaved: () -> Unit,
-    private val onNavigateBack: () -> Unit
-) : AppComponent(componentContext, parentContext),
-    EditPhraseComponent, KoinComponent {
+    private val onPhraseSaved: () -> Unit
+) : EditPhraseComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
     private val glossaryRepository: GlossaryRepository by inject()
@@ -118,8 +115,12 @@ class DefaultEditPhraseComponent(
         }
     }
 
-    override fun onBackClick() {
-        onNavigateBack()
+    override fun dismiss() {
+        parentContext.dismiss()
+    }
+
+    override fun navigateBack() {
+        parentContext.navigateBack()
     }
 
     private fun findRefs(phrase: Phrase): List<Ref> {

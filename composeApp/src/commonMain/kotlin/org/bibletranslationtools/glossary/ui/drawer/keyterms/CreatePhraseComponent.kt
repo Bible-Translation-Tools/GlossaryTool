@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -12,8 +12,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.ParentContext
-import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.main.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -24,7 +23,7 @@ private const val MAX_SEARCH_RESULTS = 100
 private const val RANDOM_WORD_SAMPLE_SIZE = 100
 private const val MAX_RANDOM_ATTEMPTS = 500
 
-interface SearchPhrasesComponent : ParentContext {
+interface CreatePhraseComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
@@ -36,19 +35,17 @@ interface SearchPhrasesComponent : ParentContext {
     fun onEditClick(phrase: String)
 }
 
-class DefaultSearchPhrasesComponent(
+class DefaultCreatePhraseComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
-    private val onNavigateBack: () -> Unit,
+    private val parentContext: DrawerContext,
     private val onNavigateEdit: (phrase: String) -> Unit
-) : AppComponent(componentContext, parentContext),
-    SearchPhrasesComponent, KoinComponent {
+) : CreatePhraseComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
     private val glossaryRepository: GlossaryRepository by inject()
 
-    private val _model = MutableValue(SearchPhrasesComponent.Model())
-    override val model: Value<SearchPhrasesComponent.Model> = _model
+    private val _model = MutableValue(CreatePhraseComponent.Model())
+    override val model: Value<CreatePhraseComponent.Model> = _model
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -77,10 +74,6 @@ class DefaultSearchPhrasesComponent(
 
             onSearchQueryChanged("")
         }
-    }
-
-    override fun onBackClick() {
-        onNavigateBack()
     }
 
     override fun onSearchQueryChanged(query: String) {
@@ -158,5 +151,13 @@ class DefaultSearchPhrasesComponent(
             }
             randomWords.toList()
         } ?: emptyList()
+    }
+
+    override fun dismiss() {
+        parentContext.dismiss()
+    }
+
+    override fun navigateBack() {
+        parentContext.navigateBack()
     }
 }

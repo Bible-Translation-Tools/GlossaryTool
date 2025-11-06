@@ -26,13 +26,13 @@ import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.platform.showStatusBars
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
+import org.bibletranslationtools.glossary.ui.drawer.keyterms.KeyTermsComponent
+import org.bibletranslationtools.glossary.ui.drawer.keyterms.KeyTermsScreen
+import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsComponent
+import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsScreen
 import org.bibletranslationtools.glossary.ui.glossary.GlossaryScreen
-import org.bibletranslationtools.glossary.ui.glossary.KeyTermsComponent
-import org.bibletranslationtools.glossary.ui.glossary.KeyTermsScreen
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
 import org.bibletranslationtools.glossary.ui.resources.ResourcesScreen
-import org.bibletranslationtools.glossary.ui.settings.SettingsComponent
-import org.bibletranslationtools.glossary.ui.settings.SettingsScreen
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.compose.koinInject
 
@@ -44,9 +44,6 @@ fun MainScreen(component: MainComponent) {
     val appStateStore = koinInject<AppStateStore>()
     val resourceState by appStateStore.resourceStateHolder.resourceState
         .collectAsStateWithLifecycle()
-
-    val childStack by component.childStack.subscribeAsState()
-    val activeChild = childStack.active.instance
 
     var selectedResource by rememberStringSetting(
         Settings.RESOURCE,
@@ -146,7 +143,7 @@ fun MainScreen(component: MainComponent) {
                 resource = resource,
                 onNavPhrase = { component.navigatePhrase(it) },
                 onViewDetails = { phrase ->
-                    component.onViewPhraseClick(phrase)
+                    //component.onViewPhraseClick(phrase)
                 },
                 onDismiss = {
                     component.clearPhraseDetails()

@@ -32,14 +32,14 @@ import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.components.PhraseNavDir
+import org.bibletranslationtools.glossary.ui.drawer.keyterms.DefaultKeyTermsComponent
+import org.bibletranslationtools.glossary.ui.drawer.settings.DefaultSettingsComponent
 import org.bibletranslationtools.glossary.ui.glossary.DefaultGlossaryComponent
-import org.bibletranslationtools.glossary.ui.glossary.DefaultKeyTermsComponent
 import org.bibletranslationtools.glossary.ui.glossary.GlossaryComponent
 import org.bibletranslationtools.glossary.ui.read.DefaultReadComponent
 import org.bibletranslationtools.glossary.ui.read.ReadComponent
 import org.bibletranslationtools.glossary.ui.resources.DefaultResourcesComponent
 import org.bibletranslationtools.glossary.ui.resources.ResourcesComponent
-import org.bibletranslationtools.glossary.ui.settings.DefaultSettingsComponent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -64,10 +64,6 @@ sealed class ReadIntent {
 @Serializable
 sealed class GlossaryIntent {
     @Serializable
-    data class EditPhrase(val phrase: String) : GlossaryIntent()
-    @Serializable
-    data class ViewPhrase(val phraseId: String) : GlossaryIntent()
-    @Serializable
     data object CreateGlossary : GlossaryIntent()
 }
 
@@ -89,12 +85,10 @@ interface MainComponent: ParentContext {
     )
 
     val childStack: Value<ChildStack<*, Child>>
-    val drawerSlot: Value<ChildSlot<DrawerConfig, DrawerComponent>>
+    val drawerSlot: Value<ChildSlot<DrawerConfig, DrawerContext>>
 
     fun navigatePhrase(dir: PhraseNavDir)
     fun clearPhraseDetails()
-    fun onViewPhraseClick(phraseId: String)
-    fun onEditPhraseClick(phrase: String)
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
@@ -130,7 +124,7 @@ class DefaultMainComponent(
 
     private val drawerNavigation = SlotNavigation<DrawerConfig>()
 
-    override val drawerSlot: Value<ChildSlot<DrawerConfig, DrawerComponent>> =
+    override val drawerSlot: Value<ChildSlot<DrawerConfig, DrawerContext>> =
         childSlot(
             source = drawerNavigation,
             serializer = DrawerConfig.serializer(),
@@ -154,8 +148,8 @@ class DefaultMainComponent(
                     parentContext = this,
                     intent = config.intent,
                     onPhraseDetails = ::loadPhrase,
-                    onNavigateViewPhrase = ::onViewPhraseClick,
-                    onNavigateEditPhrase = ::onEditPhraseClick
+                    onNavigateViewPhrase = {},
+                    onNavigateEditPhrase = {}
                 )
             )
             is Config.Glossary -> MainComponent.Child.Glossary(
@@ -185,18 +179,6 @@ class DefaultMainComponent(
 
     override fun clearPhraseDetails() {
         _model.update { it.copy(phraseDetails = null) }
-    }
-
-    override fun onViewPhraseClick(phraseId: String) {
-        navigation.bringToFront(
-            Config.Glossary(GlossaryIntent.ViewPhrase(phraseId))
-        )
-    }
-
-    override fun onEditPhraseClick(phrase: String) {
-        navigation.bringToFront(
-            Config.Glossary(GlossaryIntent.EditPhrase(phrase))
-        )
     }
 
     override fun onBackClick() {
@@ -328,7 +310,7 @@ class DefaultMainComponent(
     private fun createDrawerComponent(
         config: DrawerConfig,
         context: ComponentContext
-    ): DrawerComponent {
+    ): DrawerContext {
         return when (config) {
             is DrawerConfig.Settings -> DefaultSettingsComponent(
                 componentContext = context,
@@ -341,19 +323,7 @@ class DefaultMainComponent(
                 componentContext = context,
                 parentContext = this,
                 book = config.book,
-                chapter = config.chapter,
-                onNavigateImportGlossary = {
-
-                },
-                onNavigateGlossaryList = {
-
-                },
-                onNavigateSearchPhrases = {
-
-                },
-                onNavigateViewPhrase = { phraseId ->
-
-                }
+                chapter = config.chapter
             )
         }
     }

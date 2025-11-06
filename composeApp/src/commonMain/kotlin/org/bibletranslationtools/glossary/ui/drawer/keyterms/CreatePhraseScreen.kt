@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -37,7 +37,7 @@ import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun SearchPhrasesScreen(component: SearchPhrasesComponent) {
+fun CreatePhraseScreen(component: CreatePhraseComponent) {
     val model by component.model.subscribeAsState()
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
@@ -70,7 +70,7 @@ fun SearchPhrasesScreen(component: SearchPhrasesComponent) {
                 )
             }
         ) {
-            component.onBackClick()
+            component.navigateBack()
         }
 
         Column(modifier = Modifier.weight(1f)) {

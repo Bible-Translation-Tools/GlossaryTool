@@ -1,5 +1,6 @@
 package org.bibletranslationtools.glossary.ui.main
 
-interface DrawerComponent {
+interface DrawerContext {
     fun dismiss()
+    fun navigateBack()
 }

@@ -26,11 +26,8 @@ interface GlossaryComponent : ParentContext {
     sealed class Child {
         class GlossaryList(val component: GlossaryListComponent) : Child()
         class CreateGlossary(val component: CreateGlossaryComponent) : Child()
-        class EditPhrase(val component: EditPhraseComponent) : Child()
-        class ViewPhrase(val component: ViewPhraseComponent) : Child()
         class ViewChapter(val component: ViewChapterComponent) : Child()
         class ImportGlossary(val component: ImportGlossaryComponent) : Child()
-        class SearchPhrases(val component: SearchPhrasesComponent) : Child()
         class SelectLanguage(val component: SelectLanguageComponent) : Child()
     }
 }
@@ -54,8 +51,6 @@ class DefaultGlossaryComponent(
             source = navigation,
             serializer = Config.serializer(),
             initialConfiguration = when (intent) {
-                is GlossaryIntent.ViewPhrase -> Config.ViewPhrase(intent.phraseId)
-                is GlossaryIntent.EditPhrase -> Config.EditPhrase(intent.phrase)
                 is GlossaryIntent.CreateGlossary -> Config.CreateGlossary
             },
             handleBackButton = true,
@@ -93,51 +88,12 @@ class DefaultGlossaryComponent(
                     }
                 )
             )
-            is Config.ViewPhrase -> GlossaryComponent.Child.ViewPhrase(
-                DefaultViewPhraseComponent(
-                    componentContext = context,
-                    parentContext = parentContext,
-                    phraseId = config.phraseId,
-                    onNavigateBack = {
-                        if (childStack.value.backStack.isEmpty()) {
-                            onNavigateBack()
-                        } else navigation.pop()
-                    },
-                    onNavigateRef = { phraseId, ref ->
-                        navigation.bringToFront(Config.ViewChapter(phraseId, ref))
-                    },
-                    onNavigateEdit = { phrase ->
-                        navigation.bringToFront(Config.EditPhrase(phrase))
-                    }
-                )
-            )
             is Config.ViewChapter -> GlossaryComponent.Child.ViewChapter(
                 DefaultViewChapterComponent(
                     componentContext = context,
                     parentContext = parentContext,
                     phraseId = config.phraseId,
                     ref = config.ref,
-                    onNavigateBack = {
-                        if (childStack.value.backStack.isEmpty()) {
-                            onNavigateBack()
-                        } else navigation.pop()
-                    }
-                )
-            )
-            is Config.EditPhrase -> GlossaryComponent.Child.EditPhrase(
-                DefaultEditPhraseComponent(
-                    componentContext = context,
-                    parentContext = parentContext,
-                    phrase = config.phrase,
-                    onPhraseSaved = {
-                        val backstack = childStack.value.backStack
-                        when {
-                            backstack.isEmpty() -> onNavigateBack()
-//                            backstack.last().configuration is Config.SearchPhrases ->
-//                                navigation.popWhile { it !is Config.Index }
-                            else -> navigation.pop()
-                        }
-                    },
                     onNavigateBack = {
                         if (childStack.value.backStack.isEmpty()) {
                             onNavigateBack()
@@ -155,16 +111,6 @@ class DefaultGlossaryComponent(
                         //navigation.bringToFront(Config.Index)
                     },
                     onNavigateBack = navigation::pop
-                )
-            )
-            is Config.SearchPhrases -> GlossaryComponent.Child.SearchPhrases(
-                DefaultSearchPhrasesComponent(
-                    componentContext = context,
-                    parentContext = parentContext,
-                    onNavigateBack = navigation::pop,
-                    onNavigateEdit = { phrase ->
-                        navigation.bringToFront(Config.EditPhrase(phrase))
-                    }
                 )
             )
             is Config.SelectLanguage -> GlossaryComponent.Child.SelectLanguage(
@@ -186,15 +132,9 @@ class DefaultGlossaryComponent(
         @Serializable
         data object CreateGlossary : Config
         @Serializable
-        data class ViewPhrase(val phraseId: String) : Config
-        @Serializable
         data class ViewChapter(val phraseId: String, val ref: Ref) : Config
         @Serializable
-        data class EditPhrase(val phrase: String) : Config
-        @Serializable
         data object ImportGlossary : Config
-        @Serializable
-        data object SearchPhrases : Config
         @Serializable
         data class SelectLanguage(val type: LanguageType) : Config
     }

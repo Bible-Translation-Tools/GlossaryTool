@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -26,8 +26,7 @@ import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
-import org.bibletranslationtools.glossary.ui.ParentContext
-import org.bibletranslationtools.glossary.ui.main.DrawerComponent
+import org.bibletranslationtools.glossary.ui.main.DrawerContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -38,7 +37,7 @@ sealed class KeyTermsFilter {
     class SourceText(override val label: String) : KeyTermsFilter()
 }
 
-interface KeyTermsComponent: DrawerComponent {
+interface KeyTermsIndexComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
@@ -58,16 +57,16 @@ interface KeyTermsComponent: DrawerComponent {
     fun onUploadGlossaryClicked(glossary: Glossary)
 }
 
-class DefaultKeyTermsComponent(
+class DefaultKeyTermsIndexComponent(
     componentContext: ComponentContext,
-    private val parentContext: ParentContext,
+    private val parentContext: DrawerContext,
     private val book: Workbook,
     private val chapter: Chapter,
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateGlossaryList: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
     private val onNavigateViewPhrase: (phraseId: String) -> Unit
-) : KeyTermsComponent, ComponentContext by componentContext,
+) : KeyTermsIndexComponent, ComponentContext by componentContext,
     KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
@@ -75,8 +74,8 @@ class DefaultKeyTermsComponent(
     private val directoryProvider: DirectoryProvider by inject()
     private val glossaryApi: GlossaryApi by inject()
 
-    private val _model = MutableValue(KeyTermsComponent.Model())
-    override val model: Value<KeyTermsComponent.Model> = _model
+    private val _model = MutableValue(KeyTermsIndexComponent.Model())
+    override val model: Value<KeyTermsIndexComponent.Model> = _model
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -173,6 +172,10 @@ class DefaultKeyTermsComponent(
     }
 
     override fun dismiss() {
-        parentContext.dismissDrawer()
+        parentContext.dismiss()
+    }
+
+    override fun navigateBack() {
+        parentContext.navigateBack()
     }
 }

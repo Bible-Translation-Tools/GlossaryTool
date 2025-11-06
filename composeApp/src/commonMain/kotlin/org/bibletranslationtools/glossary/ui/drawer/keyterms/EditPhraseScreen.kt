@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -70,7 +70,7 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                 model.phrase?.phrase ?: ""
             )
         ) {
-            component.onBackClick()
+            component.navigateBack()
         }
 
         Column(modifier = Modifier.weight(1f)) {
@@ -169,7 +169,7 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                             Text(stringResource(Res.string.save_exit))
                         }
                         Button(
-                            onClick = { component.onBackClick() },
+                            onClick = component::navigateBack,
                             shape = MaterialTheme.shapes.medium,
                             modifier = Modifier.fillMaxWidth(),
                             colors = ButtonDefaults.buttonColors(

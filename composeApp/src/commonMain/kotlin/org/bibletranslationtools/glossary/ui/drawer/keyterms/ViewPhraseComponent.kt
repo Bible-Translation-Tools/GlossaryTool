@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -13,12 +13,11 @@ import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.AppComponent
-import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.main.DrawerContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface ViewPhraseComponent : ParentContext {
+interface ViewPhraseComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
@@ -33,13 +32,11 @@ interface ViewPhraseComponent : ParentContext {
 
 class DefaultViewPhraseComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
+    private val parentContext: DrawerContext,
     private val phraseId: String,
-    private val onNavigateBack: () -> Unit,
     private val onNavigateRef: (String, Ref) -> Unit,
     private val onNavigateEdit: (String) -> Unit
-) : AppComponent(componentContext, parentContext),
-    ViewPhraseComponent, KoinComponent {
+) : ViewPhraseComponent, KoinComponent, ComponentContext by componentContext {
 
     private val glossaryRepository: GlossaryRepository by inject()
 
@@ -75,15 +72,19 @@ class DefaultViewPhraseComponent(
         }
     }
 
-    override fun onBackClick() {
-        onNavigateBack()
-    }
-
     override fun onRefClick(ref: Ref) {
         onNavigateRef(phraseId, ref)
     }
 
     override fun onEditClick(phrase: String) {
         onNavigateEdit(phrase)
+    }
+
+    override fun dismiss() {
+        parentContext.dismiss()
+    }
+
+    override fun navigateBack() {
+        parentContext.navigateBack()
     }
 }
