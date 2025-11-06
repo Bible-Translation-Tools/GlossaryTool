@@ -2,11 +2,15 @@ package org.bibletranslationtools.glossary.platform
 
 import android.content.Context
 import android.os.LocaleList
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.android.Android
+import org.bibletranslationtools.glossary.ActivityHolder
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.koin.mp.KoinPlatform.getKoin
 import java.util.Locale
@@ -40,3 +44,32 @@ actual fun createSqlDriver(): SqlDriver =
 
 actual val httpClientEngine: HttpClientEngine
     get() = Android.create()
+
+actual fun showStatusBars(show: Boolean) {
+    getInsetsController()?.apply {
+        if (show) {
+            show(WindowInsetsCompat.Type.statusBars())
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+        } else {
+            systemBarsBehavior =
+                WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            hide(WindowInsetsCompat.Type.statusBars())
+        }
+    }
+}
+
+actual fun setStatusBarLight(light: Boolean) {
+    getInsetsController()?.apply {
+        isAppearanceLightStatusBars = light
+    }
+}
+
+private fun getInsetsController(): WindowInsetsControllerCompat? {
+    val activity = ActivityHolder.activity ?: return null
+    val insetsController = WindowCompat.getInsetsController(
+        activity.window,
+        activity.window.decorView
+    )
+    return insetsController
+}

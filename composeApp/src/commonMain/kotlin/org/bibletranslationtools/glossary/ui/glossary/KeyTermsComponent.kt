@@ -23,13 +23,13 @@ import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
-import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.main.DrawerComponent
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface GlossaryIndexComponent : ParentContext {
+interface KeyTermsComponent: DrawerComponent {
     val model: Value<Model>
 
     data class Model(
@@ -47,23 +47,23 @@ interface GlossaryIndexComponent : ParentContext {
     fun onUploadGlossaryClicked(glossary: Glossary)
 }
 
-class DefaultGlossaryIndexComponent(
+class DefaultKeyTermsComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
+    private val parentContext: ParentContext,
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateGlossaryList: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
     private val onNavigateViewPhrase: (phraseId: String) -> Unit
-) : AppComponent(componentContext, parentContext),
-    GlossaryIndexComponent, KoinComponent {
+) : KeyTermsComponent, ComponentContext by componentContext,
+    KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
     private val exportGlossary: ExportGlossary by inject()
     private val directoryProvider: DirectoryProvider by inject()
     private val glossaryApi: GlossaryApi by inject()
 
-    private val _model = MutableValue(GlossaryIndexComponent.Model())
-    override val model: Value<GlossaryIndexComponent.Model> = _model
+    private val _model = MutableValue(KeyTermsComponent.Model())
+    override val model: Value<KeyTermsComponent.Model> = _model
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -140,5 +140,9 @@ class DefaultGlossaryIndexComponent(
 
             _model.update { it.copy(progress = null) }
         }
+    }
+
+    override fun dismiss() {
+        parentContext.dismissDrawer()
     }
 }

@@ -5,12 +5,14 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.DarkMode
@@ -18,6 +20,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,6 +45,7 @@ import glossary.composeapp.generated.resources.edit_rules
 import glossary.composeapp.generated.resources.format_list_bulleted_add
 import glossary.composeapp.generated.resources.language
 import glossary.composeapp.generated.resources.new_glossary
+import glossary.composeapp.generated.resources.settings
 import glossary.composeapp.generated.resources.typography
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.domain.Theme
@@ -77,8 +82,28 @@ fun SettingsScreen(component: SettingsComponent) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier.fillMaxSize()
-                        .padding(16.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.settings),
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(
+                            onClick = component::dismiss
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "close"
+                            )
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Column(
@@ -125,7 +150,7 @@ fun SettingsScreen(component: SettingsComponent) {
                                     icon = painterResource(Res.drawable.format_list_bulleted_add),
                                     text = stringResource(Res.string.new_glossary),
                                     onClick = {
-                                        component.onCreateGlossaryClick()
+                                        component.createGlossary()
                                     },
                                     modifier = Modifier.fillMaxWidth()
                                 )

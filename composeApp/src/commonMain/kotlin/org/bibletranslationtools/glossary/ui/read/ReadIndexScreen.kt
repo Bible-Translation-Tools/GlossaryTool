@@ -1,8 +1,10 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package org.bibletranslationtools.glossary.ui.read
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ListAlt
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -139,7 +146,6 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                     .padding(
                         start = 16.dp,
                         end = 16.dp,
-                        top = 16.dp,
                         bottom = 8.dp
                     )
                     .pointerInput(Unit) {
@@ -162,6 +168,20 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                             .verticalScroll(scrollState),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            IconButton(
+                                onClick = component::openSettings
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Settings,
+                                    contentDescription = "settings"
+                                )
+                            }
+                        }
+
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
@@ -190,22 +210,38 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    ChapterNavigation(
-                        title = title,
-                        onBrowse = {
-                            model.activeBook?.let { book ->
-                                model.activeChapter?.let { chapter ->
-                                    component.onBrowseClick(book.slug, chapter.number)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ChapterNavigation(
+                            title = title,
+                            onBrowse = {
+                                model.activeBook?.let { book ->
+                                    model.activeChapter?.let { chapter ->
+                                        component.onBrowseClick(book.slug, chapter.number)
+                                    }
                                 }
-                            }
-                        },
-                        onPrevClick = {
-                            component.prevChapter()
-                        },
-                        onNextClick = {
-                            component.nextChapter()
+                            },
+                            onPrevClick = {
+                                component.prevChapter()
+                            },
+                            onNextClick = {
+                                component.nextChapter()
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        IconButton(
+                            onClick = component::openKeyTerms
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Outlined.ListAlt,
+                                contentDescription = "glossary"
+                            )
                         }
-                    )
+                    }
                 }
 
                 if (isLoading) {

@@ -2,20 +2,23 @@ package org.bibletranslationtools.glossary.ui.settings
 
 import com.arkivanov.decompose.ComponentContext
 import org.bibletranslationtools.glossary.ui.ParentContext
-import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.main.DrawerComponent
 
-interface SettingsComponent: ParentContext {
-    fun onCreateGlossaryClick()
+interface SettingsComponent: DrawerComponent {
+    fun createGlossary()
 }
 
 class DefaultSettingsComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
-    val onCreateGlossary: () -> Unit
-) : AppComponent(componentContext, parentContext),
-    SettingsComponent {
+    private val parentContext: ParentContext,
+    private val onCreateGlossary: () -> Unit
+) : SettingsComponent, ComponentContext by componentContext {
 
-    override fun onCreateGlossaryClick() {
+    override fun createGlossary() {
         onCreateGlossary()
+    }
+
+    override fun dismiss() {
+        parentContext.dismissDrawer()
     }
 }

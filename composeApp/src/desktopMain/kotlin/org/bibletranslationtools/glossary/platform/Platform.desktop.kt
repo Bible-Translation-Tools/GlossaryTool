@@ -40,3 +40,9 @@ actual fun createSqlDriver(): SqlDriver {
 
 actual val httpClientEngine: HttpClientEngine
     get() = CIO.create()
+
+actual fun showStatusBars(show: Boolean) {
+}
+
+actual fun setStatusBarLight(light: Boolean) {
+}

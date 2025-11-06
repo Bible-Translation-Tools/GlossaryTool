@@ -12,8 +12,10 @@ import org.bibletranslationtools.glossary.ui.DefaultRootComponent
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
+
         super.onCreate(savedInstanceState)
 
+        ActivityHolder.activity = this
         FileKit.init(this)
 
         val root = retainedComponent { componentContext ->
@@ -24,6 +26,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             App(root)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (ActivityHolder.activity == this) {
+            ActivityHolder.activity = null
         }
     }
 }

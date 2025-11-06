@@ -24,7 +24,6 @@ interface GlossaryComponent : ParentContext {
     val childStack: Value<ChildStack<*, Child>>
 
     sealed class Child {
-        class GlossaryIndex(val component: GlossaryIndexComponent) : Child()
         class GlossaryList(val component: GlossaryListComponent) : Child()
         class CreateGlossary(val component: CreateGlossaryComponent) : Child()
         class EditPhrase(val component: EditPhraseComponent) : Child()
@@ -55,7 +54,6 @@ class DefaultGlossaryComponent(
             source = navigation,
             serializer = Config.serializer(),
             initialConfiguration = when (intent) {
-                is GlossaryIntent.Index -> Config.Index
                 is GlossaryIntent.ViewPhrase -> Config.ViewPhrase(intent.phraseId)
                 is GlossaryIntent.EditPhrase -> Config.EditPhrase(intent.phrase)
                 is GlossaryIntent.CreateGlossary -> Config.CreateGlossary
@@ -66,24 +64,6 @@ class DefaultGlossaryComponent(
 
     private fun createChild(config: Config, context: ComponentContext): GlossaryComponent.Child {
         return when (config) {
-            is Config.Index -> GlossaryComponent.Child.GlossaryIndex(
-                DefaultGlossaryIndexComponent(
-                    componentContext = context,
-                    parentContext = parentContext,
-                    onNavigateImportGlossary = {
-                        navigation.bringToFront(Config.ImportGlossary)
-                    },
-                    onNavigateGlossaryList = {
-                        navigation.bringToFront(Config.GlossaryList)
-                    },
-                    onNavigateSearchPhrases = {
-                        navigation.bringToFront(Config.SearchPhrases)
-                    },
-                    onNavigateViewPhrase = { phraseId ->
-                        navigation.bringToFront(Config.ViewPhrase(phraseId))
-                    }
-                )
-            )
             is Config.GlossaryList -> GlossaryComponent.Child.GlossaryList(
                 DefaultGlossaryListComponent(
                     componentContext = context,
@@ -106,7 +86,7 @@ class DefaultGlossaryComponent(
                     onGlossaryCreated = { resource, glossary ->
                         onSelectResource(resource)
                         onSelectGlossary(glossary)
-                        navigation.replaceAll(Config.Index)
+                        //navigation.replaceAll(Config.Index)
                     },
                     onSelectLanguage = { type ->
                         navigation.bringToFront(Config.SelectLanguage(type))
@@ -153,8 +133,8 @@ class DefaultGlossaryComponent(
                         val backstack = childStack.value.backStack
                         when {
                             backstack.isEmpty() -> onNavigateBack()
-                            backstack.last().configuration is Config.SearchPhrases ->
-                                navigation.popWhile { it !is Config.Index }
+//                            backstack.last().configuration is Config.SearchPhrases ->
+//                                navigation.popWhile { it !is Config.Index }
                             else -> navigation.pop()
                         }
                     },
@@ -172,7 +152,7 @@ class DefaultGlossaryComponent(
                     onSelectResource = onSelectResource,
                     onSelectGlossary = onSelectGlossary,
                     onImportFinished = {
-                        navigation.bringToFront(Config.Index)
+                        //navigation.bringToFront(Config.Index)
                     },
                     onNavigateBack = navigation::pop
                 )
@@ -201,8 +181,6 @@ class DefaultGlossaryComponent(
 
     @Serializable
     private sealed interface Config {
-        @Serializable
-        data object Index : Config
         @Serializable
         data object GlossaryList : Config
         @Serializable

@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -25,20 +24,20 @@ fun ChapterNavigation(
     title: String,
     onBrowse: () -> Unit,
     onPrevClick: () -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .padding(vertical = 8.dp)
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                shape = MaterialTheme.shapes.medium
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = MaterialTheme.shapes.extraLarge
             )
             .background(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
-                shape = MaterialTheme.shapes.medium
+                color = MaterialTheme.colorScheme.background,
+                shape = MaterialTheme.shapes.extraLarge
             ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -48,8 +47,7 @@ fun ChapterNavigation(
         }
         Row(
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.weight(1.0f)
-                .clickable(onClick = onBrowse)
+            modifier = Modifier.clickable(onClick = onBrowse)
         ) {
             Text(
                 text = title,

@@ -29,7 +29,7 @@ val LightColorScheme = lightColorScheme(
     errorContainer = Color(0xFFFFEBEE),
     onErrorContainer = Color(0xFFB71C1C),
 
-    background = Color(0xFFFAFAFA),
+    background = Color(0xFFF2F2F2),
     onBackground = Color(0xFF212121),
 
     surface = Color(0xFFFFFFFF),
@@ -42,7 +42,7 @@ val LightColorScheme = lightColorScheme(
     inverseOnSurface = Color(0xFFF5F5F5),
 
     outline = Color(0xFF999999),
-    outlineVariant = Color(0xFFE0E0E0),
+    outlineVariant = Color(0xFFE6E6E6),
 
     scrim = Color(0xFF000000)
 )

@@ -4,6 +4,9 @@ import com.arkivanov.decompose.ComponentContext
 
 interface ParentContext {
     fun onBackClick()
+    fun dismissDrawer()
+    fun openSettings()
+    fun openKeyTerms()
 }
 
 abstract class AppComponent(
@@ -13,5 +16,17 @@ abstract class AppComponent(
 
     override fun onBackClick() {
         parentContext.onBackClick()
+    }
+
+    override fun dismissDrawer() {
+        parentContext.dismissDrawer()
+    }
+
+    override fun openSettings() {
+        parentContext.openSettings()
+    }
+
+    override fun openKeyTerms() {
+        parentContext.openKeyTerms()
     }
 }

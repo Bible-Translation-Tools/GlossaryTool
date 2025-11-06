@@ -12,7 +12,6 @@ fun GlossaryScreen(component: GlossaryComponent) {
         animation = stackAnimation(Utils.slideHorizontally())
     ) {
         when (val child = it.instance) {
-            is GlossaryComponent.Child.GlossaryIndex -> GlossaryIndexScreen(child.component)
             is GlossaryComponent.Child.GlossaryList -> GlossaryListScreen(child.component)
             is GlossaryComponent.Child.CreateGlossary -> CreateGlossaryScreen(child.component)
             is GlossaryComponent.Child.EditPhrase -> EditPhraseScreen(child.component)

@@ -1,7 +1,6 @@
 package org.bibletranslationtools.glossary.ui.glossary
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,14 +11,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.FilterAlt
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,13 +42,13 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.export_glossary
 import glossary.composeapp.generated.resources.glossary_code
+import glossary.composeapp.generated.resources.key_terms
 import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.search
 import glossary.composeapp.generated.resources.upload_glossary
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openFileSaver
 import kotlinx.coroutines.launch
-import org.bibletranslationtools.glossary.positionAwareImePadding
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
@@ -59,10 +57,10 @@ import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-private val BOTTOM_SEARCH_BAR_HEIGHT = 80.dp
+private val BOTTOM_BAR_HEIGHT = 80.dp
 
 @Composable
-fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
+fun KeyTermsScreen(component: KeyTermsComponent) {
     val model by component.model.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
@@ -95,38 +93,42 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
             .background(MaterialTheme.colorScheme.surface)
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Box(
-                modifier = Modifier.fillMaxSize()
-                    .positionAwareImePadding()
-            ) {
-                glossaryState.glossary?.let { glossary ->
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier.fillMaxSize()
-                            .padding(16.dp)
+            Box(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier.fillMaxSize()
+                        .padding(horizontal = 16.dp)
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable {
-                                component.navigateGlossaryList()
-                            }
+                        Text(
+                            text = stringResource(Res.string.key_terms),
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        IconButton(
+                            onClick = component::dismiss
                         ) {
-                            Text(
-                                text = stringResource(
-                                    Res.string.glossary_code,
-                                    glossary.code
-                                ),
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 24.sp
-                            )
                             Icon(
-                                imageVector = Icons.Default.KeyboardArrowDown,
-                                contentDescription = "available glossaries"
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "close"
                             )
                         }
+                    }
+
+                    glossaryState.glossary?.let { glossary ->
+                        Text(
+                            text = stringResource(
+                                Res.string.glossary_code,
+                                glossary.code
+                            ),
+                            fontSize = 16.sp
+                        )
+
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         Row {
                             TextButton(
@@ -163,40 +165,37 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
 
                         Spacer(modifier = Modifier.height(32.dp))
 
-                        Card(
-                            shape = MaterialTheme.shapes.medium,
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            ),
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = component::navigateSearchPhrases
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.padding(18.dp)
-                            ) {
+                        SearchField(
+                            searchQuery = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = {
                                 Text(
-                                    text = stringResource(Res.string.create_new_phrase),
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.weight(1f)
+                                    text = stringResource(Res.string.search),
+                                    color = MaterialTheme.colorScheme.onSurface.copy(
+                                        alpha = 0.5f
+                                    )
                                 )
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "add new word",
-                                    tint = MaterialTheme.colorScheme.primary
-                                )
-                            }
-                        }
+                            },
+                            colors = CustomTextFieldDefaults.colors(
+                                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                                .height(48.dp)
+                        )
 
                         Spacer(modifier = Modifier.height(16.dp))
+
+                        if (filteredPhrases.isEmpty()) {
+                            Text(text = stringResource(Res.string.no_phrases_found))
+                        }
 
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                             contentPadding = PaddingValues(
                                 top = 8.dp,
-                                bottom = BOTTOM_SEARCH_BAR_HEIGHT
+                                bottom = BOTTOM_BAR_HEIGHT
                             )
                         ) {
                             items(filteredPhrases) { phrase ->
@@ -209,54 +208,36 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
                                 )
                             }
                         }
-
-                        if (filteredPhrases.isEmpty()) {
-                            Text(text = stringResource(Res.string.no_phrases_found))
-                        }
                     }
+                }
 
-                    Column(
+                Column(
+                    modifier = Modifier.fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surface)
+                        .align(Alignment.BottomCenter)
+                ) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+                    Row(
                         modifier = Modifier.fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .height(BOTTOM_SEARCH_BAR_HEIGHT)
-                            .align(Alignment.BottomCenter)
+                            .padding(16.dp)
                     ) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
+                        Button(
+                            onClick = component::navigateSearchPhrases,
+                            shape = MaterialTheme.shapes.medium,
                             modifier = Modifier.fillMaxWidth()
-                                .padding(horizontal = 16.dp)
                         ) {
-                            SearchField(
-                                searchQuery = searchQuery,
-                                onValueChange = { searchQuery = it },
-                                placeholder = {
-                                    Text(
-                                        text = stringResource(Res.string.search),
-                                        color = MaterialTheme.colorScheme.onSurface.copy(
-                                            alpha = 0.5f
-                                        )
-                                    )
-                                },
-                                colors = CustomTextFieldDefaults.colors(
-                                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
-                                ),
-                                modifier = Modifier.weight(1f)
-                                    .height(56.dp)
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "add new word",
+                                tint = MaterialTheme.colorScheme.onPrimary
                             )
-                            IconButton(
-                                onClick = {}
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Outlined.FilterAlt,
-                                    contentDescription = "Filter"
-                                )
-                            }
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = stringResource(Res.string.create_new_phrase),
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
                         }
                     }
                 }
