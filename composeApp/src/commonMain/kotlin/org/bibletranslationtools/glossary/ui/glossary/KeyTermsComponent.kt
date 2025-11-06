@@ -6,6 +6,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.exporting_glossary
+import glossary.composeapp.generated.resources.source_text
 import glossary.composeapp.generated.resources.uploading_glossary
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exists
@@ -15,9 +16,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
+import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
@@ -29,12 +32,20 @@ import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
+sealed class KeyTermsFilter {
+    abstract val label: String
+    class Chapter(override val label: String) : KeyTermsFilter()
+    class SourceText(override val label: String) : KeyTermsFilter()
+}
+
 interface KeyTermsComponent: DrawerComponent {
     val model: Value<Model>
 
     data class Model(
         val isLoading: Boolean = false,
-        val phrases: List<Phrase> = emptyList(),
+        val allPhrases: List<Phrase> = emptyList(),
+        val chapterPhrases: List<Phrase> = emptyList(),
+        val filterOptions: List<KeyTermsFilter> = emptyList(),
         val progress: Progress? = null
     )
 
@@ -50,6 +61,8 @@ interface KeyTermsComponent: DrawerComponent {
 class DefaultKeyTermsComponent(
     componentContext: ComponentContext,
     private val parentContext: ParentContext,
+    private val book: Workbook,
+    private val chapter: Chapter,
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateGlossaryList: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
@@ -71,13 +84,30 @@ class DefaultKeyTermsComponent(
         componentScope.launch {
             _model.update { it.copy(isLoading = true) }
 
-            val phrases = glossaryRepository.getPhrases(glossary.id)
+            val allPhrases = glossaryRepository.getPhrases(glossary.id)
                 .sortedBy { it.phrase.lowercase() }
+
+            val chapterPhrases = allPhrases.filter { phrase ->
+                val relevantRef = glossaryRepository.getRefs(phrase.id)
+                    .find { ref ->
+                        ref.book == book.slug
+                                && ref.chapter == chapter.number.toString()
+                    }
+                relevantRef != null
+            }
+
+            val chapterLabel = "${book.title} ${chapter.number}"
+            val options = listOf(
+                KeyTermsFilter.Chapter(chapterLabel),
+                KeyTermsFilter.SourceText(getString(Res.string.source_text))
+            )
 
             _model.update {
                 it.copy(
                     isLoading = false,
-                    phrases = phrases
+                    allPhrases = allPhrases,
+                    chapterPhrases = chapterPhrases,
+                    filterOptions = options
                 )
             }
         }

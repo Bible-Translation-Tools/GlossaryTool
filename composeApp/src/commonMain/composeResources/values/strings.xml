@@ -69,4 +69,5 @@
     <string name="read_more">Read More</string>
     <string name="reference_not_found">Reference text not found</string>
     <string name="key_terms">Key Terms</string>
+    <string name="source_text">Source Text</string>
 </resources>

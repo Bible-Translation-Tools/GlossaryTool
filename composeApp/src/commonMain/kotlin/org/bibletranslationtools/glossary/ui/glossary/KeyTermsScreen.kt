@@ -22,17 +22,21 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -40,15 +44,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_new_phrase
-import glossary.composeapp.generated.resources.export_glossary
 import glossary.composeapp.generated.resources.glossary_code
 import glossary.composeapp.generated.resources.key_terms
 import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.search
-import glossary.composeapp.generated.resources.upload_glossary
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.dialogs.openFileSaver
-import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
@@ -59,6 +58,8 @@ import org.koin.compose.koinInject
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
 
+
+
 @Composable
 fun KeyTermsScreen(component: KeyTermsComponent) {
     val model by component.model.subscribeAsState()
@@ -67,11 +68,19 @@ fun KeyTermsScreen(component: KeyTermsComponent) {
     val glossaryState by appStateStore.glossaryStateHolder.glossaryState
         .collectAsStateWithLifecycle()
 
-    var filteredPhrases by remember(model.phrases) {
-        mutableStateOf(model.phrases)
+    var currentPhrases by remember {
+        mutableStateOf(model.chapterPhrases)
     }
-    var searchQuery by remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
+
+    var filteredPhrases by remember {
+        mutableStateOf(currentPhrases)
+    }
+    var searchQuery by rememberSaveable { mutableStateOf("") }
+    var selectedOption by rememberSaveable { mutableIntStateOf(0) }
+
+    val selectedColor = MaterialTheme.colorScheme.primary
+    val selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
+    val unselectedColor = MaterialTheme.colorScheme.outlineVariant
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let {
@@ -81,10 +90,20 @@ fun KeyTermsScreen(component: KeyTermsComponent) {
         }
     }
 
-    LaunchedEffect(searchQuery) {
-        filteredPhrases = model.phrases.filter { phrase ->
+    LaunchedEffect(searchQuery, currentPhrases) {
+        filteredPhrases = currentPhrases.filter { phrase ->
             phrase.phrase.contains(searchQuery, ignoreCase = true)
                     || phrase.spelling.contains(searchQuery, ignoreCase = true)
+        }
+    }
+
+    LaunchedEffect(selectedOption, model.filterOptions) {
+        if (model.filterOptions.isNotEmpty()) {
+            val option = model.filterOptions[selectedOption]
+            currentPhrases = when (option) {
+                is KeyTermsFilter.Chapter -> model.chapterPhrases
+                is KeyTermsFilter.SourceText -> model.allPhrases
+            }
         }
     }
 
@@ -128,42 +147,86 @@ fun KeyTermsScreen(component: KeyTermsComponent) {
                             fontSize = 16.sp
                         )
 
-                        Spacer(modifier = Modifier.height(16.dp))
+//                        Spacer(modifier = Modifier.height(16.dp))
+//
+//                        Row {
+//                            TextButton(
+//                                onClick = {
+//                                    coroutineScope.launch {
+//                                        glossaryState.glossary?.let { glossary ->
+//                                            FileKit.openFileSaver(
+//                                                suggestedName = "glossary-${glossary.code}",
+//                                                extension = "zip"
+//                                            )?.let { file ->
+//                                                component.onExportGlossaryClicked(glossary, file)
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                            ) {
+//                                Text(
+//                                    text = stringResource(Res.string.export_glossary)
+//                                )
+//                            }
+//
+//                            TextButton(
+//                                onClick = {
+//                                    glossaryState.glossary?.let {
+//                                        component.onUploadGlossaryClicked(it)
+//                                    }
+//                                }
+//                            ) {
+//                                Text(
+//                                    text = stringResource(Res.string.upload_glossary)
+//                                )
+//                            }
+//                        }
 
-                        Row {
-                            TextButton(
-                                onClick = {
-                                    coroutineScope.launch {
-                                        glossaryState.glossary?.let { glossary ->
-                                            FileKit.openFileSaver(
-                                                suggestedName = "glossary-${glossary.code}",
-                                                extension = "zip"
-                                            )?.let { file ->
-                                                component.onExportGlossaryClicked(glossary, file)
-                                            }
-                                        }
-                                    }
-                                }
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.export_glossary)
-                                )
-                            }
+                        Spacer(modifier = Modifier.height(32.dp))
 
-                            TextButton(
-                                onClick = {
-                                    glossaryState.glossary?.let {
-                                        component.onUploadGlossaryClicked(it)
-                                    }
-                                }
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.upload_glossary)
+                        SingleChoiceSegmentedButtonRow(
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            model.filterOptions.forEachIndexed { index, option ->
+                                SegmentedButton(
+                                    shape = SegmentedButtonDefaults.itemShape(
+                                        index = index,
+                                        count = model.filterOptions.size,
+                                        baseShape = MaterialTheme.shapes.medium
+                                    ),
+                                    onClick = { selectedOption = index },
+                                    selected = selectedOption == index,
+                                    label = {
+                                        Text(
+                                            text = option.label,
+                                            fontSize = 16.sp,
+                                            fontWeight = if (selectedOption == index) {
+                                                FontWeight.Bold
+                                            } else {
+                                                FontWeight.Normal
+                                            },
+                                            color = if (selectedOption == index) {
+                                                selectedColor
+                                            } else Color.Unspecified
+                                        )
+                                    },
+                                    border = SegmentedButtonDefaults.borderStroke(
+                                        color = if (selectedOption == index) {
+                                            selectedColor
+                                        } else unselectedColor
+                                    ),
+                                    colors = SegmentedButtonDefaults.colors(
+                                        activeContainerColor = if (selectedOption == index) {
+                                            selectedContainerColor
+                                        } else Color.Unspecified,
+                                    ),
+                                    contentPadding = PaddingValues(vertical = 8.dp),
+                                    icon = {}
                                 )
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(32.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
                         SearchField(
                             searchQuery = searchQuery,

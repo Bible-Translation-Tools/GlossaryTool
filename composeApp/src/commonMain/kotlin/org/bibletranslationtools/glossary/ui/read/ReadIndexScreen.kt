@@ -234,7 +234,13 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                         )
 
                         IconButton(
-                            onClick = component::openKeyTerms
+                            onClick = {
+                                model.activeBook?.let { book ->
+                                    model.activeChapter?.let { chapter ->
+                                        component.openKeyTerms(book, chapter)
+                                    }
+                                }
+                            }
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Outlined.ListAlt,

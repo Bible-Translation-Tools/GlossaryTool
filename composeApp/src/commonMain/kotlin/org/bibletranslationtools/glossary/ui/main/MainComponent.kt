@@ -76,7 +76,7 @@ sealed interface DrawerConfig {
     @Serializable
     data object Settings : DrawerConfig
     @Serializable
-    data object KeyTerms : DrawerConfig
+    data class KeyTerms(val book: Workbook, val chapter: Chapter) : DrawerConfig
 }
 
 interface MainComponent: ParentContext {
@@ -207,8 +207,8 @@ class DefaultMainComponent(
         showSettingsDrawer()
     }
 
-    override fun openKeyTerms() {
-        showKeyTermsDrawer()
+    override fun openKeyTerms(book: Workbook, chapter: Chapter) {
+        showKeyTermsDrawer(book, chapter)
     }
 
     private fun onNavigateBack() {
@@ -340,6 +340,8 @@ class DefaultMainComponent(
             is DrawerConfig.KeyTerms -> DefaultKeyTermsComponent(
                 componentContext = context,
                 parentContext = this,
+                book = config.book,
+                chapter = config.chapter,
                 onNavigateImportGlossary = {
 
                 },
@@ -360,8 +362,8 @@ class DefaultMainComponent(
         drawerNavigation.activate(DrawerConfig.Settings)
     }
 
-    fun showKeyTermsDrawer() {
-        drawerNavigation.activate(DrawerConfig.KeyTerms)
+    fun showKeyTermsDrawer(book: Workbook, chapter: Chapter) {
+        drawerNavigation.activate(DrawerConfig.KeyTerms(book, chapter))
     }
 
     override fun dismissDrawer() {

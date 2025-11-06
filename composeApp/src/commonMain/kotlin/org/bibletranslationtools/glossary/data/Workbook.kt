@@ -1,5 +1,8 @@
 package org.bibletranslationtools.glossary.data
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Workbook(
     val sort: Int,
     val slug: String,
