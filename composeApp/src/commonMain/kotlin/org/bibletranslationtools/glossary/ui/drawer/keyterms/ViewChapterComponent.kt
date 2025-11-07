@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -13,13 +13,12 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Verse
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.AppComponent
-import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.main.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface ViewChapterComponent : ParentContext {
+interface ViewChapterComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
@@ -32,12 +31,11 @@ interface ViewChapterComponent : ParentContext {
 
 class DefaultViewChapterComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
+    private val parentContext: DrawerContext,
     private val phraseId: String,
     private val ref: Ref,
-    private val onNavigateBack: () -> Unit
-) : AppComponent(componentContext, parentContext),
-    ViewChapterComponent, KoinComponent {
+    private val setFullscreen: (Boolean) -> Unit
+) : ViewChapterComponent, KoinComponent, ComponentContext by componentContext {
 
     private val glossaryRepository: GlossaryRepository by inject()
 
@@ -50,6 +48,8 @@ class DefaultViewChapterComponent(
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     init {
+        setFullscreen(true)
+
         doOnResume {
             componentScope.launch {
                 _model.update { it.copy(isLoading = true) }
@@ -71,7 +71,11 @@ class DefaultViewChapterComponent(
         }
     }
 
-    override fun onBackClick() {
-        onNavigateBack()
+    override fun dismiss() {
+        navigateBack()
+    }
+
+    override fun navigateBack() {
+        parentContext.navigateBack()
     }
 }

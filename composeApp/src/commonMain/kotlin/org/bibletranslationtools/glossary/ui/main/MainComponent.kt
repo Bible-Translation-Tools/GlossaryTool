@@ -81,7 +81,8 @@ interface MainComponent: ParentContext {
     data class Model(
         val phraseDetails: PhraseDetails? = null,
         val activeGlossary: Glossary? = null,
-        val activeResource: Resource? = null
+        val activeResource: Resource? = null,
+        val fullscreenDrawer: Boolean = false
     )
 
     val childStack: Value<ChildStack<*, Child>>
@@ -89,6 +90,7 @@ interface MainComponent: ParentContext {
 
     fun navigatePhrase(dir: PhraseNavDir)
     fun clearPhraseDetails()
+    fun setFullscreenDrawer(fullscreen: Boolean)
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
@@ -323,7 +325,8 @@ class DefaultMainComponent(
                 componentContext = context,
                 parentContext = this,
                 book = config.book,
-                chapter = config.chapter
+                chapter = config.chapter,
+                setFullscreen = ::setFullscreenDrawer
             )
         }
     }
@@ -338,6 +341,10 @@ class DefaultMainComponent(
 
     override fun dismissDrawer() {
         drawerNavigation.dismiss()
+    }
+
+    override fun setFullscreenDrawer(fullscreen: Boolean) {
+        _model.update { it.copy(fullscreenDrawer = fullscreen) }
     }
 
     @Serializable

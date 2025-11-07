@@ -1,10 +1,11 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -25,7 +26,7 @@ import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import kotlinx.coroutines.delay
 import org.bibletranslationtools.glossary.ui.components.ChapterVerse
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 
 @Composable
 fun ViewChapterScreen(component: ViewChapterComponent) {
@@ -49,9 +50,14 @@ fun ViewChapterScreen(component: ViewChapterComponent) {
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        TopAppBar(title = model.phrase?.phrase) {
-            component.onBackClick()
-        }
+        TopDrawerBar(
+            title = model.phrase?.phrase ?: "",
+            subTitle = model.ref?.let {
+                "${it.book.uppercase()} ${it.chapter}"
+            },
+            onBackClick = component::navigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Column(modifier = Modifier.weight(1f)) {
             Column(modifier = Modifier.fillMaxSize()) {

@@ -10,6 +10,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackCallback
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Chapter
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.main.DrawerContext
@@ -22,6 +23,7 @@ interface KeyTermsComponent : DrawerContext {
         data class ViewPhrase(val component: ViewPhraseComponent) : Child
         data class EditPhrase(val component: EditPhraseComponent) : Child
         data class CreatePhrase(val component: CreatePhraseComponent) : Child
+        data class ViewChapter(val component: ViewChapterComponent) : Child
     }
 }
 
@@ -30,6 +32,7 @@ class DefaultKeyTermsComponent(
     private val parentContext: ParentContext,
     private val book: Workbook,
     private val chapter: Chapter,
+    private val setFullscreen: (Boolean) -> Unit
 ) : KeyTermsComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -79,7 +82,9 @@ class DefaultKeyTermsComponent(
                     componentContext = context,
                     parentContext = this,
                     phraseId = config.phraseId,
-                    onNavigateRef = { phraseId, ref ->},
+                    onNavigateRef = { phraseId, ref ->
+                        navigation.bringToFront(Config.ViewChapter(phraseId, ref))
+                    },
                     onNavigateEdit = {
                         navigation.bringToFront(Config.EditPhrase(it))
                     }
@@ -90,7 +95,8 @@ class DefaultKeyTermsComponent(
                         componentContext = context,
                         parentContext = this,
                         phrase = config.phrase,
-                        onPhraseSaved = {}
+                        onPhraseSaved = ::navigateBack,
+                        setFullscreen = { setFullscreen(it) }
                     )
                 )
             is Config.CreatePhrase -> KeyTermsComponent.Child.CreatePhrase(
@@ -102,14 +108,25 @@ class DefaultKeyTermsComponent(
                     }
                 )
             )
+            is Config.ViewChapter -> KeyTermsComponent.Child.ViewChapter(
+                DefaultViewChapterComponent(
+                    componentContext = context,
+                    parentContext = this,
+                    phraseId = config.phraseId,
+                    ref = config.ref,
+                    setFullscreen = { setFullscreen(it) }
+                )
+            )
         }
     }
 
     override fun dismiss() {
+        setFullscreen(false)
         parentContext.dismissDrawer()
     }
 
     override fun navigateBack() {
+        setFullscreen(false)
         if (childStack.value.backStack.isNotEmpty()) {
             navigation.pop()
         } else {
@@ -127,5 +144,7 @@ class DefaultKeyTermsComponent(
         data class EditPhrase(val phrase: String) : Config
         @Serializable
         data object CreatePhrase : Config
+        @Serializable
+        data class ViewChapter(val phraseId: String, val ref: Ref) : Config
     }
 }

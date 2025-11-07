@@ -38,7 +38,8 @@ class DefaultEditPhraseComponent(
     componentContext: ComponentContext,
     private val parentContext: DrawerContext,
     private val phrase: String,
-    private val onPhraseSaved: () -> Unit
+    private val onPhraseSaved: () -> Unit,
+    private val setFullscreen: (Boolean) -> Unit
 ) : EditPhraseComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
@@ -53,6 +54,8 @@ class DefaultEditPhraseComponent(
     private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
 
     init {
+        setFullscreen(true)
+
         componentScope.launch {
             val glossary = glossaryState.value.glossary ?: return@launch
 
@@ -116,7 +119,7 @@ class DefaultEditPhraseComponent(
     }
 
     override fun dismiss() {
-        parentContext.dismiss()
+        navigateBack()
     }
 
     override fun navigateBack() {

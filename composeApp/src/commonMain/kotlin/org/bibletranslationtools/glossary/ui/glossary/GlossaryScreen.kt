@@ -14,7 +14,6 @@ fun GlossaryScreen(component: GlossaryComponent) {
         when (val child = it.instance) {
             is GlossaryComponent.Child.GlossaryList -> GlossaryListScreen(child.component)
             is GlossaryComponent.Child.CreateGlossary -> CreateGlossaryScreen(child.component)
-            is GlossaryComponent.Child.ViewChapter -> ViewChapterScreen(child.component)
             is GlossaryComponent.Child.ImportGlossary -> ImportGlossaryScreen(child.component)
             is GlossaryComponent.Child.SelectLanguage -> SelectLanguageScreen(child.component)
         }

@@ -34,11 +34,11 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.cancel
 import glossary.composeapp.generated.resources.description
-import glossary.composeapp.generated.resources.editing_phrase
+import glossary.composeapp.generated.resources.editing
 import glossary.composeapp.generated.resources.save_exit
 import glossary.composeapp.generated.resources.saving
 import glossary.composeapp.generated.resources.spelling
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -64,14 +64,12 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = stringResource(
-                Res.string.editing_phrase,
-                model.phrase?.phrase ?: ""
-            )
-        ) {
-            component.navigateBack()
-        }
+        TopDrawerBar(
+            title = stringResource(Res.string.editing),
+            subTitle = model.phrase?.phrase,
+            onBackClick = component::navigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Column(modifier = Modifier.weight(1f)) {
             Column(

@@ -16,11 +16,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -51,14 +49,13 @@ import glossary.composeapp.generated.resources.search
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 private val BOTTOM_BAR_HEIGHT = 80.dp
-
-
 
 @Composable
 fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
@@ -118,34 +115,19 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                     modifier = Modifier.fillMaxSize()
                         .padding(horizontal = 16.dp)
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.key_terms),
-                            fontSize = 25.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        IconButton(
-                            onClick = component::dismiss
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "close"
+                    TopDrawerBar(
+                        title = stringResource(Res.string.key_terms),
+                        subTitle = glossaryState.glossary?.let {
+                            stringResource(
+                                Res.string.glossary_code,
+                                it.code
                             )
-                        }
-                    }
+                        },
+                        onDismiss = component::dismiss,
+                        modifier = Modifier.fillMaxWidth()
+                    )
 
                     glossaryState.glossary?.let { glossary ->
-                        Text(
-                            text = stringResource(
-                                Res.string.glossary_code,
-                                glossary.code
-                            ),
-                            fontSize = 16.sp
-                        )
 
 //                        Spacer(modifier = Modifier.height(16.dp))
 //

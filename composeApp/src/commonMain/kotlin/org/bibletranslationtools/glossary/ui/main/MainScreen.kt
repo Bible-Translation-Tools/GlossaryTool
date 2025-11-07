@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.ui.main
 
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
@@ -102,7 +103,14 @@ fun MainScreen(component: MainComponent) {
         drawerContent = {
             ModalDrawerSheet(
                 drawerContainerColor = MaterialTheme.colorScheme.surface,
-                windowInsets = WindowInsets(0, 24, 0, 32)
+                windowInsets = WindowInsets(0, 24, 0, 32),
+                modifier = Modifier.then(
+                    if (model.fullscreenDrawer) {
+                        Modifier.fillMaxWidth()
+                    } else {
+                        Modifier
+                    }
+                )
             ) {
                 val drawerSlot by component.drawerSlot.subscribeAsState()
                 drawerSlot.child?.instance?.let { component ->

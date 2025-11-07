@@ -15,7 +15,7 @@
     <string name="save">Save</string>
     <string name="edit">Edit</string>
     <string name="add_audio">Add Audio</string>
-    <string name="editing_phrase">Editing: %1$s</string>
+    <string name="editing">Editing</string>
     <string name="spelling">Spelling</string>
     <string name="description">Description</string>
     <string name="save_exit">Save and Exit</string>

@@ -16,6 +16,7 @@ fun KeyTermsScreen(component: KeyTermsComponent) {
             is KeyTermsComponent.Child.ViewPhrase -> ViewPhraseScreen(child.component)
             is KeyTermsComponent.Child.EditPhrase -> EditPhraseScreen(child.component)
             is KeyTermsComponent.Child.CreatePhrase -> CreatePhraseScreen(child.component)
+            is KeyTermsComponent.Child.ViewChapter -> ViewChapterScreen(child.component)
         }
     }
 }

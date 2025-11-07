@@ -7,13 +7,10 @@ import com.arkivanov.decompose.router.stack.StackNavigation
 import com.arkivanov.decompose.router.stack.bringToFront
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
-import com.arkivanov.decompose.router.stack.popWhile
-import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Glossary
-import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
@@ -26,7 +23,6 @@ interface GlossaryComponent : ParentContext {
     sealed class Child {
         class GlossaryList(val component: GlossaryListComponent) : Child()
         class CreateGlossary(val component: CreateGlossaryComponent) : Child()
-        class ViewChapter(val component: ViewChapterComponent) : Child()
         class ImportGlossary(val component: ImportGlossaryComponent) : Child()
         class SelectLanguage(val component: SelectLanguageComponent) : Child()
     }
@@ -88,19 +84,6 @@ class DefaultGlossaryComponent(
                     }
                 )
             )
-            is Config.ViewChapter -> GlossaryComponent.Child.ViewChapter(
-                DefaultViewChapterComponent(
-                    componentContext = context,
-                    parentContext = parentContext,
-                    phraseId = config.phraseId,
-                    ref = config.ref,
-                    onNavigateBack = {
-                        if (childStack.value.backStack.isEmpty()) {
-                            onNavigateBack()
-                        } else navigation.pop()
-                    }
-                )
-            )
             is Config.ImportGlossary -> GlossaryComponent.Child.ImportGlossary(
                 DefaultImportGlossaryComponent(
                     componentContext = context,
@@ -131,8 +114,6 @@ class DefaultGlossaryComponent(
         data object GlossaryList : Config
         @Serializable
         data object CreateGlossary : Config
-        @Serializable
-        data class ViewChapter(val phraseId: String, val ref: Ref) : Config
         @Serializable
         data object ImportGlossary : Config
         @Serializable
