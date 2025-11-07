@@ -83,4 +83,20 @@ object Utils {
             easing = EaseIn
         )
     }
+
+    fun bookOrderMap(): Map<String, Int> {
+        return mapOf(
+            "gen" to 1, "exo" to 2, "lev" to 3, "num" to 4, "deu" to 5, "jos" to 6,
+            "jdg" to 7, "rut" to 8, "1sa" to 9, "2sa" to 10, "1ki" to 11, "2ki" to 12,
+            "1ch" to 13, "2ch" to 14, "ezr" to 15, "neh" to 16, "est" to 17, "job" to 18,
+            "psa" to 19, "pro" to 20, "ecc" to 21, "sng" to 22, "isa" to 23, "jer" to 24,
+            "lam" to 25, "ezk" to 26, "dan" to 27, "hos" to 28, "jol" to 29, "amo" to 30,
+            "oba" to 31, "jon" to 32, "mic" to 33, "nah" to 34, "hab" to 35, "zep" to 36,
+            "hag" to 37, "zec" to 38, "mal" to 39, "mat" to 41, "mrk" to 42, "luk" to 43,
+            "jhn" to 44, "act" to 45, "rom" to 46, "1co" to 47, "2co" to 48, "gal" to 49,
+            "eph" to 50, "php" to 51, "col" to 52, "1th" to 53, "2th" to 54, "1ti" to 55,
+            "2ti" to 56, "tit" to 57, "phm" to 58, "heb" to 59, "jas" to 60, "1pe" to 61,
+            "2pe" to 62, "1jn" to 63, "2jn" to 64, "3jn" to 65, "jud" to 66, "rev" to 67
+        )
+    }
 }

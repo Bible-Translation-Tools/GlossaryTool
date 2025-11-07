@@ -13,7 +13,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Glossary
-import org.bibletranslationtools.glossary.data.RefOption
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
@@ -29,6 +29,7 @@ interface GlossaryComponent : ParentContext {
         class CreateGlossary(val component: CreateGlossaryComponent) : Child()
         class EditPhrase(val component: EditPhraseComponent) : Child()
         class ViewPhrase(val component: ViewPhraseComponent) : Child()
+        class ViewChapter(val component: ViewChapterComponent) : Child()
         class ImportGlossary(val component: ImportGlossaryComponent) : Child()
         class SearchPhrases(val component: SearchPhrasesComponent) : Child()
         class SelectLanguage(val component: SelectLanguageComponent) : Child()
@@ -40,7 +41,6 @@ class DefaultGlossaryComponent(
     componentContext: ComponentContext,
     private val parentContext: ParentContext,
     intent: GlossaryIntent,
-    private val onNavigateRef: (RefOption) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
     private val onNavigateBack: () -> Unit
@@ -123,9 +123,24 @@ class DefaultGlossaryComponent(
                             onNavigateBack()
                         } else navigation.pop()
                     },
-                    onNavigateRef = onNavigateRef,
+                    onNavigateRef = { phraseId, ref ->
+                        navigation.bringToFront(Config.ViewChapter(phraseId, ref))
+                    },
                     onNavigateEdit = { phrase ->
                         navigation.bringToFront(Config.EditPhrase(phrase))
+                    }
+                )
+            )
+            is Config.ViewChapter -> GlossaryComponent.Child.ViewChapter(
+                DefaultViewChapterComponent(
+                    componentContext = context,
+                    parentContext = parentContext,
+                    phraseId = config.phraseId,
+                    ref = config.ref,
+                    onNavigateBack = {
+                        if (childStack.value.backStack.isEmpty()) {
+                            onNavigateBack()
+                        } else navigation.pop()
                     }
                 )
             )
@@ -194,6 +209,8 @@ class DefaultGlossaryComponent(
         data object CreateGlossary : Config
         @Serializable
         data class ViewPhrase(val phraseId: String) : Config
+        @Serializable
+        data class ViewChapter(val phraseId: String, val ref: Ref) : Config
         @Serializable
         data class EditPhrase(val phrase: String) : Config
         @Serializable

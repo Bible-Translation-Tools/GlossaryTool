@@ -132,7 +132,7 @@ fun CreateGlossaryScreen(component: CreateGlossaryComponent) {
                                 Color.Transparent
                             }
                         ),
-                        enabled = createEnabled,
+                        enabled = createEnabled && !model.isSaving,
                         modifier = Modifier.fillMaxWidth()
                             .height(48.dp)
                     ) {

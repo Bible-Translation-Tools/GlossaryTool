@@ -21,11 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInWindow
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalTextToolbar
 import androidx.compose.ui.text.AnnotatedString
@@ -33,6 +30,7 @@ import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
+import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
@@ -62,17 +60,15 @@ fun SelectableText(
     onSelectedTextChanged: (String) -> Unit,
     onSaveSelection: (String) -> Unit,
     onPhraseClick: (Phrase, String) -> Unit,
-    onVersePosition: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val dimColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.3f)
+    val dimColor = MaterialTheme.colorScheme.outline
 
     val currentChapter by rememberUpdatedState(newValue = chapter)
     val currentPhrases by rememberUpdatedState(newValue = phrases)
 
     var selection by remember { mutableStateOf<Selection?>(null) }
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
-    var positionInWindow by remember { mutableStateOf(Offset.Zero) }
     var annotatedString by remember { mutableStateOf<AnnotatedString?>(null) }
 
     LaunchedEffect(selectedText) {
@@ -137,6 +133,7 @@ fun SelectableText(
                         withLink(
                             link = LinkAnnotation.Clickable(
                                 tag = match.value,
+                                styles = TextLinkStyles(),
                                 linkInteractionListener = {
                                     currentPhrases.firstOrNull {
                                         it.phrase.lowercase() == match.value.lowercase()
@@ -172,30 +169,6 @@ fun SelectableText(
         }
     }
 
-    LaunchedEffect(annotatedString, textLayoutResult, positionInWindow, currentVerse) {
-        val layoutResult = textLayoutResult ?: return@LaunchedEffect
-        val text = annotatedString ?: return@LaunchedEffect
-        val verse = currentVerse ?: return@LaunchedEffect
-
-        val spanAnnotations = text.getStringAnnotations(
-            tag = VERSE_TAG,
-            start = 0,
-            end = text.length
-        )
-
-        spanAnnotations.firstOrNull { it.item == verse }?.let { range ->
-            val relativeBounds = layoutResult.getPathForRange(
-                range.start,
-                range.end
-            ).getBounds()
-
-            val absoluteBounds = relativeBounds.translate(
-                positionInWindow
-            )
-            onVersePosition(absoluteBounds.top.toInt())
-        }
-    }
-
     Box(modifier = modifier) {
         annotatedString?.let { text ->
             CompositionLocalProvider(LocalTextToolbar provides EmptyTextToolbar) {
@@ -216,9 +189,6 @@ fun SelectableText(
                         style = LocalTextStyle.current.copy(lineHeight = 32.sp),
                         onTextLayout = { textLayoutResult = it },
                         modifier = Modifier.fillMaxWidth()
-                            .onGloballyPositioned { coordinates ->
-                                positionInWindow = coordinates.positionInWindow()
-                            }
                     )
                 }
             }

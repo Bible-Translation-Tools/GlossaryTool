@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.filled.Edit
@@ -28,7 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,7 +38,6 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_audio
 import glossary.composeapp.generated.resources.edit
-import org.bibletranslationtools.glossary.data.toOption
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -52,11 +52,11 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
     val resourceState by appStateStore.resourceStateHolder.resourceState
         .collectAsStateWithLifecycle()
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = model.phrase?.phrase,
-            backgroundColor = MaterialTheme.colorScheme.surfaceVariant
-        ) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        TopAppBar(title = model.phrase?.phrase) {
             component.onBackClick()
         }
 
@@ -89,7 +89,16 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(model.phrase?.description ?: "")
+                    BasicTextField(
+                        value = model.phrase?.description ?: "",
+                        onValueChange = {},
+                        readOnly = true,
+                        maxLines = 5,
+                        textStyle = TextStyle.Default.copy(
+                            fontSize = 16.sp,
+                            lineHeight = 32.sp
+                        )
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -141,11 +150,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Box(
-                    modifier = Modifier
-                        .background(Color.Transparent)
-                        .weight(1f)
-                ) {
+                Box(modifier = Modifier.weight(1f)) {
                     if (model.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
@@ -163,7 +168,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                             items(model.refs) { ref ->
                                 resourceState.resource?.let { resource ->
                                     val reference = "${ref.book.uppercase()} ${ref.chapter}:${ref.verse}"
-                                    val text = ref.getText(resource)
+                                    val text = ref.getVerseText(resource)
 
                                     model.phrase?.let { phrase ->
                                         VerseReference(
@@ -172,7 +177,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                             text = text,
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            component.onRefClick(ref.toOption())
+                                            component.onRefClick(ref)
                                         }
                                     }
                                 }

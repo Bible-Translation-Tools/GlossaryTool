@@ -9,9 +9,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
-import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
@@ -27,7 +27,7 @@ interface ViewPhraseComponent : ParentContext {
         val refs: List<Ref> = emptyList()
     )
 
-    fun onRefClick(ref: RefOption)
+    fun onRefClick(ref: Ref)
     fun onEditClick(phrase: String)
 }
 
@@ -36,7 +36,7 @@ class DefaultViewPhraseComponent(
     parentContext: ParentContext,
     private val phraseId: String,
     private val onNavigateBack: () -> Unit,
-    private val onNavigateRef: (RefOption) -> Unit,
+    private val onNavigateRef: (String, Ref) -> Unit,
     private val onNavigateEdit: (String) -> Unit
 ) : AppComponent(componentContext, parentContext),
     ViewPhraseComponent, KoinComponent {
@@ -55,6 +55,13 @@ class DefaultViewPhraseComponent(
 
                 val phrase = glossaryRepository.getPhrase(phraseId)
                 val refs = phrase?.id?.let { glossaryRepository.getRefs(it) }
+                    ?.sortedWith(
+                        compareBy<Ref> {
+                            Utils.bookOrderMap()[it.book] ?: Int.MAX_VALUE
+                        }
+                            .thenBy { it.chapter }
+                            .thenBy { it.verse }
+                    )
                     ?: emptyList()
 
                 _model.update {
@@ -72,8 +79,8 @@ class DefaultViewPhraseComponent(
         onNavigateBack()
     }
 
-    override fun onRefClick(ref: RefOption) {
-        onNavigateRef(ref)
+    override fun onRefClick(ref: Ref) {
+        onNavigateRef(phraseId, ref)
     }
 
     override fun onEditClick(phrase: String) {
