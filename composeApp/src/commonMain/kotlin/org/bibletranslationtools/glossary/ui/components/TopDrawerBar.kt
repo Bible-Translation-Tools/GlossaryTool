@@ -54,6 +54,8 @@ fun TopDrawerBar(
                         text = it,
                         fontSize = 16.sp
                     )
+                } ?: run {
+                    Text("")
                 }
             }
         }

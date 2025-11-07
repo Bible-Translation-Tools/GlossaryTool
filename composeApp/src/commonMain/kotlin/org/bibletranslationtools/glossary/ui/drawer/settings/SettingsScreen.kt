@@ -5,28 +5,22 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -37,20 +31,23 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.admin
 import glossary.composeapp.generated.resources.dark_mode
 import glossary.composeapp.generated.resources.developer_guide
-import glossary.composeapp.generated.resources.display
 import glossary.composeapp.generated.resources.edit_rules
 import glossary.composeapp.generated.resources.format_list_bulleted_add
+import glossary.composeapp.generated.resources.interface_settings
 import glossary.composeapp.generated.resources.language
 import glossary.composeapp.generated.resources.new_glossary
 import glossary.composeapp.generated.resources.settings
-import glossary.composeapp.generated.resources.typography
+import glossary.composeapp.generated.resources.source_text_settings
+import glossary.composeapp.generated.resources.user_settings
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.domain.Theme
+import org.bibletranslationtools.glossary.ui.components.SegmentedButtonRow
 import org.bibletranslationtools.glossary.ui.components.SettingsClickableItem
+import org.bibletranslationtools.glossary.ui.components.SettingsSection
 import org.bibletranslationtools.glossary.ui.components.SettingsSwitchItem
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -65,6 +62,10 @@ fun SettingsScreen(component: SettingsComponent) {
     var isDarkModeEnabled by remember {
         mutableStateOf(darkModeEnabled(theme, isSystemInDarkTheme))
     }
+
+    var selectedIndex by remember { mutableIntStateOf(0) }
+    var selectedIndex2 by remember { mutableIntStateOf(0) }
+    var selectedIndex3 by remember { mutableIntStateOf(0) }
 
     LaunchedEffect(isDarkModeEnabled) {
         theme = if (isDarkModeEnabled) {
@@ -84,25 +85,11 @@ fun SettingsScreen(component: SettingsComponent) {
                     modifier = Modifier.fillMaxSize()
                         .padding(horizontal = 16.dp)
                 ) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
+                    TopDrawerBar(
+                        title = stringResource(Res.string.settings),
+                        onDismiss = component::dismiss,
                         modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.settings),
-                            fontSize = 25.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                        IconButton(
-                            onClick = component::dismiss
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "close"
-                            )
-                        }
-                    }
+                    )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
@@ -129,98 +116,79 @@ fun SettingsScreen(component: SettingsComponent) {
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    SettingsSection(
+                        title = stringResource(Res.string.source_text_settings)
                     ) {
-                        Text(
-                            text = stringResource(Res.string.admin),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
+                        SegmentedButtonRow(
+                            options = listOf("Aa", "Aa", "Aa"),
+                            selectedIndex = selectedIndex,
+                            onSelectionChange = { selectedIndex = it }
                         )
-                        Card(
-                            shape = MaterialTheme.shapes.medium,
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column {
-                                SettingsClickableItem(
-                                    icon = painterResource(Res.drawable.format_list_bulleted_add),
-                                    text = stringResource(Res.string.new_glossary),
-                                    onClick = {
-                                        component.createGlossary()
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-
-                                HorizontalDivider(
-                                    Modifier,
-                                    DividerDefaults.Thickness,
-                                    DividerDefaults.color
-                                )
-
-                                SettingsClickableItem(
-                                    icon = painterResource(Res.drawable.developer_guide),
-                                    text = stringResource(Res.string.edit_rules),
-                                    onClick = {}
-                                )
-                            }
-                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SegmentedButtonRow(
+                            options = listOf("Small", "Medium", "Large"),
+                            selectedIndex = selectedIndex2,
+                            onSelectionChange = { selectedIndex2 = it }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SegmentedButtonRow(
+                            options = listOf("Small", "Default", "Large"),
+                            selectedIndex = selectedIndex3,
+                            onSelectionChange = { selectedIndex3 = it }
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(32.dp))
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    HorizontalDivider(
+                        Modifier,
+                        DividerDefaults.Thickness,
+                        DividerDefaults.color
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingsSection(
+                        title = stringResource(Res.string.interface_settings)
                     ) {
-                        Text(
-                            text = stringResource(Res.string.display),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
+                        SettingsClickableItem(
+                            icon = Icons.Default.Translate,
+                            text = stringResource(Res.string.language),
+                            actionText = "English",
+                            onClick = {}
                         )
-                        Card(
-                            shape = MaterialTheme.shapes.medium,
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            ),
+                        SettingsSwitchItem(
+                            icon = Icons.Outlined.DarkMode,
+                            text = stringResource(Res.string.dark_mode),
+                            checked = isDarkModeEnabled,
+                            onCheckedChange = { isDarkModeEnabled = it }
+                        )
+                    }
+
+                    HorizontalDivider(
+                        Modifier,
+                        DividerDefaults.Thickness,
+                        DividerDefaults.color
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    SettingsSection(
+                        title = stringResource(Res.string.user_settings)
+                    ) {
+                        SettingsClickableItem(
+                            icon = painterResource(Res.drawable.format_list_bulleted_add),
+                            text = stringResource(Res.string.new_glossary),
+                            onClick = {
+                                component.createGlossary()
+                            },
                             modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Column {
-                                SettingsClickableItem(
-                                    icon = Icons.Default.Translate,
-                                    text = stringResource(Res.string.language),
-                                    onClick = {}
-                                )
-
-                                HorizontalDivider(
-                                    Modifier,
-                                    DividerDefaults.Thickness,
-                                    DividerDefaults.color
-                                )
-
-                                SettingsClickableItem(
-                                    icon = Icons.Default.TextFields,
-                                    text = stringResource(Res.string.typography),
-                                    onClick = {}
-                                )
-
-                                HorizontalDivider(
-                                    Modifier,
-                                    DividerDefaults.Thickness,
-                                    DividerDefaults.color
-                                )
-
-                                SettingsSwitchItem(
-                                    icon = Icons.Outlined.DarkMode,
-                                    text = stringResource(Res.string.dark_mode),
-                                    checked = isDarkModeEnabled,
-                                    onCheckedChange = { isDarkModeEnabled = it }
-                                )
-                            }
-                        }
+                        )
+                        SettingsClickableItem(
+                            icon = painterResource(Res.drawable.developer_guide),
+                            text = stringResource(Res.string.edit_rules),
+                            onClick = {}
+                        )
                     }
                 }
             }
