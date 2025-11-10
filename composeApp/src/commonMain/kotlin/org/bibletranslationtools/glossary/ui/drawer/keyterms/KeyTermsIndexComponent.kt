@@ -26,7 +26,8 @@ import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
-import org.bibletranslationtools.glossary.ui.main.DrawerContext
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -59,15 +60,14 @@ interface KeyTermsIndexComponent : DrawerContext {
 
 class DefaultKeyTermsIndexComponent(
     componentContext: ComponentContext,
-    private val parentContext: DrawerContext,
+    parentContext: DrawerContext,
     private val book: Workbook,
     private val chapter: Chapter,
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateGlossaryList: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
     private val onNavigateViewPhrase: (phraseId: String) -> Unit
-) : KeyTermsIndexComponent, ComponentContext by componentContext,
-    KoinComponent {
+) : DrawerComponent(componentContext, parentContext), KeyTermsIndexComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
     private val exportGlossary: ExportGlossary by inject()
@@ -169,13 +169,5 @@ class DefaultKeyTermsIndexComponent(
 
             _model.update { it.copy(progress = null) }
         }
-    }
-
-    override fun dismiss() {
-        parentContext.dismiss()
-    }
-
-    override fun navigateBack() {
-        parentContext.navigateBack()
     }
 }

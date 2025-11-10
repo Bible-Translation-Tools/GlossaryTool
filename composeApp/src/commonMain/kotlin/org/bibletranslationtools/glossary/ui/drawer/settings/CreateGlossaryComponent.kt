@@ -1,7 +1,8 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.Value
+import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_glossary_error
 import glossary.composeapp.generated.resources.downloading
@@ -25,13 +26,13 @@ import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
-import org.bibletranslationtools.glossary.ui.AppComponent
-import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface CreateGlossaryComponent : ParentContext {
+interface CreateGlossaryComponent : DrawerContext {
     val model: Value<Model>
 
     data class ResourceRequest(
@@ -49,7 +50,6 @@ interface CreateGlossaryComponent : ParentContext {
         val progress: Progress? = null
     )
 
-    fun onBackClicked()
     fun createGlossary(code: String)
     fun downloadResource(request: ResourceRequest)
     fun clearResourceRequest()
@@ -59,14 +59,12 @@ interface CreateGlossaryComponent : ParentContext {
 
 class DefaultCreateGlossaryComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
+    parentContext: DrawerContext,
     private val sharedState: CreateGlossaryStateKeeper,
-    private val onNavigateBack: () -> Unit,
     private val onResourceDownloaded: (Resource) -> Unit,
     private val onGlossaryCreated: (Resource, Glossary) -> Unit,
     private val onSelectLanguage: (type: LanguageType) -> Unit
-) : AppComponent(componentContext, parentContext),
-    CreateGlossaryComponent, KoinComponent {
+) : DrawerComponent(componentContext, parentContext), CreateGlossaryComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
     private val catalogApi: CatalogApi by inject()
@@ -77,8 +75,10 @@ class DefaultCreateGlossaryComponent(
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    override fun onBackClicked() {
-        onNavigateBack()
+    init {
+        doOnResume {
+            setFullscreen(true)
+        }
     }
 
     override fun createGlossary(code: String) {

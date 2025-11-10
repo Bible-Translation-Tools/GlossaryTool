@@ -3,6 +3,7 @@ package org.bibletranslationtools.glossary.ui.main
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
@@ -12,10 +13,13 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
@@ -31,7 +35,6 @@ import org.bibletranslationtools.glossary.ui.drawer.keyterms.KeyTermsComponent
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.KeyTermsScreen
 import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsComponent
 import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsScreen
-import org.bibletranslationtools.glossary.ui.glossary.GlossaryScreen
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
 import org.bibletranslationtools.glossary.ui.resources.ResourcesScreen
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -62,8 +65,16 @@ fun MainScreen(component: MainComponent) {
         1
     )
 
+    val roundedShape = DrawerDefaults.shape
+    val flatShape = RectangleShape
+
     val drawerSlot by component.drawerSlot.subscribeAsState()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val drawerShape by remember(model.fullscreenDrawer) {
+        mutableStateOf(
+            if (model.fullscreenDrawer) flatShape else roundedShape
+        )
+    }
 
     LaunchedEffect(model.activeResource) {
         model.activeResource?.let { resource ->
@@ -104,6 +115,7 @@ fun MainScreen(component: MainComponent) {
             ModalDrawerSheet(
                 drawerContainerColor = MaterialTheme.colorScheme.surface,
                 windowInsets = WindowInsets(0, 24, 0, 32),
+                drawerShape = drawerShape,
                 modifier = Modifier.then(
                     if (model.fullscreenDrawer) {
                         Modifier.fillMaxWidth()
@@ -137,7 +149,6 @@ fun MainScreen(component: MainComponent) {
             ) {
                 when (val child = it.instance) {
                     is MainComponent.Child.Read -> ReadScreen(child.component)
-                    is MainComponent.Child.Glossary -> GlossaryScreen(child.component)
                     is MainComponent.Child.Resources -> ResourcesScreen(child.component)
                 }
             }

@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

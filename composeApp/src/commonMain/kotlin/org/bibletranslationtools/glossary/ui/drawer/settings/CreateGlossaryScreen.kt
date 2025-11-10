@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -44,7 +44,7 @@ import glossary.composeapp.generated.resources.source_language
 import glossary.composeapp.generated.resources.target_language
 import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.ui.components.LanguageSelector
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.bibletranslationtools.glossary.ui.dialogs.ConfirmDialog
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.jetbrains.compose.resources.painterResource
@@ -65,11 +65,12 @@ fun CreateGlossaryScreen(component: CreateGlossaryComponent) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = stringResource(Res.string.new_glossary)
-        ) {
-            component.onBackClicked()
-        }
+        TopDrawerBar(
+            title = stringResource(Res.string.new_glossary),
+            subTitle = "",
+            onBackClick = component::navigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Column(modifier = Modifier.weight(1f)) {
             Column(

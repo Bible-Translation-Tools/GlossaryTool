@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -21,14 +21,14 @@ import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.ImportGlossary
 import org.bibletranslationtools.glossary.domain.NetworkResult
-import org.bibletranslationtools.glossary.ui.AppComponent
-import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.components.OtpAction
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface ImportGlossaryComponent : ParentContext {
+interface ImportGlossaryComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
@@ -45,13 +45,11 @@ interface ImportGlossaryComponent : ParentContext {
 
 class DefaultImportGlossaryComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
+    private val parentContext: DrawerContext,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
-    private val onImportFinished: () -> Unit,
-    private val onNavigateBack: () -> Unit
-) : AppComponent(componentContext, parentContext),
-    ImportGlossaryComponent, KoinComponent {
+    private val onImportFinished: () -> Unit
+) : DrawerComponent(componentContext, parentContext), ImportGlossaryComponent, KoinComponent {
 
     private val importGlossary: ImportGlossary by inject()
     private val glossaryApi: GlossaryApi by inject()
@@ -61,10 +59,6 @@ class DefaultImportGlossaryComponent(
     override val model: Value<ImportGlossaryComponent.Model> = _model
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-
-    override fun onBackClick() {
-        onNavigateBack()
-    }
 
     override fun onOtpAction(action: OtpAction) {
         val currentModel = _model.value

@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value

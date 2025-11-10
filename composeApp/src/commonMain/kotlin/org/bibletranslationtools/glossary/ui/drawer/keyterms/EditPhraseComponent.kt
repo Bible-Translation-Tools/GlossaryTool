@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.no_refs_found
 import kotlinx.coroutines.CoroutineScope
@@ -15,7 +16,8 @@ import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.DrawerContext
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
@@ -38,9 +40,8 @@ class DefaultEditPhraseComponent(
     componentContext: ComponentContext,
     private val parentContext: DrawerContext,
     private val phrase: String,
-    private val onPhraseSaved: () -> Unit,
-    private val setFullscreen: (Boolean) -> Unit
-) : EditPhraseComponent, KoinComponent, ComponentContext by componentContext {
+    private val onPhraseSaved: () -> Unit
+) : DrawerComponent(componentContext, parentContext), EditPhraseComponent, KoinComponent {
 
     private val appStateStore: AppStateStore by inject()
     private val glossaryRepository: GlossaryRepository by inject()
@@ -54,7 +55,9 @@ class DefaultEditPhraseComponent(
     private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
 
     init {
-        setFullscreen(true)
+        doOnResume {
+            setFullscreen(true)
+        }
 
         componentScope.launch {
             val glossary = glossaryState.value.glossary ?: return@launch

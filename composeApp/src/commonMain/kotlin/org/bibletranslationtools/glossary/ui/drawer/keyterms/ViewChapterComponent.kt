@@ -13,7 +13,8 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Verse
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.DrawerContext
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -31,11 +32,10 @@ interface ViewChapterComponent : DrawerContext {
 
 class DefaultViewChapterComponent(
     componentContext: ComponentContext,
-    private val parentContext: DrawerContext,
+    parentContext: DrawerContext,
     private val phraseId: String,
-    private val ref: Ref,
-    private val setFullscreen: (Boolean) -> Unit
-) : ViewChapterComponent, KoinComponent, ComponentContext by componentContext {
+    private val ref: Ref
+) : DrawerComponent(componentContext, parentContext), ViewChapterComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
 
@@ -48,9 +48,9 @@ class DefaultViewChapterComponent(
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     init {
-        setFullscreen(true)
-
         doOnResume {
+            setFullscreen(true)
+
             componentScope.launch {
                 _model.update { it.copy(isLoading = true) }
 
@@ -69,13 +69,5 @@ class DefaultViewChapterComponent(
                 }
             }
         }
-    }
-
-    override fun dismiss() {
-        navigateBack()
-    }
-
-    override fun navigateBack() {
-        parentContext.navigateBack()
     }
 }

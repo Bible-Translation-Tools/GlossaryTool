@@ -8,7 +8,6 @@ import com.arkivanov.decompose.router.slot.childSlot
 import com.arkivanov.decompose.router.slot.dismiss
 import com.arkivanov.decompose.router.stack.ChildStack
 import com.arkivanov.decompose.router.stack.StackNavigation
-import com.arkivanov.decompose.router.stack.bringToFront
 import com.arkivanov.decompose.router.stack.childStack
 import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.router.stack.replaceAll
@@ -32,10 +31,9 @@ import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.components.PhraseNavDir
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.DefaultKeyTermsComponent
 import org.bibletranslationtools.glossary.ui.drawer.settings.DefaultSettingsComponent
-import org.bibletranslationtools.glossary.ui.glossary.DefaultGlossaryComponent
-import org.bibletranslationtools.glossary.ui.glossary.GlossaryComponent
 import org.bibletranslationtools.glossary.ui.read.DefaultReadComponent
 import org.bibletranslationtools.glossary.ui.read.ReadComponent
 import org.bibletranslationtools.glossary.ui.resources.DefaultResourcesComponent
@@ -59,12 +57,6 @@ sealed class ReadIntent {
     data object Index : ReadIntent()
     @Serializable
     data class Reference(val ref: RefOption) : ReadIntent()
-}
-
-@Serializable
-sealed class GlossaryIntent {
-    @Serializable
-    data object CreateGlossary : GlossaryIntent()
 }
 
 @Serializable
@@ -94,7 +86,6 @@ interface MainComponent: ParentContext {
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
-        class Glossary(val component: GlossaryComponent) : Child()
         class Resources(val component: ResourcesComponent) : Child()
     }
 }
@@ -154,16 +145,6 @@ class DefaultMainComponent(
                     onNavigateEditPhrase = {}
                 )
             )
-            is Config.Glossary -> MainComponent.Child.Glossary(
-                DefaultGlossaryComponent(
-                    componentContext = context,
-                    parentContext = this,
-                    intent = config.intent,
-                    onSelectResource = ::selectActiveResource,
-                    onSelectGlossary = ::selectActiveGlossary,
-                    onNavigateBack = navigation::pop
-                )
-            )
             is Config.Resources -> MainComponent.Child.Resources(
                 DefaultResourcesComponent(
                     componentContext = context,
@@ -198,21 +179,9 @@ class DefaultMainComponent(
     private fun onNavigateBack() {
         val config = childStack.value.active.configuration
         when (config) {
-            is Config.Glossary -> {
-                val mainIntent = config.intent
-                val lastConfig = childStack.value.backStack.lastOrNull()?.configuration
-
-//                if (mainIntent is GlossaryIntent.CreateGlossary && lastConfig is Config.Settings) {
-//                    navigation.pop()
-//                } else {
-                    navigation.replaceAll(Config.Read())
-//                }
-            }
-
             !is Config.Read -> {
                 navigation.replaceAll(Config.Read())
             }
-
             else -> {
                 navigation.replaceAll(Config.Read()) {
                     onFinished()
@@ -225,12 +194,6 @@ class DefaultMainComponent(
         navigation.replaceAll(Config.Read(
             ReadIntent.Reference(ref)
         ))
-    }
-
-    private fun navigateToGlossaryCreate() {
-        navigation.bringToFront(
-            Config.Glossary(GlossaryIntent.CreateGlossary)
-        )
     }
 
     private fun selectActiveResource(resource: Resource) {
@@ -317,16 +280,16 @@ class DefaultMainComponent(
             is DrawerConfig.Settings -> DefaultSettingsComponent(
                 componentContext = context,
                 parentContext = this,
-                onCreateGlossary = {
-                    println("create glossary")
-                }
+                onSelectResource = ::selectActiveResource,
+                onSelectGlossary = ::selectActiveGlossary,
+                onFullscreen = ::setFullscreenDrawer
             )
             is DrawerConfig.KeyTerms -> DefaultKeyTermsComponent(
                 componentContext = context,
                 parentContext = this,
                 book = config.book,
                 chapter = config.chapter,
-                setFullscreen = ::setFullscreenDrawer
+                onFullscreen = ::setFullscreenDrawer
             )
         }
     }
@@ -349,8 +312,6 @@ class DefaultMainComponent(
 
     @Serializable
     private sealed interface Config {
-        @Serializable
-        data class Glossary(val intent: GlossaryIntent = GlossaryIntent.CreateGlossary) : Config
         @Serializable
         data class Read(val intent: ReadIntent = ReadIntent.Index) : Config
         @Serializable

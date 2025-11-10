@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.add_glossary
+import glossary.composeapp.generated.resources.back
 import glossary.composeapp.generated.resources.download
 import glossary.composeapp.generated.resources.downloading_glossary
 import glossary.composeapp.generated.resources.downloading_glossary_hint
@@ -39,7 +39,7 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openFilePicker
 import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.ui.components.OtpInput
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -58,11 +58,12 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        TopAppBar(
-            title = stringResource(Res.string.add_glossary)
-        ) {
-            component.onBackClick()
-        }
+        TopDrawerBar(
+            title = stringResource(Res.string.back),
+            subTitle = "",
+            onBackClick = component::navigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Column(modifier = Modifier.weight(1f)) {
             Column(

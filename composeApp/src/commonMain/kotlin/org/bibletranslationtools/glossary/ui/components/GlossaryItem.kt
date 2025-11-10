@@ -29,7 +29,7 @@ import glossary.composeapp.generated.resources.group
 import glossary.composeapp.generated.resources.match_word
 import glossary.composeapp.generated.resources.users_count
 import glossary.composeapp.generated.resources.words_count
-import org.bibletranslationtools.glossary.ui.glossary.GlossaryItem
+import org.bibletranslationtools.glossary.ui.drawer.settings.GlossaryItem
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 

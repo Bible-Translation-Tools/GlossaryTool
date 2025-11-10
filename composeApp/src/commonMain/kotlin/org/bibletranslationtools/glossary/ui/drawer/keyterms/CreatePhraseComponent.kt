@@ -12,7 +12,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.DrawerContext
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -37,10 +38,9 @@ interface CreatePhraseComponent : DrawerContext {
 
 class DefaultCreatePhraseComponent(
     componentContext: ComponentContext,
-    private val parentContext: DrawerContext,
+    parentContext: DrawerContext,
     private val onNavigateEdit: (phrase: String) -> Unit
-) : CreatePhraseComponent, KoinComponent, ComponentContext by componentContext {
-
+) : DrawerComponent(componentContext, parentContext), CreatePhraseComponent, KoinComponent {
     private val appStateStore: AppStateStore by inject()
     private val glossaryRepository: GlossaryRepository by inject()
 
@@ -151,13 +151,5 @@ class DefaultCreatePhraseComponent(
             }
             randomWords.toList()
         } ?: emptyList()
-    }
-
-    override fun dismiss() {
-        parentContext.dismiss()
-    }
-
-    override fun navigateBack() {
-        parentContext.navigateBack()
     }
 }

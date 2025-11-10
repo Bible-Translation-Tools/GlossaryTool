@@ -13,7 +13,7 @@ import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.ParentContext
-import org.bibletranslationtools.glossary.ui.main.DrawerContext
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 
 interface KeyTermsComponent : DrawerContext {
     val childStack: Value<ChildStack<*, Child>>
@@ -30,11 +30,10 @@ interface KeyTermsComponent : DrawerContext {
 class DefaultKeyTermsComponent(
     componentContext: ComponentContext,
     private val parentContext: ParentContext,
-    private val book: Workbook,
-    private val chapter: Chapter,
-    private val setFullscreen: (Boolean) -> Unit
+    book: Workbook,
+    chapter: Chapter,
+    private val onFullscreen: (Boolean) -> Unit
 ) : KeyTermsComponent, ComponentContext by componentContext {
-
     private val navigation = StackNavigation<Config>()
 
     override val childStack: Value<ChildStack<*, KeyTermsComponent.Child>> =
@@ -95,8 +94,7 @@ class DefaultKeyTermsComponent(
                         componentContext = context,
                         parentContext = this,
                         phrase = config.phrase,
-                        onPhraseSaved = ::navigateBack,
-                        setFullscreen = { setFullscreen(it) }
+                        onPhraseSaved = ::navigateBack
                     )
                 )
             is Config.CreatePhrase -> KeyTermsComponent.Child.CreatePhrase(
@@ -113,8 +111,7 @@ class DefaultKeyTermsComponent(
                     componentContext = context,
                     parentContext = this,
                     phraseId = config.phraseId,
-                    ref = config.ref,
-                    setFullscreen = { setFullscreen(it) }
+                    ref = config.ref
                 )
             )
         }
@@ -132,6 +129,10 @@ class DefaultKeyTermsComponent(
         } else {
             dismiss()
         }
+    }
+
+    override fun setFullscreen(fullscreen: Boolean) {
+        onFullscreen(fullscreen)
     }
 
     @Serializable

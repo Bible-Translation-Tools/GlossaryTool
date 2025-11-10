@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
@@ -14,8 +14,8 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
-import org.bibletranslationtools.glossary.ui.AppComponent
-import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -26,7 +26,7 @@ data class GlossaryItem(
     val userCount: Int
 )
 
-interface GlossaryListComponent : ParentContext {
+interface GlossaryListComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
@@ -38,18 +38,15 @@ interface GlossaryListComponent : ParentContext {
     fun selectGlossary(glossary: GlossaryItem)
     fun navigateImportGlossary()
     fun saveGlossary()
-    fun navigateBack()
 }
 
 class DefaultGlossaryListComponent(
     componentContext: ComponentContext,
-    parentContext: ParentContext,
+    parentContext: DrawerContext,
     private val onNavigateImportGlossary: () -> Unit,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
-    private val onSelectResource: (resource: Resource) -> Unit,
-    private val onNavigateBack: () -> Unit
-) : AppComponent(componentContext, parentContext),
-    GlossaryListComponent, KoinComponent {
+    private val onSelectResource: (resource: Resource) -> Unit
+) : DrawerComponent(componentContext, parentContext), GlossaryListComponent, KoinComponent {
 
     private val appStateStore: AppStateStore by inject()
     private val glossaryRepository: GlossaryRepository by inject()
@@ -63,6 +60,7 @@ class DefaultGlossaryListComponent(
 
     init {
         doOnResume {
+            setFullscreen(true)
             loadGlossaries()
         }
     }
@@ -92,10 +90,6 @@ class DefaultGlossaryListComponent(
         onNavigateImportGlossary()
     }
 
-    override fun navigateBack() {
-        onNavigateBack()
-    }
-
     override fun saveGlossary() {
         componentScope.launch {
             val glossary = _model.value.selectedGlossary?.glossary ?: return@launch
@@ -103,7 +97,7 @@ class DefaultGlossaryListComponent(
 
             onSelectResource(resource)
             onSelectGlossary(glossary)
-            onNavigateBack()
+            navigateBack()
         }
     }
 

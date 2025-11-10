@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.ui.glossary
+package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,7 +29,7 @@ import glossary.composeapp.generated.resources.target_language
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.LanguageItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -59,9 +59,12 @@ fun SelectLanguageScreen(component: SelectLanguageComponent) {
         } else {
             stringResource(Res.string.target_language)
         }
-        TopAppBar(title = title) {
-            component.onBackClick()
-        }
+        TopDrawerBar(
+            title = title,
+            subTitle = "",
+            onBackClick = component::navigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Column(modifier = Modifier.weight(1f)) {
             Column(

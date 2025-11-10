@@ -13,7 +13,8 @@ import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.ui.main.DrawerContext
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -32,11 +33,11 @@ interface ViewPhraseComponent : DrawerContext {
 
 class DefaultViewPhraseComponent(
     componentContext: ComponentContext,
-    private val parentContext: DrawerContext,
+    parentContext: DrawerContext,
     private val phraseId: String,
     private val onNavigateRef: (String, Ref) -> Unit,
     private val onNavigateEdit: (String) -> Unit
-) : ViewPhraseComponent, KoinComponent, ComponentContext by componentContext {
+) : DrawerComponent(componentContext, parentContext), ViewPhraseComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
 
@@ -78,13 +79,5 @@ class DefaultViewPhraseComponent(
 
     override fun onEditClick(phrase: String) {
         onNavigateEdit(phrase)
-    }
-
-    override fun dismiss() {
-        parentContext.dismiss()
-    }
-
-    override fun navigateBack() {
-        parentContext.navigateBack()
     }
 }

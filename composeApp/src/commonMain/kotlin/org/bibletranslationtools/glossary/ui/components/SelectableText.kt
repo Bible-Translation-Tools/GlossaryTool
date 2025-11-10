@@ -243,7 +243,7 @@ fun SelectableText(
                         }
                 ) {
                     val isView = currentPhrases.any {
-                        it.phrase.lowercase() == selectedText.lowercase()
+                        it.phrase.equals(selectedText, ignoreCase = true)
                     } || selectedText.isEmpty()
 
                     val text = if (isView) {
