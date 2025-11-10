@@ -45,4 +45,9 @@ actual fun showStatusBars(show: Boolean) {
 }
 
 actual fun setStatusBarLight(light: Boolean) {
+    // noop
+}
+
+actual fun showNavigationBar(show: Boolean) {
+    // noop
 }

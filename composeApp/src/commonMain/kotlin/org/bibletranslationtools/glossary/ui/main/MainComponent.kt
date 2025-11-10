@@ -15,22 +15,13 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.backhandler.BackCallback
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Glossary
-import org.bibletranslationtools.glossary.data.Phrase
-import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.ParentContext
-import org.bibletranslationtools.glossary.ui.components.PhraseNavDir
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.DefaultKeyTermsComponent
 import org.bibletranslationtools.glossary.ui.drawer.settings.DefaultSettingsComponent
@@ -42,15 +33,6 @@ import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-data class PhraseDetails(
-    val phrase: Phrase,
-    val phrases: List<Phrase>,
-    val ref: Ref?,
-    val book: Workbook,
-    val chapter: Chapter,
-    val verse: String? = null
-)
-
 @Serializable
 sealed class ReadIntent {
     @Serializable
@@ -60,18 +42,27 @@ sealed class ReadIntent {
 }
 
 @Serializable
+sealed class KeyTermsIntent {
+    @Serializable
+    data class Index(val book: Workbook, val chapter: Chapter) : KeyTermsIntent()
+    @Serializable
+    data class ViewPhrase(val phraseId: String) : KeyTermsIntent()
+    @Serializable
+    data class EditPhrase(val phrase: String): KeyTermsIntent()
+}
+
+@Serializable
 sealed interface DrawerConfig {
     @Serializable
     data object Settings : DrawerConfig
     @Serializable
-    data class KeyTerms(val book: Workbook, val chapter: Chapter) : DrawerConfig
+    data class KeyTerms(val intent: KeyTermsIntent) : DrawerConfig
 }
 
 interface MainComponent: ParentContext {
     val model: Value<Model>
 
     data class Model(
-        val phraseDetails: PhraseDetails? = null,
         val activeGlossary: Glossary? = null,
         val activeResource: Resource? = null,
         val fullscreenDrawer: Boolean = false
@@ -80,8 +71,6 @@ interface MainComponent: ParentContext {
     val childStack: Value<ChildStack<*, Child>>
     val drawerSlot: Value<ChildSlot<DrawerConfig, DrawerContext>>
 
-    fun navigatePhrase(dir: PhraseNavDir)
-    fun clearPhraseDetails()
     fun setFullscreenDrawer(fullscreen: Boolean)
 
     sealed class Child {
@@ -96,12 +85,10 @@ class DefaultMainComponent(
 ) : MainComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
-    private val glossaryRepository: GlossaryRepository by inject()
 
     private val _model = MutableValue(MainComponent.Model())
     override val model: Value<MainComponent.Model> = _model
 
-    private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
     private val navigation = StackNavigation<Config>()
 
     override val childStack: Value<ChildStack<*, MainComponent.Child>> =
@@ -140,9 +127,8 @@ class DefaultMainComponent(
                     componentContext = context,
                     parentContext = this,
                     intent = config.intent,
-                    onPhraseDetails = ::loadPhrase,
-                    onNavigateViewPhrase = {},
-                    onNavigateEditPhrase = {}
+                    onNavigateViewPhrase = ::onNavigateViewPhrase,
+                    onNavigateEditPhrase = ::onNavigateEditPhrase
                 )
             )
             is Config.Resources -> MainComponent.Child.Resources(
@@ -154,16 +140,6 @@ class DefaultMainComponent(
             )
         }
 
-    override fun navigatePhrase(dir: PhraseNavDir) {
-        componentScope.launch {
-            navigatePhrase(dir.value)
-        }
-    }
-
-    override fun clearPhraseDetails() {
-        _model.update { it.copy(phraseDetails = null) }
-    }
-
     override fun onBackClick() {
         navigation.pop()
     }
@@ -174,6 +150,16 @@ class DefaultMainComponent(
 
     override fun openKeyTerms(book: Workbook, chapter: Chapter) {
         showKeyTermsDrawer(book, chapter)
+    }
+
+    private fun onNavigateViewPhrase(phraseId: String) {
+        val intent = KeyTermsIntent.ViewPhrase(phraseId)
+        drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
+    }
+
+    private fun onNavigateEditPhrase(phrase: String) {
+        val intent = KeyTermsIntent.EditPhrase(phrase)
+        drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
     }
 
     private fun onNavigateBack() {
@@ -206,72 +192,6 @@ class DefaultMainComponent(
         appStateStore.glossaryStateHolder.updateGlossary(glossary)
     }
 
-    private fun loadPhrase(
-        phrase: Phrase,
-        phrases: List<Phrase>,
-        book: Workbook,
-        chapter: Chapter,
-        verse: String?
-    ) {
-        componentScope.launch {
-            val ref = getInitialRef(
-                phrase = phrase,
-                book = book,
-                chapter = chapter,
-                verse = verse
-            )
-            val phraseDetails = PhraseDetails(
-                phrase = phrase,
-                phrases = phrases,
-                ref = ref,
-                book = book,
-                chapter = chapter,
-                verse = verse
-            )
-
-            _model.value = _model.value.copy(
-                phraseDetails = phraseDetails
-            )
-        }
-    }
-
-    private suspend fun navigatePhrase(incr: Int) {
-        _model.value.phraseDetails?.let { details ->
-            details.phrases.getOrNull(
-                details.phrases.indexOf(details.phrase) + incr
-            )?.let { phrase ->
-                val ref = getInitialRef(
-                    phrase = phrase,
-                    book = details.book,
-                    chapter = details.chapter
-                )
-                _model.update { state ->
-                    state.copy(
-                        phraseDetails = details.copy(
-                            phrase = phrase,
-                            ref = ref
-                        )
-                    )
-                }
-            }
-        }
-    }
-
-    private suspend fun getInitialRef(
-        phrase: Phrase,
-        book: Workbook,
-        chapter: Chapter,
-        verse: String? = null,
-    ): Ref? {
-        return withContext(Dispatchers.Default) {
-            glossaryRepository.getRefs(phrase.id).firstOrNull {
-                it.book == book.slug
-                        && it.chapter == chapter.number.toString()
-                        && (verse == null || it.verse == verse)
-            }
-        }
-    }
-
     private fun createDrawerComponent(
         config: DrawerConfig,
         context: ComponentContext
@@ -287,8 +207,7 @@ class DefaultMainComponent(
             is DrawerConfig.KeyTerms -> DefaultKeyTermsComponent(
                 componentContext = context,
                 parentContext = this,
-                book = config.book,
-                chapter = config.chapter,
+                intent = config.intent,
                 onFullscreen = ::setFullscreenDrawer
             )
         }
@@ -299,7 +218,8 @@ class DefaultMainComponent(
     }
 
     fun showKeyTermsDrawer(book: Workbook, chapter: Chapter) {
-        drawerNavigation.activate(DrawerConfig.KeyTerms(book, chapter))
+        val intent = KeyTermsIntent.Index(book, chapter)
+        drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
     }
 
     override fun dismissDrawer() {

@@ -11,11 +11,15 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.platform.showNavigationBar
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.components.PhraseDetails
+import org.bibletranslationtools.glossary.ui.components.PhraseNavDir
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -33,6 +37,7 @@ interface ReadIndexComponent : ParentContext {
         val activeBook: Workbook? = null,
         val activeChapter: Chapter? = null,
         val chapterPhrases: List<Phrase> = emptyList(),
+        val phraseDetails: PhraseDetails? = null,
         val currentRef: RefOption? = null
     )
 
@@ -42,9 +47,11 @@ interface ReadIndexComponent : ParentContext {
     fun onBrowseClick(book: String, chapter: Int)
     fun loadRef(ref: RefOption?)
     fun clearRef()
-    fun onEditPhraseSelected(phrase: String)
-    fun selectPhraseForView(phraseId: String)
+    fun onPhraseSelected(phrase: String)
     fun onPhraseClick(phrase: Phrase, verse: String?)
+    fun navigatePhrase(dir: PhraseNavDir)
+    fun onViewPhraseClick(phraseId: String)
+    fun clearPhraseDetails()
 }
 
 class DefaultReadIndexComponent(
@@ -53,13 +60,6 @@ class DefaultReadIndexComponent(
     private val ref: RefOption? = null,
     private val onNavigateViewPhrase: (phraseId: String) -> Unit,
     private val onNavigateEditPhrase: (phrase: String) -> Unit,
-    private val onPhraseSelected: (
-        phrase: Phrase,
-        phrases: List<Phrase>,
-        book: Workbook,
-        chapter: Chapter,
-        verse: String?
-    ) -> Unit,
     private val onNavigateBrowse: (book: String, chapter: Int) -> Unit
 ) : AppComponent(componentContext, parentContext),
     ReadIndexComponent, KoinComponent {
@@ -114,7 +114,7 @@ class DefaultReadIndexComponent(
         _model.update { it.copy(currentRef = null) }
     }
 
-    override fun onEditPhraseSelected(phrase: String) {
+    override fun onPhraseSelected(phrase: String) {
         onNavigateEditPhrase(phrase)
     }
 
@@ -123,11 +123,22 @@ class DefaultReadIndexComponent(
         val chapter = _model.value.activeChapter ?: return
         val phrases = _model.value.chapterPhrases
 
-        onPhraseSelected(phrase, phrases, book, chapter, verse)
+        loadPhrase(phrase, phrases, book, chapter, verse)
     }
 
-    override fun selectPhraseForView(phraseId: String) {
+    override fun navigatePhrase(dir: PhraseNavDir) {
+        componentScope.launch {
+            navigatePhrase(dir.value)
+        }
+    }
+
+    override fun onViewPhraseClick(phraseId: String) {
         onNavigateViewPhrase(phraseId)
+    }
+
+    override fun clearPhraseDetails() {
+        showNavigationBar(true)
+        _model.update { it.copy(phraseDetails = null) }
     }
 
     private fun navigateChapter(dir: NavDir) {
@@ -196,6 +207,73 @@ class DefaultReadIndexComponent(
             }
 
             _model.update { it.copy(chapterPhrases = phrases) }
+        }
+    }
+
+    private fun loadPhrase(
+        phrase: Phrase,
+        phrases: List<Phrase>,
+        book: Workbook,
+        chapter: Chapter,
+        verse: String?
+    ) {
+        showNavigationBar(false)
+        componentScope.launch {
+            val ref = getInitialRef(
+                phrase = phrase,
+                book = book,
+                chapter = chapter,
+                verse = verse
+            )
+            val phraseDetails = PhraseDetails(
+                phrase = phrase,
+                phrases = phrases,
+                ref = ref,
+                book = book,
+                chapter = chapter,
+                verse = verse
+            )
+
+            _model.value = _model.value.copy(
+                phraseDetails = phraseDetails
+            )
+        }
+    }
+
+    private suspend fun navigatePhrase(incr: Int) {
+        _model.value.phraseDetails?.let { details ->
+            details.phrases.getOrNull(
+                details.phrases.indexOf(details.phrase) + incr
+            )?.let { phrase ->
+                val ref = getInitialRef(
+                    phrase = phrase,
+                    book = details.book,
+                    chapter = details.chapter
+                )
+                _model.update { state ->
+                    state.copy(
+                        phraseDetails = details.copy(
+                            phrase = phrase,
+                            ref = ref
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+    private suspend fun getInitialRef(
+        phrase: Phrase,
+        book: Workbook,
+        chapter: Chapter,
+        verse: String? = null,
+    ): Ref? {
+        return withContext(Dispatchers.Default) {
+            glossaryRepository.getRefs(phrase.id).firstOrNull {
+                it.book == book.slug
+                        && it.chapter == chapter.number.toString()
+                        && (verse == null || it.verse == verse)
+            }
         }
     }
 }

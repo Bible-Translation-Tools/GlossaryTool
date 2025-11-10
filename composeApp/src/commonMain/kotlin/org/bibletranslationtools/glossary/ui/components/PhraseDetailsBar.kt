@@ -42,9 +42,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.reference_not_found
+import org.bibletranslationtools.glossary.data.Chapter
+import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
-import org.bibletranslationtools.glossary.ui.main.PhraseDetails
+import org.bibletranslationtools.glossary.data.Workbook
 import org.jetbrains.compose.resources.stringResource
+
+data class PhraseDetails(
+    val phrase: Phrase,
+    val phrases: List<Phrase>,
+    val ref: Ref?,
+    val book: Workbook,
+    val chapter: Chapter,
+    val verse: String? = null
+)
 
 enum class PhraseNavDir(val value: Int) {
     PREV(-1),
@@ -81,7 +93,6 @@ fun PhraseDetailsBar(
                 indication = null,
                 onClick = onDismiss
             )
-            .navigationBarsPadding()
     ) {
         Surface(
             modifier = Modifier

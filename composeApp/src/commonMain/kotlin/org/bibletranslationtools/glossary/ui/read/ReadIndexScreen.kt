@@ -35,6 +35,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
@@ -44,13 +45,20 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
+import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
 import org.bibletranslationtools.glossary.ui.components.SelectableText
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @OptIn(InternalTextApi::class)
 @Composable
 fun ReadIndexScreen(component: ReadIndexComponent) {
     val model by component.model.subscribeAsState()
+
+    val appStateStore = koinInject<AppStateStore>()
+    val resourceState by appStateStore.resourceStateHolder.resourceState
+        .collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -200,7 +208,7 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                                 selectedText = selectedText,
                                 currentVerse = model.currentRef?.verse,
                                 onSelectedTextChanged = { selectedText = it },
-                                onSaveSelection = { component.onEditPhraseSelected(it) },
+                                onSaveSelection = { component.onPhraseSelected(it) },
                                 onPhraseClick = { phrase, verse ->
                                     component.onPhraseClick(phrase, verse)
                                 }
@@ -260,6 +268,22 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                     }
                 }
             }
+        }
+    }
+
+    model.phraseDetails?.let { phraseDetails ->
+        resourceState.resource?.let { resource ->
+            PhraseDetailsBar(
+                details = phraseDetails,
+                resource = resource,
+                onNavPhrase = { component.navigatePhrase(it) },
+                onViewDetails = { phrase ->
+                    component.onViewPhraseClick(phrase)
+                },
+                onDismiss = {
+                    component.clearPhraseDetails()
+                }
+            )
         }
     }
 }

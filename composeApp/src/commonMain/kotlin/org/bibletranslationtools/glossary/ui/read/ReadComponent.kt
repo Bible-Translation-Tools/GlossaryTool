@@ -10,10 +10,7 @@ import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
-import org.bibletranslationtools.glossary.data.Chapter
-import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
-import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.main.ReadIntent
@@ -39,13 +36,6 @@ class DefaultReadComponent(
     private val parentContext: ParentContext,
     intent: ReadIntent,
     private val onNavigateViewPhrase: (phraseId: String) -> Unit,
-    private val onPhraseDetails: (
-        phrase: Phrase,
-        phrases: List<Phrase>,
-        book: Workbook,
-        chapter: Chapter,
-        verse: String?
-    ) -> Unit,
     private val onNavigateEditPhrase: (String) -> Unit
 ) : AppComponent(componentContext, parentContext),
     ReadComponent, KoinComponent {
@@ -78,7 +68,6 @@ class DefaultReadComponent(
                     ref = config.ref,
                     onNavigateViewPhrase = onNavigateViewPhrase,
                     onNavigateEditPhrase = onNavigateEditPhrase,
-                    onPhraseSelected = onPhraseDetails,
                     onNavigateBrowse = { book, chapter ->
                         navigation.bringToFront(Config.Browse(book, chapter))
                     }

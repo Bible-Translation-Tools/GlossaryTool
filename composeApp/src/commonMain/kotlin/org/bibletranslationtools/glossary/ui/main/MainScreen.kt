@@ -20,7 +20,6 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
@@ -30,24 +29,17 @@ import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
 import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.platform.showStatusBars
-import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.KeyTermsComponent
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.KeyTermsScreen
 import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsComponent
 import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsScreen
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
 import org.bibletranslationtools.glossary.ui.resources.ResourcesScreen
-import org.bibletranslationtools.glossary.ui.state.AppStateStore
-import org.koin.compose.koinInject
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MainScreen(component: MainComponent) {
     val model by component.model.subscribeAsState()
-
-    val appStateStore = koinInject<AppStateStore>()
-    val resourceState by appStateStore.resourceStateHolder.resourceState
-        .collectAsStateWithLifecycle()
 
     var selectedResource by rememberStringSetting(
         Settings.RESOURCE,
@@ -152,22 +144,6 @@ fun MainScreen(component: MainComponent) {
                     is MainComponent.Child.Resources -> ResourcesScreen(child.component)
                 }
             }
-        }
-    }
-
-    model.phraseDetails?.let { phraseDetails ->
-        resourceState.resource?.let { resource ->
-            PhraseDetailsBar(
-                details = phraseDetails,
-                resource = resource,
-                onNavPhrase = { component.navigatePhrase(it) },
-                onViewDetails = { phrase ->
-                    //component.onViewPhraseClick(phrase)
-                },
-                onDismiss = {
-                    component.clearPhraseDetails()
-                }
-            )
         }
     }
 }
