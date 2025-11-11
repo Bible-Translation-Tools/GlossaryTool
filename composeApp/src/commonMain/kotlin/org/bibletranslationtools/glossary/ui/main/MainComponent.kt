@@ -15,6 +15,7 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.backhandler.BackCallback
+import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Glossary
@@ -65,7 +66,8 @@ interface MainComponent: ParentContext {
     data class Model(
         val activeGlossary: Glossary? = null,
         val activeResource: Resource? = null,
-        val fullscreenDrawer: Boolean = false
+        val fullscreenDrawer: Boolean = false,
+        val phraseUpdated: Boolean = false
     )
 
     val childStack: Value<ChildStack<*, Child>>
@@ -85,6 +87,8 @@ class DefaultMainComponent(
 ) : MainComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
+
+    private val mainState = instanceKeeper.getOrCreate { MainStateKeeper() }
 
     private val _model = MutableValue(MainComponent.Model())
     override val model: Value<MainComponent.Model> = _model
@@ -127,6 +131,7 @@ class DefaultMainComponent(
                     componentContext = context,
                     parentContext = this,
                     intent = config.intent,
+                    sharedState = mainState,
                     onNavigateViewPhrase = ::onNavigateViewPhrase,
                     onNavigateEditPhrase = ::onNavigateEditPhrase
                 )
@@ -152,6 +157,23 @@ class DefaultMainComponent(
         showKeyTermsDrawer(book, chapter)
     }
 
+    fun showSettingsDrawer() {
+        drawerNavigation.activate(DrawerConfig.Settings)
+    }
+
+    fun showKeyTermsDrawer(book: Workbook, chapter: Chapter) {
+        val intent = KeyTermsIntent.Index(book, chapter)
+        drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
+    }
+
+    override fun dismissDrawer() {
+        drawerNavigation.dismiss()
+    }
+
+    override fun setFullscreenDrawer(fullscreen: Boolean) {
+        _model.update { it.copy(fullscreenDrawer = fullscreen) }
+    }
+
     private fun onNavigateViewPhrase(phraseId: String) {
         val intent = KeyTermsIntent.ViewPhrase(phraseId)
         drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
@@ -174,12 +196,6 @@ class DefaultMainComponent(
                 }
             }
         }
-    }
-
-    private fun navigateToReadAndLoadRef(ref: RefOption) {
-        navigation.replaceAll(Config.Read(
-            ReadIntent.Reference(ref)
-        ))
     }
 
     private fun selectActiveResource(resource: Resource) {
@@ -208,26 +224,10 @@ class DefaultMainComponent(
                 componentContext = context,
                 parentContext = this,
                 intent = config.intent,
+                sharedState = mainState,
                 onFullscreen = ::setFullscreenDrawer
             )
         }
-    }
-
-    fun showSettingsDrawer() {
-        drawerNavigation.activate(DrawerConfig.Settings)
-    }
-
-    fun showKeyTermsDrawer(book: Workbook, chapter: Chapter) {
-        val intent = KeyTermsIntent.Index(book, chapter)
-        drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
-    }
-
-    override fun dismissDrawer() {
-        drawerNavigation.dismiss()
-    }
-
-    override fun setFullscreenDrawer(fullscreen: Boolean) {
-        _model.update { it.copy(fullscreenDrawer = fullscreen) }
     }
 
     @Serializable

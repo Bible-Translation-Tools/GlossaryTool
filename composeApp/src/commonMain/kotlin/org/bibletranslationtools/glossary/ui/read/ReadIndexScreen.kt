@@ -59,6 +59,8 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
     val appStateStore = koinInject<AppStateStore>()
     val resourceState by appStateStore.resourceStateHolder.resourceState
         .collectAsStateWithLifecycle()
+    val glossaryState by appStateStore.glossaryStateHolder.glossaryState
+        .collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -114,6 +116,12 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
     DisposableEffect(Unit) {
         onDispose {
             component.clearRef()
+        }
+    }
+
+    LaunchedEffect(glossaryState.glossary) {
+        if (model.currentRef == null) {
+            component.reloadChapter()
         }
     }
 

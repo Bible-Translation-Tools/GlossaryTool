@@ -15,6 +15,7 @@ import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.main.KeyTermsIntent
+import org.bibletranslationtools.glossary.ui.main.MainStateKeeper
 
 interface KeyTermsComponent : DrawerContext {
     val childStack: Value<ChildStack<*, Child>>
@@ -32,6 +33,7 @@ class DefaultKeyTermsComponent(
     componentContext: ComponentContext,
     private val parentContext: ParentContext,
     intent: KeyTermsIntent,
+    private val sharedState: MainStateKeeper,
     private val onFullscreen: (Boolean) -> Unit
 ) : KeyTermsComponent, ComponentContext by componentContext {
     private val navigation = StackNavigation<Config>()
@@ -98,7 +100,10 @@ class DefaultKeyTermsComponent(
                         componentContext = context,
                         parentContext = this,
                         phrase = config.phrase,
-                        onPhraseSaved = ::navigateBack
+                        onPhraseSaved = {
+                            sharedState.updatePhraseUpdated(true)
+                            navigateBack()
+                        }
                     )
                 )
             is Config.CreatePhrase -> KeyTermsComponent.Child.CreatePhrase(

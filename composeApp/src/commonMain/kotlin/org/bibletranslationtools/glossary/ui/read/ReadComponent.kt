@@ -13,6 +13,7 @@ import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
+import org.bibletranslationtools.glossary.ui.main.MainStateKeeper
 import org.bibletranslationtools.glossary.ui.main.ReadIntent
 import org.koin.core.component.KoinComponent
 
@@ -35,6 +36,7 @@ class DefaultReadComponent(
     componentContext: ComponentContext,
     private val parentContext: ParentContext,
     intent: ReadIntent,
+    private val sharedState: MainStateKeeper,
     private val onNavigateViewPhrase: (phraseId: String) -> Unit,
     private val onNavigateEditPhrase: (String) -> Unit
 ) : AppComponent(componentContext, parentContext),
@@ -66,6 +68,7 @@ class DefaultReadComponent(
                     componentContext = context,
                     parentContext = parentContext,
                     ref = config.ref,
+                    sharedState = sharedState,
                     onNavigateViewPhrase = onNavigateViewPhrase,
                     onNavigateEditPhrase = onNavigateEditPhrase,
                     onNavigateBrowse = { book, chapter ->

@@ -20,6 +20,7 @@ import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.components.PhraseDetails
 import org.bibletranslationtools.glossary.ui.components.PhraseNavDir
+import org.bibletranslationtools.glossary.ui.main.MainStateKeeper
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -46,6 +47,7 @@ interface ReadIndexComponent : ParentContext {
     fun navigateBookChapter(bookSlug: String, chapter: Int)
     fun onBrowseClick(book: String, chapter: Int)
     fun loadRef(ref: RefOption?)
+    fun reloadChapter()
     fun clearRef()
     fun onPhraseSelected(phrase: String)
     fun onPhraseClick(phrase: Phrase, verse: String?)
@@ -58,6 +60,7 @@ class DefaultReadIndexComponent(
     componentContext: ComponentContext,
     parentContext: ParentContext,
     private val ref: RefOption? = null,
+    private val sharedState: MainStateKeeper,
     private val onNavigateViewPhrase: (phraseId: String) -> Unit,
     private val onNavigateEditPhrase: (phrase: String) -> Unit,
     private val onNavigateBrowse: (book: String, chapter: Int) -> Unit
@@ -78,6 +81,13 @@ class DefaultReadIndexComponent(
     init {
         componentScope.launch {
             _model.update { it.copy(currentRef = ref) }
+
+            sharedState.model.subscribe { model ->
+                if (model.phraseUpdated) {
+                    loadChapterPhrases()
+                    sharedState.updatePhraseUpdated(false)
+                }
+            }
         }
     }
 
@@ -112,6 +122,14 @@ class DefaultReadIndexComponent(
 
     override fun clearRef() {
         _model.update { it.copy(currentRef = null) }
+    }
+
+    override fun reloadChapter() {
+        model.value.activeBook?.let { workbook ->
+            model.value.activeChapter?.let { chapter ->
+                navigateBookChapter(workbook.slug, chapter.number)
+            }
+        }
     }
 
     override fun onPhraseSelected(phrase: String) {
