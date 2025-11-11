@@ -17,6 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -40,12 +42,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import dev.burnoo.compose.remembersetting.rememberIntSetting
+import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.add_glossary
+import glossary.composeapp.generated.resources.add_glossary_key_terms
+import glossary.composeapp.generated.resources.create_glossary
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.glossary_code
 import glossary.composeapp.generated.resources.key_terms
+import glossary.composeapp.generated.resources.key_terms_unavailable
 import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.search
+import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
@@ -79,11 +88,22 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
     val selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
     val unselectedColor = MaterialTheme.colorScheme.outlineVariant
 
+    var activeBookSlug by rememberStringSetting(
+        Settings.BOOK,
+        "mat"
+    )
+    var activeChapterNum by rememberIntSetting(
+        Settings.CHAPTER,
+        1
+    )
+
     LaunchedEffect(glossaryState.glossary) {
-        glossaryState.glossary?.let {
-            component.loadPhrases(it)
-        } ?: run {
-            component.navigateImportGlossary()
+        glossaryState.glossary?.let { glossary ->
+            component.initialize(
+                glossary,
+                activeBookSlug,
+                activeChapterNum
+            )
         }
     }
 
@@ -253,36 +273,82 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                                 )
                             }
                         }
+                    } ?: run {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(
+                                space = 8.dp,
+                                alignment = Alignment.CenterVertically
+                            ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.weight(1f)
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.key_terms_unavailable),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp
+                            )
+
+                            Text(
+                                text = stringResource(Res.string.add_glossary_key_terms),
+                                fontSize = 16.sp
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Button(
+                                onClick = component::navigateImportGlossary,
+                                shape = MaterialTheme.shapes.medium,
+                                modifier = Modifier.fillMaxWidth()
+                                    .height(48.dp)
+                            ) {
+                                Text(stringResource(Res.string.add_glossary))
+                            }
+
+                            ElevatedButton(
+                                onClick = component::navigateCreateGlossary,
+                                shape = MaterialTheme.shapes.medium,
+                                colors = ButtonDefaults.elevatedButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                                    .height(48.dp)
+                            ) {
+                                Text(stringResource(Res.string.create_glossary))
+                            }
+                        }
                     }
                 }
 
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .align(Alignment.BottomCenter)
-                ) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                    Row(
+                if (glossaryState.glossary != null) {
+                    Column(
                         modifier = Modifier.fillMaxWidth()
-                            .padding(16.dp)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .align(Alignment.BottomCenter)
                     ) {
-                        Button(
-                            onClick = component::navigateSearchPhrases,
-                            shape = MaterialTheme.shapes.medium,
+                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+                        Row(
                             modifier = Modifier.fillMaxWidth()
+                                .padding(16.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = "add new word",
-                                tint = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = stringResource(Res.string.create_new_phrase),
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
+                            Button(
+                                onClick = component::navigateSearchPhrases,
+                                shape = MaterialTheme.shapes.medium,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "add new word",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(Res.string.create_new_phrase),
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
                         }
                     }
                 }

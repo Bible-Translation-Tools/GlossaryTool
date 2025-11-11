@@ -9,9 +9,7 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackCallback
 import kotlinx.serialization.Serializable
-import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Ref
-import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.main.KeyTermsIntent
@@ -34,7 +32,9 @@ class DefaultKeyTermsComponent(
     private val parentContext: ParentContext,
     intent: KeyTermsIntent,
     private val sharedState: MainStateKeeper,
-    private val onFullscreen: (Boolean) -> Unit
+    private val onFullscreen: (Boolean) -> Unit,
+    private val onNavigateImportGlossary: () -> Unit,
+    private val onNavigateCreateGlossary: () -> Unit
 ) : KeyTermsComponent, ComponentContext by componentContext {
     private val navigation = StackNavigation<Config>()
 
@@ -43,7 +43,7 @@ class DefaultKeyTermsComponent(
             source = navigation,
             serializer = Config.serializer(),
             initialConfiguration = when (intent) {
-                is KeyTermsIntent.Index -> Config.Index(intent.book, intent.chapter)
+                is KeyTermsIntent.Index -> Config.Index
                 is KeyTermsIntent.ViewPhrase -> Config.ViewPhrase(intent.phraseId)
                 is KeyTermsIntent.EditPhrase -> Config.EditPhrase(intent.phrase)
             },
@@ -68,11 +68,11 @@ class DefaultKeyTermsComponent(
                 DefaultKeyTermsIndexComponent(
                     componentContext = context,
                     parentContext = this,
-                    book = config.book,
-                    chapter = config.chapter,
                     onNavigateImportGlossary = {
+                        onNavigateImportGlossary()
                     },
-                    onNavigateGlossaryList = {
+                    onNavigateCreateGlossary = {
+                        onNavigateCreateGlossary()
                     },
                     onNavigateSearchPhrases = {
                         navigation.bringToFront(Config.CreatePhrase)
@@ -147,7 +147,7 @@ class DefaultKeyTermsComponent(
     @Serializable
     private sealed interface Config {
         @Serializable
-        data class Index(val book: Workbook, val chapter: Chapter) : Config
+        data object Index : Config
         @Serializable
         data class ViewPhrase(val phraseId: String) : Config
         @Serializable

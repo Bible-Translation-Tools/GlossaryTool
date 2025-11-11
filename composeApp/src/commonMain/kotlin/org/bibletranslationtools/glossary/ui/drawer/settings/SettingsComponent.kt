@@ -15,6 +15,7 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
+import org.bibletranslationtools.glossary.ui.main.SettingsIntent
 
 interface SettingsComponent: DrawerContext {
     val childStack: Value<ChildStack<*, Child>>
@@ -31,9 +32,11 @@ interface SettingsComponent: DrawerContext {
 class DefaultSettingsComponent(
     componentContext: ComponentContext,
     private val parentContext: ParentContext,
+    intent: SettingsIntent,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
-    private val onFullscreen: (Boolean) -> Unit
+    private val onFullscreen: (Boolean) -> Unit,
+    private val onImportFinished: () -> Unit
 ) : SettingsComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -43,7 +46,11 @@ class DefaultSettingsComponent(
         childStack(
             source = navigation,
             serializer = Config.serializer(),
-            initialConfiguration = Config.Index,
+            initialConfiguration = when (intent) {
+                SettingsIntent.Index -> Config.Index
+                SettingsIntent.ImportGlossary -> Config.ImportGlossary
+                SettingsIntent.CreateGlossary -> Config.CreateGlossary
+            },
             handleBackButton = false,
             childFactory = ::createChild
         )
@@ -105,6 +112,9 @@ class DefaultSettingsComponent(
                     onNavigateImportGlossary = {
                         navigation.bringToFront(Config.ImportGlossary)
                     },
+                    onNavigateCreateGlossary = {
+                        navigation.bringToFront(Config.CreateGlossary)
+                    },
                     onSelectResource = onSelectResource,
                     onSelectGlossary = onSelectGlossary
                 )
@@ -115,9 +125,7 @@ class DefaultSettingsComponent(
                     parentContext = this,
                     onSelectResource = onSelectResource,
                     onSelectGlossary = onSelectGlossary,
-                    onImportFinished = {
-                        navigation.bringToFront(Config.Index)
-                    }
+                    onImportFinished = { onImportFinished() }
                 )
             )
         }

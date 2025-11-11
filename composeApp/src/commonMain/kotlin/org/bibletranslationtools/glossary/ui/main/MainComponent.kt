@@ -16,12 +16,15 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.backhandler.BackCallback
 import com.arkivanov.essenty.instancekeeper.getOrCreate
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Resource
-import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.DefaultKeyTermsComponent
@@ -45,7 +48,7 @@ sealed class ReadIntent {
 @Serializable
 sealed class KeyTermsIntent {
     @Serializable
-    data class Index(val book: Workbook, val chapter: Chapter) : KeyTermsIntent()
+    data object Index : KeyTermsIntent()
     @Serializable
     data class ViewPhrase(val phraseId: String) : KeyTermsIntent()
     @Serializable
@@ -53,9 +56,19 @@ sealed class KeyTermsIntent {
 }
 
 @Serializable
+sealed class SettingsIntent {
+    @Serializable
+    data object Index : SettingsIntent()
+    @Serializable
+    data object ImportGlossary : SettingsIntent()
+    @Serializable
+    data object CreateGlossary : SettingsIntent()
+}
+
+@Serializable
 sealed interface DrawerConfig {
     @Serializable
-    data object Settings : DrawerConfig
+    data class Settings(val intent: SettingsIntent) : DrawerConfig
     @Serializable
     data class KeyTerms(val intent: KeyTermsIntent) : DrawerConfig
 }
@@ -87,7 +100,6 @@ class DefaultMainComponent(
 ) : MainComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
-
     private val mainState = instanceKeeper.getOrCreate { MainStateKeeper() }
 
     private val _model = MutableValue(MainComponent.Model())
@@ -105,6 +117,7 @@ class DefaultMainComponent(
         )
 
     private val backCallback = BackCallback(onBack = ::onNavigateBack, isEnabled = false)
+    private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     private val drawerNavigation = SlotNavigation<DrawerConfig>()
 
@@ -139,8 +152,7 @@ class DefaultMainComponent(
             is Config.Resources -> MainComponent.Child.Resources(
                 DefaultResourcesComponent(
                     componentContext = context,
-                    parentContext = this,
-                    onShowSettingsDrawer = ::showSettingsDrawer
+                    parentContext = this
                 )
             )
         }
@@ -153,16 +165,15 @@ class DefaultMainComponent(
         showSettingsDrawer()
     }
 
-    override fun openKeyTerms(book: Workbook, chapter: Chapter) {
-        showKeyTermsDrawer(book, chapter)
+    override fun openKeyTerms() {
+        showKeyTermsDrawer()
     }
 
-    fun showSettingsDrawer() {
-        drawerNavigation.activate(DrawerConfig.Settings)
+    private fun showSettingsDrawer(intent: SettingsIntent = SettingsIntent.Index) {
+        drawerNavigation.activate(DrawerConfig.Settings(intent))
     }
 
-    fun showKeyTermsDrawer(book: Workbook, chapter: Chapter) {
-        val intent = KeyTermsIntent.Index(book, chapter)
+    private fun showKeyTermsDrawer(intent: KeyTermsIntent = KeyTermsIntent.Index) {
         drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
     }
 
@@ -206,6 +217,12 @@ class DefaultMainComponent(
     private fun selectActiveGlossary(glossary: Glossary) {
         _model.update { it.copy(activeGlossary = glossary) }
         appStateStore.glossaryStateHolder.updateGlossary(glossary)
+
+        componentScope.launch {
+            dismissDrawer()
+            delay(500)
+            openKeyTerms()
+        }
     }
 
     private fun createDrawerComponent(
@@ -216,16 +233,38 @@ class DefaultMainComponent(
             is DrawerConfig.Settings -> DefaultSettingsComponent(
                 componentContext = context,
                 parentContext = this,
+                intent = config.intent,
                 onSelectResource = ::selectActiveResource,
                 onSelectGlossary = ::selectActiveGlossary,
-                onFullscreen = ::setFullscreenDrawer
+                onFullscreen = ::setFullscreenDrawer,
+                onImportFinished = {
+                    componentScope.launch {
+                        dismissDrawer()
+                        delay(500)
+                        showKeyTermsDrawer()
+                    }
+                }
             )
             is DrawerConfig.KeyTerms -> DefaultKeyTermsComponent(
                 componentContext = context,
                 parentContext = this,
                 intent = config.intent,
                 sharedState = mainState,
-                onFullscreen = ::setFullscreenDrawer
+                onFullscreen = ::setFullscreenDrawer,
+                onNavigateImportGlossary = {
+                    componentScope.launch {
+                        dismissDrawer()
+                        delay(300)
+                        showSettingsDrawer(SettingsIntent.ImportGlossary)
+                    }
+                },
+                onNavigateCreateGlossary = {
+                    componentScope.launch {
+                        dismissDrawer()
+                        delay(300)
+                        showSettingsDrawer(SettingsIntent.CreateGlossary)
+                    }
+                }
             )
         }
     }

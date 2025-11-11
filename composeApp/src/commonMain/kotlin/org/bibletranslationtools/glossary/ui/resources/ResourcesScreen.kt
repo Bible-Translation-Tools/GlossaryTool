@@ -1,7 +1,6 @@
 package org.bibletranslationtools.glossary.ui.resources
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,10 +26,7 @@ fun ResourcesScreen(component: ResourcesComponent) {
             modifier = Modifier.fillMaxSize()
         ) {
             Text(
-                text = "Resources Screen",
-                modifier = Modifier.clickable {
-                    component.showSettingsDrawer()
-                }
+                text = "Resources Screen"
             )
         }
     }

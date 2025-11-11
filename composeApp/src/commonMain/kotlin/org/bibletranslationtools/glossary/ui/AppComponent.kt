@@ -1,14 +1,12 @@
 package org.bibletranslationtools.glossary.ui
 
 import com.arkivanov.decompose.ComponentContext
-import org.bibletranslationtools.glossary.data.Chapter
-import org.bibletranslationtools.glossary.data.Workbook
 
 interface ParentContext {
     fun onBackClick()
     fun dismissDrawer()
     fun openSettings()
-    fun openKeyTerms(book: Workbook, chapter: Chapter)
+    fun openKeyTerms()
 }
 
 abstract class AppComponent(
@@ -28,7 +26,7 @@ abstract class AppComponent(
         parentContext.openSettings()
     }
 
-    override fun openKeyTerms(book: Workbook, chapter: Chapter) {
-        parentContext.openKeyTerms(book, chapter)
+    override fun openKeyTerms() {
+        parentContext.openKeyTerms()
     }
 }

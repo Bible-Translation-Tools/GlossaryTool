@@ -37,6 +37,7 @@ interface GlossaryListComponent : DrawerContext {
     )
     fun selectGlossary(glossary: GlossaryItem)
     fun navigateImportGlossary()
+    fun navigateCreateGlossary()
     fun saveGlossary()
 }
 
@@ -44,6 +45,7 @@ class DefaultGlossaryListComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
     private val onNavigateImportGlossary: () -> Unit,
+    private val onNavigateCreateGlossary: () -> Unit,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit
 ) : DrawerComponent(componentContext, parentContext), GlossaryListComponent, KoinComponent {
@@ -90,6 +92,10 @@ class DefaultGlossaryListComponent(
         onNavigateImportGlossary()
     }
 
+    override fun navigateCreateGlossary() {
+        onNavigateCreateGlossary()
+    }
+
     override fun saveGlossary() {
         componentScope.launch {
             val glossary = _model.value.selectedGlossary?.glossary ?: return@launch
@@ -97,7 +103,6 @@ class DefaultGlossaryListComponent(
 
             onSelectResource(resource)
             onSelectGlossary(glossary)
-            navigateBack()
         }
     }
 

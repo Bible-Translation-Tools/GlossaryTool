@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.downloading_glossary
 import glossary.composeapp.generated.resources.importing_glossary
@@ -45,7 +46,7 @@ interface ImportGlossaryComponent : DrawerContext {
 
 class DefaultImportGlossaryComponent(
     componentContext: ComponentContext,
-    private val parentContext: DrawerContext,
+    parentContext: DrawerContext,
     private val onSelectGlossary: (glossary: Glossary) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onImportFinished: () -> Unit
@@ -59,6 +60,12 @@ class DefaultImportGlossaryComponent(
     override val model: Value<ImportGlossaryComponent.Model> = _model
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    init {
+        doOnResume {
+            setFullscreen(true)
+        }
+    }
 
     override fun onOtpAction(action: OtpAction) {
         val currentModel = _model.value

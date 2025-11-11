@@ -48,7 +48,7 @@
     <string name="share_code_hint">Share this code with anyone you want to share this glossary with.</string>
     <string name="source_language">Source Language</string>
     <string name="target_language">Target Language</string>
-    <string name="create_glossary">Create Glossary</string>
+    <string name="create_glossary">Create New Glossary</string>
     <string name="required">* Required</string>
     <string name="create_glossary_error">Could not create glossary</string>
     <string name="available_glossaries">Available Glossaries</string>
@@ -79,5 +79,9 @@
     <string name="read_more">Read More</string>
     <string name="reference_not_found">Reference text not found</string>
     <string name="key_terms">Key Terms</string>
+    <string name="key_terms_unavailable">Key Terms Unavailable</string>
+    <string name="glossaries_unavailable">Glossaries Unavailable</string>
+    <string name="add_glossary_key_terms">Add a glossary to view key terms</string>
+    <string name="add_create_glossary">Add or Create a glossary</string>
     <string name="source_text">Source Text</string>
 </resources>

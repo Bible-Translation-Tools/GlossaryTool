@@ -4,6 +4,7 @@ import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.exporting_glossary
 import glossary.composeapp.generated.resources.source_text
@@ -16,11 +17,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
-import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
@@ -49,9 +48,9 @@ interface KeyTermsIndexComponent : DrawerContext {
         val progress: Progress? = null
     )
 
-    fun loadPhrases(glossary: Glossary)
+    fun initialize(glossary: Glossary, book: String, chapter: Int)
     fun navigateImportGlossary()
-    fun navigateGlossaryList()
+    fun navigateCreateGlossary()
     fun navigateSearchPhrases()
     fun navigateViewPhrase(phraseId: String)
     fun onExportGlossaryClicked(glossary: Glossary, file: PlatformFile)
@@ -61,10 +60,8 @@ interface KeyTermsIndexComponent : DrawerContext {
 class DefaultKeyTermsIndexComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
-    private val book: Workbook,
-    private val chapter: Chapter,
     private val onNavigateImportGlossary: () -> Unit,
-    private val onNavigateGlossaryList: () -> Unit,
+    private val onNavigateCreateGlossary: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
     private val onNavigateViewPhrase: (phraseId: String) -> Unit
 ) : DrawerComponent(componentContext, parentContext), KeyTermsIndexComponent, KoinComponent {
@@ -79,7 +76,13 @@ class DefaultKeyTermsIndexComponent(
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    override fun loadPhrases(glossary: Glossary) {
+    init {
+        doOnResume {
+            setFullscreen(false)
+        }
+    }
+
+    override fun initialize(glossary: Glossary, book: String, chapter: Int) {
         componentScope.launch {
             _model.update { it.copy(isLoading = true) }
 
@@ -89,13 +92,12 @@ class DefaultKeyTermsIndexComponent(
             val chapterPhrases = allPhrases.filter { phrase ->
                 val relevantRef = glossaryRepository.getRefs(phrase.id)
                     .find { ref ->
-                        ref.book == book.slug
-                                && ref.chapter == chapter.number.toString()
+                        ref.book == book && ref.chapter == chapter.toString()
                     }
                 relevantRef != null
             }
 
-            val chapterLabel = "${book.title} ${chapter.number}"
+            val chapterLabel = "${book.uppercase()} $chapter"
             val options = listOf(
                 KeyTermsFilter.Chapter(chapterLabel),
                 KeyTermsFilter.SourceText(getString(Res.string.source_text))
@@ -116,8 +118,8 @@ class DefaultKeyTermsIndexComponent(
         onNavigateImportGlossary()
     }
 
-    override fun navigateGlossaryList() {
-        onNavigateGlossaryList()
+    override fun navigateCreateGlossary() {
+        onNavigateCreateGlossary()
     }
 
     override fun navigateSearchPhrases() {

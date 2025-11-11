@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,12 +24,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.add_create_glossary
 import glossary.composeapp.generated.resources.add_glossary
 import glossary.composeapp.generated.resources.available_glossaries
+import glossary.composeapp.generated.resources.create_glossary
+import glossary.composeapp.generated.resources.glossaries_unavailable
 import glossary.composeapp.generated.resources.save_exit
 import org.bibletranslationtools.glossary.ui.components.GlossaryItem
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
@@ -66,49 +73,87 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
                     modifier = Modifier.fillMaxWidth()
                         .padding(16.dp)
                 ) {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(16.dp),
-                        contentPadding = PaddingValues(bottom = 2.dp),
-                        state = scrollState,
-                        modifier = Modifier.heightIn(max = 412.dp)
-                    ) {
-                        items(model.glossaries) { item ->
-                            GlossaryItem(
-                                item = item,
-                                isSelected = model.selectedGlossary == item,
-                                onSelected = { component.selectGlossary(item) },
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                    if (model.glossaries.isNotEmpty()) {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(bottom = 2.dp),
+                            state = scrollState,
+                            modifier = Modifier.heightIn(max = 412.dp)
+                        ) {
+                            items(model.glossaries) { item ->
+                                GlossaryItem(
+                                    item = item,
+                                    isSelected = model.selectedGlossary == item,
+                                    onSelected = { component.selectGlossary(item) },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                         }
-                    }
 
-                    Button(
-                        onClick = {
-                            component.saveGlossary()
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.fillMaxWidth()
-                            .height(48.dp)
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.save_exit)
-                        )
-                    }
+                        Button(
+                            onClick = component::saveGlossary,
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier.fillMaxWidth()
+                                .height(48.dp)
+                        ) {
+                            Text(stringResource(Res.string.save_exit))
+                        }
 
-                    ElevatedButton(
-                        onClick = {
-                            component.navigateImportGlossary()
-                        },
-                        shape = MaterialTheme.shapes.medium,
-                        colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        ),
-                        modifier = Modifier.fillMaxWidth()
-                            .height(48.dp)
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.add_glossary)
-                        )
+                        ElevatedButton(
+                            onClick = component::navigateImportGlossary,
+                            shape = MaterialTheme.shapes.medium,
+                            colors = ButtonDefaults.elevatedButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            ),
+                            modifier = Modifier.fillMaxWidth()
+                                .height(48.dp)
+                        ) {
+                            Text(stringResource(Res.string.add_glossary))
+                        }
+                    } else {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(
+                                space = 8.dp,
+                                alignment = Alignment.CenterVertically
+                            ),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.weight(1f)
+                                .fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.glossaries_unavailable),
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 24.sp
+                            )
+
+                            Text(
+                                text = stringResource(Res.string.add_create_glossary),
+                                fontSize = 16.sp
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Button(
+                                onClick = component::navigateImportGlossary,
+                                shape = MaterialTheme.shapes.medium,
+                                modifier = Modifier.fillMaxWidth()
+                                    .height(48.dp)
+                            ) {
+                                Text(stringResource(Res.string.add_glossary))
+                            }
+
+                            ElevatedButton(
+                                onClick = component::navigateCreateGlossary,
+                                shape = MaterialTheme.shapes.medium,
+                                colors = ButtonDefaults.elevatedButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                                    .height(48.dp)
+                            ) {
+                                Text(stringResource(Res.string.create_glossary))
+                            }
+                        }
                     }
                 }
             }
