@@ -39,13 +39,16 @@ fun OtpInputField(
     onCharChanged: (String) -> Unit,
     onKeyboardBack: () -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    isError: Boolean = false
 ) {
     var isFocused by remember { mutableStateOf(false) }
 
-    val borderColor = if (isFocused) {
-        MaterialTheme.colorScheme.primary
-    } else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+    val borderColor = when {
+        isFocused -> MaterialTheme.colorScheme.primary
+        isError -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.outlineVariant
+    }
     val borderSize = if (isFocused) 2.dp else 1.dp
 
     Box(
@@ -64,9 +67,17 @@ fun OtpInputField(
         BasicTextField(
             value = char?.uppercase() ?: "",
             onValueChange = { newText ->
-                if (newText.length <= 1) {
-                    if (newText.isNotEmpty()) {
+                when {
+                    newText.isEmpty() -> { }
+                    newText.length == 1 -> {
                         onCharChanged(newText.uppercase())
+                    }
+                    newText.length > 1 -> {
+                        val oldChar = char ?: ""
+                        val newChar = newText.replace(oldChar, "")
+                        if (newChar.isNotEmpty()) {
+                            onCharChanged(newChar.last().toString().uppercase())
+                        }
                     }
                 }
             },

@@ -84,4 +84,5 @@
     <string name="add_glossary_key_terms">Add a glossary to view key terms</string>
     <string name="add_create_glossary">Add or Create a glossary</string>
     <string name="source_text">Source Text</string>
+    <string name="glossary_code_not_recognized">Your code was not recognized.</string>
 </resources>

@@ -21,7 +21,8 @@ fun OtpInput(
     focusRequesters: List<FocusRequester>,
     onAction: (OtpAction) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    isError: Boolean = false
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -32,6 +33,7 @@ fun OtpInput(
             OtpInputField(
                 char = char,
                 enabled = enabled,
+                isError = isError,
                 focusRequester = focusRequesters[index],
                 onFocusChanged = { isFocused ->
                     if (isFocused) {

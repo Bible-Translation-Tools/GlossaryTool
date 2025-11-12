@@ -36,7 +36,8 @@ interface ImportGlossaryComponent : DrawerContext {
         val isLoading: Boolean = false,
         val otpCode: List<String?> = (1..5).map { null },
         val focusedIndex: Int? = null,
-        val progress: Progress? = null
+        val progress: Progress? = null,
+        val error: String? = null
     )
 
     fun onOtpAction(action: OtpAction)
@@ -64,6 +65,7 @@ class DefaultImportGlossaryComponent(
     init {
         doOnResume {
             setFullscreen(true)
+            _model.update { it.copy(error = null) }
         }
     }
 
@@ -122,7 +124,9 @@ class DefaultImportGlossaryComponent(
                     value = -1f,
                     message = getString(Res.string.downloading_glossary)
                 )
-                _model.update { it.copy(progress = progress) }
+                _model.update {
+                    it.copy(progress = progress, error = null)
+                }
 
                 val code = model.value.otpCode.joinToString("")
 
@@ -136,6 +140,7 @@ class DefaultImportGlossaryComponent(
                             importGlossary(PlatformFile(target))
                         } else null
                     } else {
+                        _model.update { it.copy(error = result.toString()) }
                         println(result)
                         null
                     }

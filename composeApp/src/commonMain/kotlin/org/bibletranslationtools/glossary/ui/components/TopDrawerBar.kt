@@ -20,10 +20,11 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun TopDrawerBar(
     title: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     subTitle: String? = null,
     onBackClick: (() -> Unit)? = null,
-    onDismiss: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
+    onDismiss: (() -> Unit)? = null
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -34,7 +35,10 @@ fun TopDrawerBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             onBackClick?.let {
-                IconButton(onClick = it) {
+                IconButton(
+                    onClick = it,
+                    enabled = enabled
+                ) {
                     Icon(
                         imageVector = Icons.Default.West,
                         contentDescription = "Back"

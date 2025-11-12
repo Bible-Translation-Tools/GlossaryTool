@@ -32,6 +32,7 @@ import glossary.composeapp.generated.resources.back
 import glossary.composeapp.generated.resources.download
 import glossary.composeapp.generated.resources.downloading_glossary
 import glossary.composeapp.generated.resources.downloading_glossary_hint
+import glossary.composeapp.generated.resources.glossary_code_not_recognized
 import glossary.composeapp.generated.resources.import_glossary_hint
 import glossary.composeapp.generated.resources.import_glossary_manually
 import glossary.composeapp.generated.resources.import_glossary_title
@@ -61,6 +62,7 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
         TopDrawerBar(
             title = stringResource(Res.string.back),
             subTitle = "",
+            enabled = model.progress == null,
             onBackClick = component::navigateBack,
             modifier = Modifier.fillMaxWidth()
         )
@@ -98,8 +100,21 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
                             code = model.otpCode,
                             focusRequesters = focusRequesters,
                             onAction = { component.onOtpAction(it) },
+                            isError = model.error != null,
                             modifier = Modifier.fillMaxWidth()
                         )
+
+                        if (model.error != null) {
+                            Spacer(modifier = Modifier.height(32.dp))
+
+                            Text(
+                                text = stringResource(Res.string.glossary_code_not_recognized),
+                                color = MaterialTheme.colorScheme.error,
+                                fontSize = 16.sp,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(32.dp))
 
