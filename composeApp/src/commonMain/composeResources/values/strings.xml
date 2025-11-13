@@ -101,4 +101,6 @@
     <string name="glossary_update_failed">Glossary Update Failed</string>
     <string name="glossary_update_failed_description">The glossary failed to download.</string>
     <string name="try_again">Please try again</string>
+    <string name="share">Share</string>
+    <string name="select">Select</string>
 </resources>

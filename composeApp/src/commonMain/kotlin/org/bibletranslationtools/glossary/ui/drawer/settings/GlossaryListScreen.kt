@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -36,9 +37,11 @@ import glossary.composeapp.generated.resources.add_glossary
 import glossary.composeapp.generated.resources.available_glossaries
 import glossary.composeapp.generated.resources.create_glossary
 import glossary.composeapp.generated.resources.glossaries_unavailable
-import glossary.composeapp.generated.resources.save_exit
+import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.ui.components.GlossaryItem
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
+import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -47,6 +50,9 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
 
     var isLoaded by remember { mutableStateOf(false) }
     val scrollState = rememberLazyListState()
+
+    val coroutineScope = rememberCoroutineScope()
+    val snackBar = LocalSnackBarHostState.current
 
     LaunchedEffect(model.selectedGlossary) {
         if (model.selectedGlossary != null && !isLoaded) {
@@ -84,31 +90,13 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
                                 GlossaryItem(
                                     item = item,
                                     isSelected = model.selectedGlossary == item,
+                                    isActive = model.activeGlossary == item,
                                     onSelected = { component.selectGlossary(item) },
+                                    onSelectedSave = component::saveGlossary,
+                                    onShare = component::uploadGlossary,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
-                        }
-
-                        Button(
-                            onClick = component::saveGlossary,
-                            shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.fillMaxWidth()
-                                .height(48.dp)
-                        ) {
-                            Text(stringResource(Res.string.save_exit))
-                        }
-
-                        ElevatedButton(
-                            onClick = component::navigateImportGlossary,
-                            shape = MaterialTheme.shapes.medium,
-                            colors = ButtonDefaults.elevatedButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                            ),
-                            modifier = Modifier.fillMaxWidth()
-                                .height(48.dp)
-                        ) {
-                            Text(stringResource(Res.string.add_glossary))
                         }
                     } else {
                         Column(
@@ -157,6 +145,17 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
                     }
                 }
             }
+        }
+    }
+
+    model.progress?.let { progress ->
+        ProgressDialog(progress)
+    }
+
+    model.snackBarMessage?.let { message ->
+        coroutineScope.launch {
+            component.clearSnackBarMessage()
+            snackBar?.showSnackbar(message)
         }
     }
 }
