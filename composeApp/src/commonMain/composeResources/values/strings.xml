@@ -57,7 +57,9 @@
     <string name="ok">OK</string>
     <string name="back">Back</string>
     <string name="download">Download</string>
-    <string name="downloading">Downloading... Please wait.</string>
+    <string name="download_now">Download Now</string>
+    <string name="downloading">Downloading...</string>
+    <string name="downloading_wait">Downloading... Please wait.</string>
     <string name="download_resource_request">In order to use this glossary, you need to download the resource for it. Would you like to download it now?</string>
     <string name="resource_not_found">Resource not found</string>
     <string name="unknown_error">Unknown error occurred</string>
@@ -65,6 +67,8 @@
     <string name="upload_glossary">Upload Glossary</string>
     <string name="exporting_glossary">Exporting Glossary...</string>
     <string name="uploading_glossary">Uploading Glossary...</string>
+    <string name="glossary_uploaded_successfully">Glossary uploaded successfully</string>
+    <string name="glossary_upload_failed">Glossary upload failed</string>
     <string name="import_glossary">Import Glossary</string>
     <string name="import_glossary_title">Let's Get Your Glossary Ready</string>
     <string name="import_glossary_hint">Enter the 5-digit code from your team. This will download the glossary so you can use it right away.</string>
@@ -85,4 +89,16 @@
     <string name="add_create_glossary">Add or Create a glossary</string>
     <string name="source_text">Source Text</string>
     <string name="glossary_code_not_recognized">Your code was not recognized.</string>
+    <string name="checking_for_updates">Checking for updates...</string>
+    <string name="no_updates_found">No updates found</string>
+    <string name="updates_found">Glossaries with updates: %1$s</string>
+    <string name="update_available">An Update is Available</string>
+    <string name="update_available_description">There are new or modified phrases in this glossary.</string>
+    <string name="error_checking_updates">There was an error checking for updates</string>
+    <string name="this_make_take_moment">This may take a moment.</string>
+    <string name="glossary_updated">Glossary Updated</string>
+    <string name="glossary_updated_description">The glossary has been successfully updated</string>
+    <string name="glossary_update_failed">Glossary Update Failed</string>
+    <string name="glossary_update_failed_description">The glossary failed to download.</string>
+    <string name="try_again">Please try again</string>
 </resources>

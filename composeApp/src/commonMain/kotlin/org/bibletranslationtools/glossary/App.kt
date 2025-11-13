@@ -1,12 +1,9 @@
 package org.bibletranslationtools.glossary
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.slide
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
@@ -21,7 +18,6 @@ import org.bibletranslationtools.glossary.ui.LightColorScheme
 import org.bibletranslationtools.glossary.ui.MainAppTheme
 import org.bibletranslationtools.glossary.ui.RootComponent
 import org.bibletranslationtools.glossary.ui.main.MainScreen
-import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.splash.SplashScreen
 
 @Composable
@@ -38,19 +34,15 @@ fun App(root: RootComponent) {
     val locale by rememberStringSetting(Settings.LOCALE, Locales.EN)
     applyLocale(locale.lowercase())
 
-    val snackBarHostState = remember { SnackbarHostState() }
-
     MainAppTheme(colorScheme) {
-        CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
-            Surface {
-                Children(
-                    stack = root.stack,
-                    animation = stackAnimation(slide())
-                ) {
-                    when (val child = it.instance) {
-                        is RootComponent.Child.Splash -> SplashScreen(child.component)
-                        is RootComponent.Child.Main -> MainScreen(child.component)
-                    }
+        Surface {
+            Children(
+                stack = root.stack,
+                animation = stackAnimation(slide())
+            ) {
+                when (val child = it.instance) {
+                    is RootComponent.Child.Splash -> SplashScreen(child.component)
+                    is RootComponent.Child.Main -> MainScreen(child.component)
                 }
             }
         }

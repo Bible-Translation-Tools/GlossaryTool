@@ -214,14 +214,16 @@ class DefaultMainComponent(
         appStateStore.resourceStateHolder.updateResource(resource)
     }
 
-    private fun selectActiveGlossary(glossary: Glossary) {
+    private fun selectActiveGlossary(glossary: Glossary, openKeyTerms: Boolean = false) {
         _model.update { it.copy(activeGlossary = glossary) }
         appStateStore.glossaryStateHolder.updateGlossary(glossary)
 
         componentScope.launch {
-            dismissDrawer()
-            delay(500)
-            openKeyTerms()
+            if (openKeyTerms) {
+                dismissDrawer()
+                delay(500)
+                openKeyTerms()
+            }
         }
     }
 
@@ -264,7 +266,9 @@ class DefaultMainComponent(
                         delay(300)
                         showSettingsDrawer(SettingsIntent.CreateGlossary)
                     }
-                }
+                },
+                onSelectResource = ::selectActiveResource,
+                onSelectGlossary = ::selectActiveGlossary
             )
         }
     }

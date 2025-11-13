@@ -18,11 +18,13 @@ import {
   inArray,
   max,
   min,
+  or,
 } from "drizzle-orm";
 import { unzipSync, zipSync } from "fflate";
 import { load as parseYaml, dump as stringifyYaml } from "js-yaml";
-import { Glossary } from "./glossary.types";
+import { Glossary, GlossaryUpdate } from "./glossary.types";
 import { Manifest } from "./resource.types";
+import { version } from "uuid";
 
 interface AppVariables {
   db: DbHelper;
@@ -141,6 +143,7 @@ app.post("/api/glossary", async (c) => {
         },
       })
       .returning({ id: glossaryTable.id });
+
     const glossaryId = insertGlossary[0].id;
 
     for (const phrase of glossary!.phrases) {
@@ -176,7 +179,18 @@ app.post("/api/glossary", async (c) => {
         });
     }
 
-    return c.json(true);
+    const updated = await dbHelper
+      .getDb()
+      .query.glossaryTable.findFirst({
+        where: eq(glossaryTable.id, glossaryId),
+      })
+      .execute();
+
+    if (!updated) {
+      return c.json({ error: "Could not find glossary" }, 404);
+    }
+
+    return c.json(updated.version);
   } catch (error) {
     return c.json(
       { error: "Failed to process raw zip file.", details: error },
@@ -238,6 +252,45 @@ app.get("/api/glossary/:code", async (c) => {
   } catch (error) {
     return c.json(
       { error: "Failed to process raw zip file.", details: error },
+      500
+    );
+  }
+});
+
+app.post("/api/glossary/check_updates", async (c) => {
+  const dbHelper = c.get("db");
+  const glossaries = await c.req.json<GlossaryUpdate[]>();
+
+  if (glossaries.length === 0) return c.json([], 200);
+
+  const conditions = glossaries.map((item) =>
+    and(eq(glossaryTable.id, item.id), gt(glossaryTable.version, item.version))
+  );
+  const combinedQuery = or(...conditions);
+
+  try {
+    const dbResult = await dbHelper
+      .getDb()
+      .select({
+        id: glossaryTable.id,
+        code: glossaryTable.code,
+        version: glossaryTable.version,
+        createdAt: glossaryTable.createdAt,
+        updatedAt: glossaryTable.updatedAt,
+      })
+      .from(glossaryTable)
+      .where(combinedQuery);
+
+    const updates: GlossaryUpdate[] = dbResult.map((item) => ({
+      ...item,
+      createdAt: item.createdAt.getTime(),
+      updatedAt: item.updatedAt.getTime(),
+    }));
+
+    return c.json(updates);
+  } catch (error) {
+    return c.json(
+      { error: "Failed to check for updates.", details: error },
       500
     );
   }

@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS GlossaryEntity (
     author TEXT NOT NULL,
     sourceLanguage TEXT NOT NULL,
     targetLanguage TEXT NOT NULL,
+    version INTEGER NOT NULL,
+    hasUpdate INTEGER NOT NULL DEFAULT 0,
     resourceId INTEGER NOT NULL,
     createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
@@ -19,9 +21,15 @@ SELECT * FROM GlossaryEntity;
 getByCode:
 SELECT * FROM GlossaryEntity WHERE code = :code;
 
+setVersion:
+UPDATE GlossaryEntity SET version = :version WHERE id = :id;
+
+setHasUpdate:
+UPDATE GlossaryEntity SET hasUpdate = :hasUpdate WHERE id = :id;
+
 insert:
-INSERT OR REPLACE INTO GlossaryEntity(id, code, author, sourceLanguage, targetLanguage, resourceId, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO GlossaryEntity(id, code, author, sourceLanguage, targetLanguage, version, resourceId, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 delete:
 DELETE FROM GlossaryEntity WHERE id = :id;

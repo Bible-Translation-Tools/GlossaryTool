@@ -48,12 +48,12 @@ interface ImportGlossaryComponent : DrawerContext {
 class DefaultImportGlossaryComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
-    private val onSelectGlossary: (glossary: Glossary) -> Unit,
+    private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onImportFinished: () -> Unit
 ) : DrawerComponent(componentContext, parentContext), ImportGlossaryComponent, KoinComponent {
 
-    private val importGlossary: ImportGlossary by inject()
+    private val importGlossaryUseCase: ImportGlossary by inject()
     private val glossaryApi: GlossaryApi by inject()
     private val directoryProvider: DirectoryProvider by inject()
 
@@ -82,11 +82,12 @@ class DefaultImportGlossaryComponent(
                 val newOtpCode = currentModel.otpCode.toMutableList()
                 newOtpCode[action.index] = action.char?.takeIf { it.isNotEmpty() }
 
-                val nextFocusIndex = if (action.char?.isNotEmpty() == true && action.index < newOtpCode.lastIndex) {
-                    action.index + 1
-                } else {
-                    action.index
-                }
+                val nextFocusIndex =
+                    if (action.char?.isNotEmpty() == true && action.index < newOtpCode.lastIndex) {
+                        action.index + 1
+                    } else {
+                        action.index
+                    }
 
                 _model.update {
                     it.copy(
@@ -95,6 +96,7 @@ class DefaultImportGlossaryComponent(
                     )
                 }
             }
+
             OtpAction.OnKeyboardBack -> {
                 val codeAtIndex = currentModel.otpCode.getOrNull(currentFocusIndex)
                 val newOtpCode = currentModel.otpCode.toMutableList()
@@ -137,7 +139,7 @@ class DefaultImportGlossaryComponent(
                         directoryProvider.writeFile(result.data, target)
 
                         if (SystemFileSystem.exists(target)) {
-                            importGlossary(PlatformFile(target))
+                            importGlossaryUseCase(PlatformFile(target))
                         } else null
                     } else {
                         _model.update { it.copy(error = result.toString()) }
@@ -148,7 +150,7 @@ class DefaultImportGlossaryComponent(
 
                 result?.let {
                     onSelectResource(it.resource)
-                    onSelectGlossary(it.glossary)
+                    onSelectGlossary(it.glossary, true)
                     onImportFinished()
                 }
 
@@ -166,11 +168,11 @@ class DefaultImportGlossaryComponent(
             _model.update { it.copy(progress = progress) }
 
             val result = withContext(Dispatchers.Default) {
-                importGlossary(file)
+                importGlossaryUseCase(file)
             }
 
             onSelectResource(result.resource)
-            onSelectGlossary(result.glossary)
+            onSelectGlossary(result.glossary, true)
 
             _model.update { it.copy(progress = null) }
 

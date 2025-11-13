@@ -33,10 +33,10 @@ export const resourceTable = pgTable(
     language: text("language").notNull(),
     type: text("type").notNull(),
     version: text("version").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at", { withTimezone: false })
       .notNull()
       .defaultNow(),
-    modifiedAt: timestamp("modified_at", { withTimezone: true })
+    modifiedAt: timestamp("modified_at", { withTimezone: false })
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
@@ -52,13 +52,14 @@ export const glossaryTable = pgTable(
     author: text("author").notNull(),
     sourceLanguage: text("source_language").notNull(),
     targetLanguage: text("target_language").notNull(),
+    version: integer("version").notNull().default(1),
     resourceId: integer("resource_id")
       .notNull()
       .references(() => resourceTable.id),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at", { withTimezone: false })
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
+    updatedAt: timestamp("updated_at", { withTimezone: false })
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
@@ -77,10 +78,10 @@ export const phraseTable = pgTable(
     glossaryId: text("glossary_id")
       .notNull()
       .references(() => glossaryTable.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at", { withTimezone: true })
+    createdAt: timestamp("created_at", { withTimezone: false })
       .notNull()
       .defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
+    updatedAt: timestamp("updated_at", { withTimezone: false })
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),

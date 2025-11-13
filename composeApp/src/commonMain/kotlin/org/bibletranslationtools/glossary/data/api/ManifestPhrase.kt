@@ -1,9 +1,9 @@
-package org.bibletranslationtools.glossary.data.export
+package org.bibletranslationtools.glossary.data.api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class PhraseExport(
+data class ManifestPhrase(
     val id: String,
     val phrase: String,
     val spelling: String,
@@ -11,5 +11,5 @@ internal data class PhraseExport(
     val audio: String?,
     val createdAt: String,
     val updatedAt: String,
-    val refs: List<RefExport>
+    val refs: List<ManifestRef>
 )

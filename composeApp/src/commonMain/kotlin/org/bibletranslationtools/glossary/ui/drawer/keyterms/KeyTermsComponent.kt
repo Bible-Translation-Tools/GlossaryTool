@@ -9,7 +9,9 @@ import com.arkivanov.decompose.router.stack.pop
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackCallback
 import kotlinx.serialization.Serializable
+import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Ref
+import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.main.KeyTermsIntent
@@ -34,7 +36,9 @@ class DefaultKeyTermsComponent(
     private val sharedState: MainStateKeeper,
     private val onFullscreen: (Boolean) -> Unit,
     private val onNavigateImportGlossary: () -> Unit,
-    private val onNavigateCreateGlossary: () -> Unit
+    private val onNavigateCreateGlossary: () -> Unit,
+    private val onSelectResource: (resource: Resource) -> Unit,
+    private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
 ) : KeyTermsComponent, ComponentContext by componentContext {
     private val navigation = StackNavigation<Config>()
 
@@ -79,7 +83,9 @@ class DefaultKeyTermsComponent(
                     },
                     onNavigateViewPhrase = { phraseId ->
                         navigation.bringToFront(Config.ViewPhrase(phraseId))
-                    }
+                    },
+                    onSelectResource = onSelectResource,
+                    onSelectGlossary = onSelectGlossary
                 )
             )
             is Config.ViewPhrase -> KeyTermsComponent.Child.ViewPhrase(

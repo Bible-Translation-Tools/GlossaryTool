@@ -6,6 +6,8 @@ import org.bibletranslationtools.glossary.GlossaryEntity
 interface GlossaryDataSource {
     suspend fun getAll(): List<GlossaryEntity>
     suspend fun getByCode(code: String): GlossaryEntity?
+    suspend fun setVersion(version: Long, id: String): Long
+    suspend fun setHasUpdate(hasUpdate: Boolean, id: String): Long
     suspend fun insert(glossary: GlossaryEntity): String?
     suspend fun delete(id: String)
 }
@@ -19,6 +21,14 @@ class GlossaryDataSourceImpl(db: GlossaryDatabase): GlossaryDataSource {
         return queries.getByCode(code).executeAsOneOrNull()
     }
 
+    override suspend fun setVersion(version: Long, id: String): Long {
+        return queries.setVersion(version, id).await()
+    }
+
+    override suspend fun setHasUpdate(hasUpdate: Boolean, id: String): Long {
+        return queries.setHasUpdate(if (hasUpdate) 1 else 0, id).await()
+    }
+
     override suspend fun insert(glossary: GlossaryEntity): String? {
         val result = queries.insert(
             id = glossary.id,
@@ -26,6 +36,7 @@ class GlossaryDataSourceImpl(db: GlossaryDatabase): GlossaryDataSource {
             author = glossary.author,
             sourceLanguage = glossary.sourceLanguage,
             targetLanguage = glossary.targetLanguage,
+            version = glossary.version,
             resourceId = glossary.resourceId,
             updatedAt = glossary.updatedAt
         )

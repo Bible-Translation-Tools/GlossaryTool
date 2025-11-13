@@ -10,9 +10,9 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
-import org.bibletranslationtools.glossary.data.export.GlossaryExport
-import org.bibletranslationtools.glossary.data.export.PhraseExport
-import org.bibletranslationtools.glossary.data.export.RefExport
+import org.bibletranslationtools.glossary.data.api.ManifestGlossary
+import org.bibletranslationtools.glossary.data.api.ManifestPhrase
+import org.bibletranslationtools.glossary.data.api.ManifestRef
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.extractZip
 import org.bibletranslationtools.glossary.toLocalDateTime
@@ -42,7 +42,7 @@ class ImportGlossary(
             source.readString()
         }
 
-        val glossaryDict: GlossaryExport = JsonLenient.decodeFromString(json)
+        val glossaryDict: ManifestGlossary = JsonLenient.decodeFromString(json)
 
         val resourceId = glossaryDict.resource.toString()
         val resourceFile = Path(tempDir, "$resourceId.zip")
@@ -54,13 +54,14 @@ class ImportGlossary(
         val resource = resourceContainerAccessor.read(resourceFile)?.let { resource ->
             try {
                 glossaryRepository.addResource(resource)
-            } catch (_: Exception){}
+            } catch (_: Exception) {}
             val dbResource = glossaryRepository.getResource(
                 glossaryDict.resource.language,
                 glossaryDict.resource.type
             )
             resource.copy(id = dbResource!!.id, url = dbResource.url)
         } ?: throw IllegalArgumentException("Resource is corrupted")
+
         directoryProvider.saveSource(resourceFile, "$resourceId.zip")
 
         val glossary = mapGlossary(glossaryDict, resource)
@@ -82,7 +83,7 @@ class ImportGlossary(
     }
 
     private suspend fun mapGlossary(
-        glossary: GlossaryExport,
+        glossary: ManifestGlossary,
         resource: Resource
     ): Glossary {
         val sourceLanguage = glossaryRepository.getLanguage(glossary.sourceLanguage)
@@ -102,13 +103,15 @@ class ImportGlossary(
             author = glossary.author,
             sourceLanguage = sourceLanguage,
             targetLanguage = targetLanguage,
+            version = glossary.version,
+            hasUpdate = false,
             resourceId = resource.id,
             createdAt = glossary.createdAt.toLocalDateTime(),
             updatedAt = glossary.updatedAt.toLocalDateTime(),
         )
     }
 
-    private fun mapPhrase(phrase: PhraseExport, glossaryId: String): Phrase {
+    private fun mapPhrase(phrase: ManifestPhrase, glossaryId: String): Phrase {
         return Phrase(
             id = phrase.id,
             phrase = phrase.phrase,
@@ -121,7 +124,7 @@ class ImportGlossary(
         )
     }
 
-    private fun mapRef(ref: RefExport, phraseId: String): Ref {
+    private fun mapRef(ref: ManifestRef, phraseId: String): Ref {
         return Ref(
             id = ref.id,
             book = ref.book,

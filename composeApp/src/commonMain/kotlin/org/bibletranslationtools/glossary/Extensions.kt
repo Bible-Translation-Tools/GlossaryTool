@@ -33,16 +33,11 @@ fun Long.toLocalDateTime(): LocalDateTime {
 }
 
 @OptIn(ExperimentalTime::class)
-fun LocalDateTime.toTimestamp(): Long {
-    val timeZone = TimeZone.currentSystemDefault()
-    return this.toInstant(timeZone).epochSeconds
-}
-
-@OptIn(ExperimentalTime::class)
 fun String.toLocalDateTime(): LocalDateTime {
     runCatching {
         val instant = Instant.parse(this)
-        return instant.toLocalDateTime(TimeZone.UTC)
+        val timeZone = TimeZone.currentSystemDefault()
+        return instant.toLocalDateTime(timeZone)
     }
 
     runCatching {
@@ -55,6 +50,12 @@ fun String.toLocalDateTime(): LocalDateTime {
     }
 
     return getCurrentTime()
+}
+
+@OptIn(ExperimentalTime::class)
+fun LocalDateTime.toTimestamp(): Long {
+    val timeZone = TimeZone.currentSystemDefault()
+    return this.toInstant(timeZone).epochSeconds
 }
 
 fun Modifier.positionAwareImePadding() = composed {

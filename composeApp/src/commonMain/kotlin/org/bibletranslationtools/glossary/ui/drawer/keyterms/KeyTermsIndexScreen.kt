@@ -26,12 +26,14 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,17 +51,25 @@ import glossary.composeapp.generated.resources.add_glossary
 import glossary.composeapp.generated.resources.add_glossary_key_terms
 import glossary.composeapp.generated.resources.create_glossary
 import glossary.composeapp.generated.resources.create_new_phrase
+import glossary.composeapp.generated.resources.export_glossary
 import glossary.composeapp.generated.resources.glossary_code
 import glossary.composeapp.generated.resources.key_terms
 import glossary.composeapp.generated.resources.key_terms_unavailable
 import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.search
+import glossary.composeapp.generated.resources.upload_glossary
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.openFileSaver
+import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
+import org.bibletranslationtools.glossary.ui.components.GlossaryUpdate
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
+import org.bibletranslationtools.glossary.ui.components.UpdateStatus
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
+import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -96,6 +106,13 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
         Settings.CHAPTER,
         1
     )
+
+    var glossaryUpdateStatus by remember(model.updateStatus) {
+        mutableStateOf(model.updateStatus)
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+    val snackBar = LocalSnackBarHostState.current
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let { glossary ->
@@ -147,42 +164,43 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    glossaryState.glossary?.let { glossary ->
+                    model.glossary?.let { glossary ->
+                        Spacer(modifier = Modifier.height(16.dp))
 
-//                        Spacer(modifier = Modifier.height(16.dp))
-//
-//                        Row {
-//                            TextButton(
-//                                onClick = {
-//                                    coroutineScope.launch {
-//                                        glossaryState.glossary?.let { glossary ->
-//                                            FileKit.openFileSaver(
-//                                                suggestedName = "glossary-${glossary.code}",
-//                                                extension = "zip"
-//                                            )?.let { file ->
-//                                                component.onExportGlossaryClicked(glossary, file)
-//                                            }
-//                                        }
-//                                    }
-//                                }
-//                            ) {
-//                                Text(
-//                                    text = stringResource(Res.string.export_glossary)
-//                                )
-//                            }
-//
-//                            TextButton(
-//                                onClick = {
-//                                    glossaryState.glossary?.let {
-//                                        component.onUploadGlossaryClicked(it)
-//                                    }
-//                                }
-//                            ) {
-//                                Text(
-//                                    text = stringResource(Res.string.upload_glossary)
-//                                )
-//                            }
-//                        }
+                        Row {
+                            TextButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        FileKit.openFileSaver(
+                                            suggestedName = "glossary-${glossary.code}",
+                                            extension = "zip"
+                                        )?.let { file ->
+                                            component.exportGlossary(file)
+                                        }
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.export_glossary)
+                                )
+                            }
+
+                            TextButton(
+                                onClick = component::uploadGlossary
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.upload_glossary)
+                                )
+                            }
+                        }
+
+                        if (glossary.hasUpdate || glossaryUpdateStatus != UpdateStatus.DEFAULT) {
+                            GlossaryUpdate(
+                                status = glossaryUpdateStatus,
+                                onDownload = component::downloadGlossary,
+                                onDismiss = component::clearHasUpdate
+                            )
+                        }
 
                         Spacer(modifier = Modifier.height(32.dp))
 
@@ -358,5 +376,12 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
 
     model.progress?.let { progress ->
         ProgressDialog(progress)
+    }
+
+    model.snackBarMessage?.let { message ->
+        coroutineScope.launch {
+            component.clearSnackBarMessage()
+            snackBar?.showSnackbar(message)
+        }
     }
 }

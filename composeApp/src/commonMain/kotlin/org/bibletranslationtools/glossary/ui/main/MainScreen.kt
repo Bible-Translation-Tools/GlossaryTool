@@ -1,6 +1,8 @@
 package org.bibletranslationtools.glossary.ui.main
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerDefaults
@@ -9,13 +11,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +39,7 @@ import org.bibletranslationtools.glossary.ui.drawer.keyterms.KeyTermsComponent
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.KeyTermsScreen
 import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsComponent
 import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsScreen
+import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
 import org.bibletranslationtools.glossary.ui.resources.ResourcesScreen
 
@@ -68,6 +75,8 @@ fun MainScreen(component: MainComponent) {
         )
     }
 
+    val snackBarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(model.activeResource) {
         model.activeResource?.let { resource ->
             if (resource.toString() != selectedResource) {
@@ -100,50 +109,60 @@ fun MainScreen(component: MainComponent) {
         }
     }
 
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        gesturesEnabled = false,
-        drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = MaterialTheme.colorScheme.surface,
-                windowInsets = WindowInsets(0, 24, 0, 32),
-                drawerShape = drawerShape,
-                modifier = Modifier.then(
-                    if (model.fullscreenDrawer) {
-                        Modifier.fillMaxWidth()
-                    } else {
-                        Modifier
-                    }
-                )
-            ) {
-                val drawerSlot by component.drawerSlot.subscribeAsState()
-                drawerSlot.child?.instance?.let { component ->
-                    when (component) {
-                        is SettingsComponent -> {
-                            SettingsScreen(component)
+    CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
+        Box(
+            modifier = Modifier.fillMaxSize()
+        ) {
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                gesturesEnabled = false,
+                drawerContent = {
+                    ModalDrawerSheet(
+                        drawerContainerColor = MaterialTheme.colorScheme.surface,
+                        windowInsets = WindowInsets(0, 24, 0, 32),
+                        drawerShape = drawerShape,
+                        modifier = Modifier.then(
+                            if (model.fullscreenDrawer) {
+                                Modifier.fillMaxWidth()
+                            } else {
+                                Modifier
+                            }
+                        )
+                    ) {
+                        val drawerSlot by component.drawerSlot.subscribeAsState()
+                        drawerSlot.child?.instance?.let { component ->
+                            when (component) {
+                                is SettingsComponent -> {
+                                    SettingsScreen(component)
+                                }
+                                is KeyTermsComponent -> {
+                                    KeyTermsScreen(component)
+                                }
+                            }
                         }
-                        is KeyTermsComponent -> {
-                            KeyTermsScreen(component)
+                    }
+                },
+                scrimColor = Color(0x800F2F4C)
+            ) {
+                Scaffold(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ) { paddingValues ->
+                    Children(
+                        stack = component.childStack,
+                        animation = stackAnimation(Utils.slideHorizontally()),
+                        modifier = Modifier.padding(paddingValues)
+                    ) {
+                        when (val child = it.instance) {
+                            is MainComponent.Child.Read -> ReadScreen(child.component)
+                            is MainComponent.Child.Resources -> ResourcesScreen(child.component)
                         }
                     }
                 }
             }
-        },
-        scrimColor = Color(0x800F2F4C)
-    ) {
-        Scaffold(
-            containerColor = MaterialTheme.colorScheme.surface
-        ) { paddingValues ->
-            Children(
-                stack = component.childStack,
-                animation = stackAnimation(Utils.slideHorizontally()),
-                modifier = Modifier.padding(paddingValues)
-            ) {
-                when (val child = it.instance) {
-                    is MainComponent.Child.Read -> ReadScreen(child.component)
-                    is MainComponent.Child.Resources -> ResourcesScreen(child.component)
-                }
-            }
+            SnackbarHost(
+                hostState = snackBarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
 }

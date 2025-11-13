@@ -34,7 +34,7 @@ class DefaultSettingsComponent(
     private val parentContext: ParentContext,
     intent: SettingsIntent,
     private val onSelectResource: (resource: Resource) -> Unit,
-    private val onSelectGlossary: (glossary: Glossary) -> Unit,
+    private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onFullscreen: (Boolean) -> Unit,
     private val onImportFinished: () -> Unit
 ) : SettingsComponent, ComponentContext by componentContext {
@@ -89,7 +89,7 @@ class DefaultSettingsComponent(
                     onResourceDownloaded = onSelectResource,
                     onGlossaryCreated = { resource, glossary ->
                         onSelectResource(resource)
-                        onSelectGlossary(glossary)
+                        onSelectGlossary(glossary, true)
                         navigation.replaceAll(Config.Index)
                     },
                     onSelectLanguage = { type ->

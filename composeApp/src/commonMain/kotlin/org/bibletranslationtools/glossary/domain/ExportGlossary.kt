@@ -7,10 +7,10 @@ import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.writeString
 import org.bibletranslationtools.glossary.Utils.JsonLenient
 import org.bibletranslationtools.glossary.data.Glossary
-import org.bibletranslationtools.glossary.data.export.GlossaryExport
-import org.bibletranslationtools.glossary.data.export.PhraseExport
-import org.bibletranslationtools.glossary.data.export.RefExport
-import org.bibletranslationtools.glossary.data.export.ResourceExport
+import org.bibletranslationtools.glossary.data.api.ManifestGlossary
+import org.bibletranslationtools.glossary.data.api.ManifestPhrase
+import org.bibletranslationtools.glossary.data.api.ManifestRef
+import org.bibletranslationtools.glossary.data.api.ManifestResource
 import org.bibletranslationtools.glossary.platform.zipDirectory
 
 class ExportGlossary(
@@ -22,22 +22,23 @@ class ExportGlossary(
             ?: throw IllegalArgumentException("Resource not found")
         val phrases = glossaryRepository.getPhrases(glossary.id)
 
-        val export = GlossaryExport(
+        val export = ManifestGlossary(
             id = glossary.id!!,
             code = glossary.code,
             author = glossary.author,
             sourceLanguage = glossary.sourceLanguage.slug,
             targetLanguage = glossary.targetLanguage.slug,
+            version = glossary.version,
             createdAt = glossary.createdAt.toString(),
             updatedAt = glossary.updatedAt.toString(),
-            resource = ResourceExport(
+            resource = ManifestResource(
                 language = resource.lang,
                 type = resource.type,
                 version = resource.version
             ),
             phrases = phrases.map { phrase ->
                 val refs = glossaryRepository.getRefs(phrase.id)
-                PhraseExport(
+                ManifestPhrase(
                     id = phrase.id!!,
                     phrase = phrase.phrase,
                     spelling = phrase.spelling,
@@ -46,7 +47,7 @@ class ExportGlossary(
                     createdAt = phrase.createdAt.toString(),
                     updatedAt = phrase.updatedAt.toString(),
                     refs = refs.map { ref ->
-                        RefExport(
+                        ManifestRef(
                             id = ref.id!!,
                             book = ref.book,
                             chapter = ref.chapter,

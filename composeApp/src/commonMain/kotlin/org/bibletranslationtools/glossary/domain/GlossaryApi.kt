@@ -9,11 +9,15 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import io.ktor.utils.io.toByteArray
+import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
 
 interface GlossaryApi {
     suspend fun downloadGlossary(code: String): NetworkResult<ByteArray>
-    suspend fun uploadGlossary(file: PlatformFile): NetworkResult<Boolean>
+    suspend fun uploadGlossary(file: PlatformFile): NetworkResult<Int>
+    suspend fun checkUpdates(glossaries: List<GlossaryUpdate>): NetworkResult<List<GlossaryUpdate>>
 }
 
 class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
@@ -38,12 +42,31 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
         }
     }
 
-    override suspend fun uploadGlossary(file: PlatformFile): NetworkResult<Boolean> {
+    override suspend fun uploadGlossary(file: PlatformFile): NetworkResult<Int> {
         return ApiHelper.callApi {
-            val resp = httpClient.post(API_URL) {
+            val response = httpClient.post(API_URL) {
                 setBody(file.readBytes())
             }
-            resp.body()
+            response.body()
+        }
+    }
+
+    override suspend fun checkUpdates(
+        glossaries: List<GlossaryUpdate>
+    ): NetworkResult<List<GlossaryUpdate>> {
+        return ApiHelper.callApi {
+            val response = httpClient.post("$API_URL/check_updates") {
+                setBody(glossaries)
+                contentType(ContentType.Application.Json)
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error checking for updates"
+                )
+            }
         }
     }
 }

@@ -5,7 +5,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_glossary_error
-import glossary.composeapp.generated.resources.downloading
+import glossary.composeapp.generated.resources.downloading_wait
 import glossary.composeapp.generated.resources.resource_not_found
 import glossary.composeapp.generated.resources.unknown_error
 import kotlinx.coroutines.CoroutineScope
@@ -120,7 +120,7 @@ class DefaultCreateGlossaryComponent(
 
             val progress = Progress(
                 value = -1f,
-                message = getString(Res.string.downloading)
+                message = getString(Res.string.downloading_wait)
             )
 
             sharedState.updateProgress(progress)
@@ -192,6 +192,8 @@ class DefaultCreateGlossaryComponent(
             author = "User",
             sourceLanguage = sourceLanguage,
             targetLanguage = targetLanguage,
+            version = 1,
+            hasUpdate = false,
             resourceId = resource.id
         )
 

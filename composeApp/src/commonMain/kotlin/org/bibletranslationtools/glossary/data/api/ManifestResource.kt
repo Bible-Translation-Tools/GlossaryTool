@@ -1,12 +1,13 @@
-package org.bibletranslationtools.glossary.data.export
+package org.bibletranslationtools.glossary.data.api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class ResourceExport(
+data class ManifestResource(
     val language: String,
     val type: String,
-    val version: String
+    val version: String,
+    val id: Int? = null
 ) {
     override fun toString(): String {
         return "${language}_$type"

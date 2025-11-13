@@ -8,6 +8,41 @@
       "when": 1757530391450,
       "tag": "0000_bouncy_hobgoblin",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762944852095,
+      "tag": "0001_add_timestamp_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762945681986,
+      "tag": "0002_mature_sauron",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1762946340464,
+      "tag": "0003_fix_cascading_triggers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1762947037748,
+      "tag": "0004_make_version_trigger_smart",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1762956830673,
+      "tag": "0005_keen_vapor",
+      "breakpoints": true
     }
   ]
 }

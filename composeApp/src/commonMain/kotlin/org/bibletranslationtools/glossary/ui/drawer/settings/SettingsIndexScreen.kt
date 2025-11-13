@@ -28,12 +28,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.about_app
@@ -57,6 +59,7 @@ import glossary.composeapp.generated.resources.source_text_settings
 import glossary.composeapp.generated.resources.terms_and_conditions
 import glossary.composeapp.generated.resources.user_settings
 import glossary.composeapp.generated.resources.view_glossaries
+import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.domain.Theme
 import org.bibletranslationtools.glossary.ui.components.SegmentedButtonRow
@@ -64,11 +67,15 @@ import org.bibletranslationtools.glossary.ui.components.SettingsClickableItem
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
 import org.bibletranslationtools.glossary.ui.components.SettingsSwitchItem
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
+import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
+import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun SettingsIndexScreen(component: SettingsIndexComponent) {
+    val model by component.model.subscribeAsState()
+
     var theme by rememberStringSetting(
         Settings.THEME,
         Theme.SYSTEM
@@ -83,6 +90,8 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
     var selectedIndex3 by remember { mutableIntStateOf(0) }
 
     val scrollState = rememberScrollState()
+    val snackBar = LocalSnackBarHostState.current
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(isDarkModeEnabled) {
         theme = if (isDarkModeEnabled) {
@@ -242,7 +251,7 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                             SettingsClickableItem(
                                 icon = Icons.Default.Refresh,
                                 text = stringResource(Res.string.check_updates),
-                                onClick = {}
+                                onClick = component::checkUpdates
                             )
                             SettingsClickableItem(
                                 icon = Icons.Default.Info,
@@ -265,6 +274,17 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                     }
                 }
             }
+        }
+    }
+
+    model.progress?.let { progress ->
+        ProgressDialog(progress)
+    }
+
+    model.snackBarMessage?.let { message ->
+        scope.launch {
+            component.clearSnackBarMessage()
+            snackBar?.showSnackbar(message)
         }
     }
 }

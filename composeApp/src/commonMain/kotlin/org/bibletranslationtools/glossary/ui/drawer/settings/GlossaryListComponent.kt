@@ -46,7 +46,7 @@ class DefaultGlossaryListComponent(
     parentContext: DrawerContext,
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateCreateGlossary: () -> Unit,
-    private val onSelectGlossary: (glossary: Glossary) -> Unit,
+    private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit
 ) : DrawerComponent(componentContext, parentContext), GlossaryListComponent, KoinComponent {
 
@@ -102,7 +102,7 @@ class DefaultGlossaryListComponent(
             val resource = _model.value.selectedResource ?: return@launch
 
             onSelectResource(resource)
-            onSelectGlossary(glossary)
+            onSelectGlossary(glossary, true)
         }
     }
 

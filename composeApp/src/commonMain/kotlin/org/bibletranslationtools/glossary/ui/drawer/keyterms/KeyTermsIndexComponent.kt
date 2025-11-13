@@ -7,6 +7,8 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.exporting_glossary
+import glossary.composeapp.generated.resources.glossary_upload_failed
+import glossary.composeapp.generated.resources.glossary_uploaded_successfully
 import glossary.composeapp.generated.resources.source_text
 import glossary.composeapp.generated.resources.uploading_glossary
 import io.github.vinceglb.filekit.PlatformFile
@@ -17,14 +19,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.io.files.SystemFileSystem
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
+import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.ImportGlossary
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.ui.components.UpdateStatus
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.jetbrains.compose.resources.getString
@@ -42,9 +48,12 @@ interface KeyTermsIndexComponent : DrawerContext {
 
     data class Model(
         val isLoading: Boolean = false,
+        val glossary: Glossary? = null,
         val allPhrases: List<Phrase> = emptyList(),
         val chapterPhrases: List<Phrase> = emptyList(),
         val filterOptions: List<KeyTermsFilter> = emptyList(),
+        val updateStatus: UpdateStatus = UpdateStatus.DEFAULT,
+        val snackBarMessage: String? = null,
         val progress: Progress? = null
     )
 
@@ -53,8 +62,11 @@ interface KeyTermsIndexComponent : DrawerContext {
     fun navigateCreateGlossary()
     fun navigateSearchPhrases()
     fun navigateViewPhrase(phraseId: String)
-    fun onExportGlossaryClicked(glossary: Glossary, file: PlatformFile)
-    fun onUploadGlossaryClicked(glossary: Glossary)
+    fun exportGlossary(file: PlatformFile)
+    fun uploadGlossary()
+    fun downloadGlossary()
+    fun clearHasUpdate()
+    fun clearSnackBarMessage()
 }
 
 class DefaultKeyTermsIndexComponent(
@@ -63,11 +75,14 @@ class DefaultKeyTermsIndexComponent(
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateCreateGlossary: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
-    private val onNavigateViewPhrase: (phraseId: String) -> Unit
+    private val onNavigateViewPhrase: (phraseId: String) -> Unit,
+    private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
+    private val onSelectResource: (resource: Resource) -> Unit,
 ) : DrawerComponent(componentContext, parentContext), KeyTermsIndexComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
-    private val exportGlossary: ExportGlossary by inject()
+    private val exportGlossaryUseCase: ExportGlossary by inject()
+    private val importGlossaryUseCase: ImportGlossary by inject()
     private val directoryProvider: DirectoryProvider by inject()
     private val glossaryApi: GlossaryApi by inject()
 
@@ -79,6 +94,7 @@ class DefaultKeyTermsIndexComponent(
     init {
         doOnResume {
             setFullscreen(false)
+            reloadGlossary()
         }
     }
 
@@ -106,11 +122,14 @@ class DefaultKeyTermsIndexComponent(
             _model.update {
                 it.copy(
                     isLoading = false,
+                    glossary = glossary,
                     allPhrases = allPhrases,
                     chapterPhrases = chapterPhrases,
                     filterOptions = options
                 )
             }
+
+            reloadGlossary()
         }
     }
 
@@ -130,46 +149,108 @@ class DefaultKeyTermsIndexComponent(
         onNavigateViewPhrase(phraseId)
     }
 
-    override fun onExportGlossaryClicked(glossary: Glossary, file: PlatformFile) {
+    override fun exportGlossary(file: PlatformFile) {
         componentScope.launch {
-            val progress = Progress(
-                value = -1f,
-                message = getString(Res.string.exporting_glossary)
-            )
-            _model.update { it.copy(progress = progress) }
+            _model.value.glossary?.let { glossary ->
+                val progress = Progress(
+                    value = -1f,
+                    message = getString(Res.string.exporting_glossary)
+                )
+                _model.update { it.copy(progress = progress) }
 
-            withContext(Dispatchers.Default) {
-                exportGlossary(glossary, file)
+                withContext(Dispatchers.Default) {
+                    exportGlossaryUseCase(glossary, file)
+                }
+
+                _model.update { it.copy(progress = null) }
             }
-
-            _model.update { it.copy(progress = null) }
         }
     }
 
-    override fun onUploadGlossaryClicked(glossary: Glossary) {
+    override fun uploadGlossary() {
         componentScope.launch {
-            val progress = Progress(
-                value = -1f,
-                message = getString(Res.string.uploading_glossary)
-            )
-            _model.update { it.copy(progress = progress) }
+            _model.value.glossary?.let { glossary ->
+                val progress = Progress(
+                    value = -1f,
+                    message = getString(Res.string.uploading_glossary)
+                )
+                _model.update { it.copy(progress = progress) }
 
-            val uploadPath = directoryProvider.createTempFile("upload", ".zip")
-            val uploadFile = PlatformFile(uploadPath)
+                val message = withContext(Dispatchers.Default) {
+                    val uploadPath = directoryProvider.createTempFile("upload", ".zip")
+                    val uploadFile = PlatformFile(uploadPath)
 
-            exportGlossary(glossary, uploadFile)
+                    exportGlossaryUseCase(glossary, uploadFile)
 
-            if (uploadFile.exists() && uploadFile.size() > 0) {
-                val result = glossaryApi.uploadGlossary(uploadFile)
-                if (result is NetworkResult.Success) {
-                    println("Upload successful")
-                } else {
-                    println("Upload failed")
-                    println(result)
+                    if (uploadFile.exists() && uploadFile.size() > 0) {
+                        val result = glossaryApi.uploadGlossary(uploadFile)
+                        if (result is NetworkResult.Success) {
+                            glossaryRepository.setGlossaryVersion(
+                                result.data.toLong(),
+                                glossary.id!!
+                            )
+                            getString(Res.string.glossary_uploaded_successfully)
+                        } else {
+                            println(result)
+                            getString(Res.string.glossary_upload_failed)
+                        }
+                    } else {
+                        getString(Res.string.glossary_upload_failed)
+                    }
+                }
+
+                _model.update { it.copy(progress = null, snackBarMessage = message) }
+            }
+        }
+    }
+
+    override fun downloadGlossary() {
+        componentScope.launch {
+            _model.value.glossary?.let { glossary ->
+                _model.update { it.copy(updateStatus = UpdateStatus.DOWNLOADING) }
+
+                val result: ImportGlossary.Result? = withContext(Dispatchers.IO) {
+                    val result = glossaryApi.downloadGlossary(glossary.code)
+                    if (result is NetworkResult.Success) {
+                        val target = directoryProvider.createTempFile("download", ".zip")
+                        directoryProvider.writeFile(result.data, target)
+
+                        if (SystemFileSystem.exists(target)) {
+                            importGlossaryUseCase(PlatformFile(target))
+                        } else null
+                    } else {
+                        println(result)
+                        null
+                    }
+                }
+
+                result?.let { (glossary, resource) ->
+                    onSelectResource(resource)
+                    onSelectGlossary(glossary, false)
+
+                    _model.update { it.copy(updateStatus = UpdateStatus.DOWNLOADED) }
+                } ?: run {
+                    _model.update { it.copy(updateStatus = UpdateStatus.FAILED) }
                 }
             }
+        }
+    }
 
-            _model.update { it.copy(progress = null) }
+    override fun clearHasUpdate() {
+        _model.update { it.copy(updateStatus = UpdateStatus.DEFAULT) }
+    }
+
+    override fun clearSnackBarMessage() {
+        _model.update { it.copy(snackBarMessage = null) }
+    }
+
+    private fun reloadGlossary() {
+        componentScope.launch {
+            _model.value.glossary?.let { glossary ->
+                glossaryRepository.getGlossary(glossary.code)?.let { dbGlossary ->
+                    _model.update { it.copy(glossary = dbGlossary) }
+                }
+            }
         }
     }
 }

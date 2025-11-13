@@ -1,9 +1,9 @@
-package org.bibletranslationtools.glossary.data.export
+package org.bibletranslationtools.glossary.data.api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class RefExport(
+data class ManifestRef(
     val id: String,
     val book: String,
     val chapter: String,

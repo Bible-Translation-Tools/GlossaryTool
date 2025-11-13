@@ -1,16 +1,17 @@
-package org.bibletranslationtools.glossary.data.export
+package org.bibletranslationtools.glossary.data.api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal data class GlossaryExport(
+data class ManifestGlossary(
     val id: String,
     val code: String,
     val author: String,
     val sourceLanguage: String,
     val targetLanguage: String,
+    val version: Int,
     val createdAt: String,
     val updatedAt: String,
-    val resource: ResourceExport,
-    val phrases: List<PhraseExport>
+    val resource: ManifestResource,
+    val phrases: List<ManifestPhrase>
 )

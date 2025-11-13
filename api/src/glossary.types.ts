@@ -33,3 +33,11 @@ export interface Glossary {
   resource: Resource;
   phrases: Phrase[];
 }
+
+export interface GlossaryUpdate {
+  id: string;
+  code: string;
+  version: number;
+  createdAt: number;
+  updatedAt: number;
+}
