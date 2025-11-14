@@ -34,8 +34,8 @@ fun SegmentedButtonRow(
     selectedIndex: Int,
     onSelectionChange: (Int) -> Unit
 ) {
-    val backgroundColor = Color(0xFFF2F2F2)
-    val shadowColor = Color(0xFFCDCDCD)
+    val backgroundColor = MaterialTheme.colorScheme.outlineVariant
+    val shadowColor = MaterialTheme.colorScheme.surfaceDim
 
     val baseHeight = 48.dp
     val overflowAmount = 1.dp
@@ -78,7 +78,7 @@ fun SegmentedButtonRow(
                         selected = selected,
                         colors = SegmentedButtonDefaults.colors(
                             activeContentColor = MaterialTheme.colorScheme.primary,
-                            activeContainerColor = MaterialTheme.colorScheme.surface,
+                            activeContainerColor = MaterialTheme.colorScheme.surfaceBright,
                             activeBorderColor = Color.Transparent,
                             inactiveContainerColor = Color.Transparent,
                             inactiveBorderColor = Color.Transparent
