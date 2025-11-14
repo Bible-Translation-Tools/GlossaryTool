@@ -32,6 +32,7 @@ interface GlossaryRepository {
     suspend fun addResource(resource: Resource)
     suspend fun deleteResource(id: Long)
     suspend fun batchAddPhrasesAndRefs(phrases: List<Phrase>, refs: List<Ref>)
+    suspend fun batchAddRefs(refs: List<Ref>)
 }
 
 class GlossaryRepositoryImpl(
@@ -163,6 +164,14 @@ class GlossaryRepositoryImpl(
                 phraseDataSource.insertInTransaction(phrase.toEntity())
             }
 
+            refs.forEach { ref ->
+                refDataSource.insertInTransaction(ref.toEntity())
+            }
+        }
+    }
+
+    override suspend fun batchAddRefs(refs: List<Ref>) {
+        refDataSource.transaction {
             refs.forEach { ref ->
                 refDataSource.insertInTransaction(ref.toEntity())
             }

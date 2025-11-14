@@ -8,6 +8,7 @@ interface RefDataSource {
     suspend fun insert(ref: RefEntity): String?
     fun insertInTransaction(ref: RefEntity): String?
     suspend fun delete(id: String): Long
+    fun transaction(block: () -> Unit)
 }
 
 class RefDataSourceImpl(db: GlossaryDatabase): RefDataSource {
@@ -36,5 +37,11 @@ class RefDataSourceImpl(db: GlossaryDatabase): RefDataSource {
 
     override suspend fun delete(id: String): Long {
         return queries.delete(id).await()
+    }
+
+    override fun transaction(block: () -> Unit) {
+        queries.transaction {
+            block()
+        }
     }
 }

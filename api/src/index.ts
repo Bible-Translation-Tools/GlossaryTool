@@ -147,36 +147,39 @@ app.post("/api/glossary", async (c) => {
     const glossaryId = insertGlossary[0].id;
 
     for (const phrase of glossary!.phrases) {
-      const insertPhrase = await dbHelper
-        .getDb()
-        .insert(phraseTable)
-        .values({
-          id: phrase.id,
-          phrase: phrase.phrase,
-          spelling: phrase.spelling,
-          description: phrase.description,
-          audio: phrase.audio,
-          glossaryId: glossaryId,
-        })
-        .onConflictDoUpdate({
-          target: [phraseTable.phrase, phraseTable.glossaryId],
-          set: {
+      // Use a single transaction for each phrase and its refs
+      await dbHelper.getDb().transaction(async (tx) => {
+        const insertPhrase = await tx
+          .insert(phraseTable)
+          .values({
+            id: phrase.id,
+            phrase: phrase.phrase,
             spelling: phrase.spelling,
             description: phrase.description,
             audio: phrase.audio,
-          },
-        })
-        .returning({ id: phraseTable.id });
+            glossaryId: glossaryId,
+          })
+          .onConflictDoUpdate({
+            target: [phraseTable.phrase, phraseTable.glossaryId],
+            set: {
+              spelling: phrase.spelling,
+              description: phrase.description,
+              audio: phrase.audio,
+            },
+          })
+          .returning({ id: phraseTable.id });
 
-      const phraseId = insertPhrase[0].id;
+        const phraseId = insertPhrase[0].id;
 
-      await dbHelper
-        .getDb()
-        .insert(refTable)
-        .values(phrase.refs.map((ref) => ({ ...ref, phraseId: phraseId })))
-        .onConflictDoNothing({
-          target: [refTable.id],
-        });
+        if (phrase.refs && phrase.refs.length > 0) {
+          await tx
+            .insert(refTable)
+            .values(phrase.refs.map((ref) => ({ ...ref, phraseId: phraseId })))
+            .onConflictDoNothing({
+              target: [refTable.id],
+            });
+        }
+      });
     }
 
     const updated = await dbHelper

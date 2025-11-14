@@ -97,9 +97,11 @@ class DefaultEditPhraseComponent(
 
                     if (refs.isNotEmpty()) {
                         glossaryRepository.addPhrase(phrase)?.let { phraseId ->
-                            refs.forEach { ref ->
-                                glossaryRepository.addRef(ref.copy(phraseId = phraseId))
-                            }
+                            glossaryRepository.batchAddRefs(
+                                refs.map {
+                                    it.copy(phraseId = phraseId)
+                                }
+                            )
                         }
                         null
                     } else {
