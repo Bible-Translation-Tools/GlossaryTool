@@ -8,7 +8,9 @@ interface PhraseDataSource {
     suspend fun getById(id: String): PhraseEntity?
     suspend fun getByPhrase(phrase: String, glossaryId: String): PhraseEntity?
     suspend fun insert(phrase: PhraseEntity): String?
+    fun insertInTransaction(phrase: PhraseEntity): String?
     suspend fun delete(id: String): Long
+    fun transaction(body: () -> Unit)
 }
 
 class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
@@ -26,6 +28,10 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
     }
 
     override suspend fun insert(phrase: PhraseEntity): String? {
+        return insertInTransaction(phrase)
+    }
+
+    override fun insertInTransaction(phrase: PhraseEntity): String? {
         val result = queries.insert(
             id = phrase.id,
             phrase = phrase.phrase,
@@ -35,7 +41,7 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
             glossaryId = phrase.glossaryId,
             updatedAt = phrase.updatedAt
         )
-        if (result.await() > 0) {
+        if (result.value > 0) {
             return phrase.id
         }
         return null
@@ -43,5 +49,11 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
 
     override suspend fun delete(id: String): Long {
         return queries.delete(id).await()
+    }
+
+    override fun transaction(body: () -> Unit) {
+        queries.transaction {
+            body()
+        }
     }
 }

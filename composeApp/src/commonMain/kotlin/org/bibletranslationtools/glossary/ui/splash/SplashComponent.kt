@@ -36,7 +36,7 @@ class DefaultSplashComponent(
     private val onInitDone: () -> Unit
 ) : SplashComponent, KoinComponent, ComponentContext by componentContext {
 
-    private val initApp: InitApp by inject()
+    private val initAppUseCase: InitApp by inject()
     private val appStateStore: AppStateStore by inject()
     private val resourceContainerAccessor: ResourceContainerAccessor by inject()
     private val glossaryRepository: GlossaryRepository by inject()
@@ -49,7 +49,7 @@ class DefaultSplashComponent(
     override fun initializeApp(resource: String, glossaryCode: String?) {
         componentScope.launch {
             withContext(Dispatchers.IO) {
-                initApp { message ->
+                initAppUseCase { message ->
                     _model.update { it.copy(message = message) }
                 }
                 loadResource(resource)

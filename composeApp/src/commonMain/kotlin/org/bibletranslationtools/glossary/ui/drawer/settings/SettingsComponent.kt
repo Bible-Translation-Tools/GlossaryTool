@@ -48,7 +48,7 @@ class DefaultSettingsComponent(
             serializer = Config.serializer(),
             initialConfiguration = when (intent) {
                 SettingsIntent.Index -> Config.Index
-                SettingsIntent.ImportGlossary -> Config.ImportGlossary
+                SettingsIntent.ImportGlossary -> Config.ImportGlossary()
                 SettingsIntent.CreateGlossary -> Config.CreateGlossary
             },
             handleBackButton = false,
@@ -110,19 +110,23 @@ class DefaultSettingsComponent(
                     componentContext = context,
                     parentContext = this,
                     onNavigateImportGlossary = {
-                        navigation.bringToFront(Config.ImportGlossary)
+                        navigation.bringToFront(Config.ImportGlossary())
                     },
                     onNavigateCreateGlossary = {
                         navigation.bringToFront(Config.CreateGlossary)
                     },
                     onSelectResource = onSelectResource,
-                    onSelectGlossary = onSelectGlossary
+                    onSelectGlossary = onSelectGlossary,
+                    onImportManually = {
+                        navigation.bringToFront(Config.ImportGlossary(true))
+                    }
                 )
             )
             is Config.ImportGlossary -> SettingsComponent.Child.ImportGlossary(
                 DefaultImportGlossaryComponent(
                     componentContext = context,
                     parentContext = this,
+                    autoImportManually = config.autoImportManually,
                     onSelectResource = onSelectResource,
                     onSelectGlossary = onSelectGlossary,
                     onImportFinished = { onImportFinished() }
@@ -160,6 +164,6 @@ class DefaultSettingsComponent(
         @Serializable
         data class SelectLanguage(val type: LanguageType) : Config
         @Serializable
-        data object ImportGlossary : Config
+        data class ImportGlossary(val autoImportManually: Boolean = false) : Config
     }
 }

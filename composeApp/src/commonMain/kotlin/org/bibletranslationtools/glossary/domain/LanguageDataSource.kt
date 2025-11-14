@@ -9,6 +9,8 @@ interface LanguageDataSource {
     suspend fun getGatewayLanguages(): List<LanguageEntity>
     suspend fun getTargetLanguages(): List<LanguageEntity>
     suspend fun insert(language: LanguageEntity)
+    fun insertInTransaction(language: LanguageEntity)
+    fun transaction(block: () -> Unit)
 }
 
 class LanguageDataSourceImpl(db: GlossaryDatabase): LanguageDataSource {
@@ -29,6 +31,10 @@ class LanguageDataSourceImpl(db: GlossaryDatabase): LanguageDataSource {
         queries.getTargetLangs().executeAsList()
 
     override suspend fun insert(language: LanguageEntity) {
+        insertInTransaction(language)
+    }
+
+    override fun insertInTransaction(language: LanguageEntity) {
         queries.insert(
             slug = language.slug,
             name = language.name,
@@ -36,5 +42,11 @@ class LanguageDataSourceImpl(db: GlossaryDatabase): LanguageDataSource {
             direction = language.direction,
             gw = language.gw
         )
+    }
+
+    override fun transaction(block: () -> Unit) {
+        queries.transaction {
+            block()
+        }
     }
 }

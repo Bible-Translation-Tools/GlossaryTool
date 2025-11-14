@@ -31,6 +31,7 @@ interface GlossaryRepository {
     suspend fun getResource(lang: String, type: String): Resource?
     suspend fun addResource(resource: Resource)
     suspend fun deleteResource(id: Long)
+    suspend fun batchAddPhrasesAndRefs(phrases: List<Phrase>, refs: List<Ref>)
 }
 
 class GlossaryRepositoryImpl(
@@ -154,5 +155,17 @@ class GlossaryRepositoryImpl(
 
     override suspend fun deleteResource(id: Long) {
         resourceDataSource.delete(id)
+    }
+
+    override suspend fun batchAddPhrasesAndRefs(phrases: List<Phrase>, refs: List<Ref>) {
+        phraseDataSource.transaction {
+            phrases.forEach { phrase ->
+                phraseDataSource.insertInTransaction(phrase.toEntity())
+            }
+
+            refs.forEach { ref ->
+                refDataSource.insertInTransaction(ref.toEntity())
+            }
+        }
     }
 }

@@ -6,8 +6,13 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.glossary_upload_failed
+import glossary.composeapp.generated.resources.glossary_uploaded_successfully
 import glossary.composeapp.generated.resources.source_text
+import glossary.composeapp.generated.resources.uploading_glossary
 import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.exists
+import io.github.vinceglb.filekit.size
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -16,8 +21,10 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.SystemFileSystem
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
+import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.ImportGlossary
@@ -44,16 +51,20 @@ interface KeyTermsIndexComponent : DrawerContext {
         val allPhrases: List<Phrase> = emptyList(),
         val chapterPhrases: List<Phrase> = emptyList(),
         val filterOptions: List<KeyTermsFilter> = emptyList(),
-        val updateStatus: UpdateStatus = UpdateStatus.DEFAULT
+        val updateStatus: UpdateStatus = UpdateStatus.DEFAULT,
+        val snackBarMessage: String? = null,
+        val progress: Progress? = null
     )
 
     fun initialize(glossary: Glossary, book: String, chapter: Int)
     fun navigateImportGlossary()
     fun navigateCreateGlossary()
     fun navigateSearchPhrases()
+    fun updateGlossary()
     fun navigateViewPhrase(phraseId: String)
     fun downloadGlossary()
     fun clearHasUpdate()
+    fun clearSnackBarMessage()
 }
 
 class DefaultKeyTermsIndexComponent(
@@ -71,6 +82,7 @@ class DefaultKeyTermsIndexComponent(
     private val importGlossaryUseCase: ImportGlossary by inject()
     private val directoryProvider: DirectoryProvider by inject()
     private val glossaryApi: GlossaryApi by inject()
+    private val exportGlossaryUseCase: ExportGlossary by inject()
 
     private val _model = MutableValue(KeyTermsIndexComponent.Model())
     override val model: Value<KeyTermsIndexComponent.Model> = _model
@@ -131,6 +143,43 @@ class DefaultKeyTermsIndexComponent(
         onNavigateSearchPhrases()
     }
 
+    override fun updateGlossary() {
+        componentScope.launch {
+            val glossary = _model.value.glossary ?: return@launch
+
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.uploading_glossary)
+            )
+            _model.update { it.copy(progress = progress) }
+
+            val message = withContext(Dispatchers.Default) {
+                val uploadPath = directoryProvider.createTempFile("upload", ".zip")
+                val uploadFile = PlatformFile(uploadPath)
+
+                exportGlossaryUseCase(glossary, uploadFile)
+
+                if (uploadFile.exists() && uploadFile.size() > 0) {
+                    val result = glossaryApi.uploadGlossary(uploadFile)
+                    if (result is NetworkResult.Success) {
+                        glossaryRepository.setGlossaryVersion(
+                            result.data.toLong(),
+                            glossary.id!!
+                        )
+                        getString(Res.string.glossary_uploaded_successfully)
+                    } else {
+                        println(result)
+                        getString(Res.string.glossary_upload_failed)
+                    }
+                } else {
+                    getString(Res.string.glossary_upload_failed)
+                }
+            }
+
+            _model.update { it.copy(progress = null, snackBarMessage = message) }
+        }
+    }
+
     override fun navigateViewPhrase(phraseId: String) {
         onNavigateViewPhrase(phraseId)
     }
@@ -169,6 +218,10 @@ class DefaultKeyTermsIndexComponent(
 
     override fun clearHasUpdate() {
         _model.update { it.copy(updateStatus = UpdateStatus.DEFAULT) }
+    }
+
+    override fun clearSnackBarMessage() {
+        _model.update { it.copy(snackBarMessage = null) }
     }
 
     private fun reloadGlossary() {

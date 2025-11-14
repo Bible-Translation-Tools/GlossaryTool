@@ -18,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
@@ -37,6 +39,9 @@ import glossary.composeapp.generated.resources.add_glossary
 import glossary.composeapp.generated.resources.available_glossaries
 import glossary.composeapp.generated.resources.create_glossary
 import glossary.composeapp.generated.resources.glossaries_unavailable
+import glossary.composeapp.generated.resources.import_glossary_manually
+import io.github.vinceglb.filekit.FileKit
+import io.github.vinceglb.filekit.dialogs.openFileSaver
 import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.ui.components.GlossaryItem
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
@@ -93,10 +98,28 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
                                     isActive = model.activeGlossary == item,
                                     onSelected = { component.selectGlossary(item) },
                                     onSelectedSave = component::saveGlossary,
-                                    onShare = component::uploadGlossary,
+                                    onShare = {
+                                        coroutineScope.launch {
+                                            FileKit.openFileSaver(
+                                                suggestedName = "glossary-${item.glossary.code}",
+                                                extension = "zip"
+                                            )?.let { file ->
+                                                component.exportGlossary(file)
+                                            }
+                                        }
+                                    },
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }
+                        }
+
+                        Button(
+                            onClick = component::navigateImportGlossary,
+                            shape = MaterialTheme.shapes.medium,
+                            modifier = Modifier.fillMaxWidth()
+                                .height(48.dp)
+                        ) {
+                            Text(stringResource(Res.string.add_glossary))
                         }
                     } else {
                         Column(
@@ -122,16 +145,16 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
                             Spacer(modifier = Modifier.height(8.dp))
 
                             Button(
-                                onClick = component::navigateImportGlossary,
+                                onClick = component::navigateCreateGlossary,
                                 shape = MaterialTheme.shapes.medium,
                                 modifier = Modifier.fillMaxWidth()
                                     .height(48.dp)
                             ) {
-                                Text(stringResource(Res.string.add_glossary))
+                                Text(stringResource(Res.string.create_glossary))
                             }
 
                             ElevatedButton(
-                                onClick = component::navigateCreateGlossary,
+                                onClick = component::navigateImportGlossary,
                                 shape = MaterialTheme.shapes.medium,
                                 colors = ButtonDefaults.elevatedButtonColors(
                                     containerColor = MaterialTheme.colorScheme.primaryContainer
@@ -139,7 +162,18 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
                                 modifier = Modifier.fillMaxWidth()
                                     .height(48.dp)
                             ) {
-                                Text(stringResource(Res.string.create_glossary))
+                                Text(stringResource(Res.string.add_glossary))
+                            }
+
+                            TextButton(
+                                onClick = component::navigateImportManually
+                            ) {
+                                Text(
+                                    text = stringResource(
+                                        Res.string.import_glossary_manually
+                                    ),
+                                    textDecoration = TextDecoration.Underline
+                                )
                             }
                         }
                     }

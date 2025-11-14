@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -32,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,6 +54,8 @@ import glossary.composeapp.generated.resources.key_terms
 import glossary.composeapp.generated.resources.key_terms_unavailable
 import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.search
+import glossary.composeapp.generated.resources.update_glossary
+import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.GlossaryUpdate
@@ -61,6 +63,8 @@ import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.bibletranslationtools.glossary.ui.components.UpdateStatus
+import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
+import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -101,6 +105,9 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
     var glossaryUpdateStatus by remember(model.updateStatus) {
         mutableStateOf(model.updateStatus)
     }
+
+    val coroutineScope = rememberCoroutineScope()
+    val snackBar = LocalSnackBarHostState.current
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let { glossary ->
@@ -304,10 +311,12 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                         modifier = Modifier.fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surface)
                             .align(Alignment.BottomCenter)
+                            .padding(bottom = 16.dp)
                     ) {
                         HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-                        Row(
+                        Column (
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
                                 .padding(16.dp)
                         ) {
@@ -328,10 +337,33 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                                     color = MaterialTheme.colorScheme.onPrimary
                                 )
                             }
+
+                            ElevatedButton(
+                                onClick = component::updateGlossary,
+                                shape = MaterialTheme.shapes.medium,
+                                colors = ButtonDefaults.elevatedButtonColors(
+                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                ),
+                                modifier = Modifier.fillMaxWidth()
+                                    .height(40.dp)
+                            ) {
+                                Text(stringResource(Res.string.update_glossary))
+                            }
                         }
                     }
                 }
             }
+        }
+    }
+
+    model.progress?.let { progress ->
+        ProgressDialog(progress)
+    }
+
+    model.snackBarMessage?.let { message ->
+        coroutineScope.launch {
+            component.clearSnackBarMessage()
+            snackBar?.showSnackbar(message)
         }
     }
 }

@@ -58,6 +58,16 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
         }
     }
 
+    LaunchedEffect(model.autoImportManually) {
+        if (model.autoImportManually) {
+            coroutineScope.launch {
+                FileKit.openFilePicker()?.let {
+                    component.onImportClicked(it)
+                }
+            }
+        }
+    }
+
     Column(modifier = Modifier.fillMaxSize()) {
         TopDrawerBar(
             title = stringResource(Res.string.back),

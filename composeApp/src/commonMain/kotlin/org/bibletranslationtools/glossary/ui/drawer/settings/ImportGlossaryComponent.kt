@@ -36,6 +36,7 @@ interface ImportGlossaryComponent : DrawerContext {
         val isLoading: Boolean = false,
         val otpCode: List<String?> = (1..5).map { null },
         val focusedIndex: Int? = null,
+        val autoImportManually: Boolean = false,
         val progress: Progress? = null,
         val error: String? = null
     )
@@ -48,6 +49,7 @@ interface ImportGlossaryComponent : DrawerContext {
 class DefaultImportGlossaryComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
+    private val autoImportManually: Boolean,
     private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onImportFinished: () -> Unit
@@ -65,7 +67,12 @@ class DefaultImportGlossaryComponent(
     init {
         doOnResume {
             setFullscreen(true)
-            _model.update { it.copy(error = null) }
+            _model.update {
+                it.copy(
+                    error = null,
+                    autoImportManually = autoImportManually
+                )
+            }
         }
     }
 

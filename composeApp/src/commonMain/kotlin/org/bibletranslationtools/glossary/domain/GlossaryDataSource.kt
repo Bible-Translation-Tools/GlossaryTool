@@ -4,6 +4,7 @@ import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.GlossaryEntity
 
 interface GlossaryDataSource {
+
     suspend fun getAll(): List<GlossaryEntity>
     suspend fun getByCode(code: String): GlossaryEntity?
     suspend fun setVersion(version: Long, id: String): Long

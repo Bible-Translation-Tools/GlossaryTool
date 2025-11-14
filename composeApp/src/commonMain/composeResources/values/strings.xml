@@ -64,6 +64,7 @@
     <string name="resource_not_found">Resource not found</string>
     <string name="unknown_error">Unknown error occurred</string>
     <string name="export_glossary">Export Glossary</string>
+    <string name="glossary_exported_successfully">Glossary exported successfully</string>
     <string name="upload_glossary">Upload Glossary</string>
     <string name="exporting_glossary">Exporting Glossary...</string>
     <string name="uploading_glossary">Uploading Glossary...</string>
@@ -72,7 +73,7 @@
     <string name="import_glossary">Import Glossary</string>
     <string name="import_glossary_title">Let's Get Your Glossary Ready</string>
     <string name="import_glossary_hint">Enter the 5-digit code from your team. This will download the glossary so you can use it right away.</string>
-    <string name="import_glossary_manually">Import Manually</string>
+    <string name="import_glossary_manually">Manually Import</string>
     <string name="code_not_recognized">Your code was not recognized.</string>
     <string name="downloading_glossary">Downloading Glossary...</string>
     <string name="downloading_glossary_hint">This process may take several moments to complete. We will notify you when your glossary is ready.</string>
@@ -84,12 +85,13 @@
     <string name="reference_not_found">Reference text not found</string>
     <string name="key_terms">Key Terms</string>
     <string name="key_terms_unavailable">Key Terms Unavailable</string>
-    <string name="glossaries_unavailable">Glossaries Unavailable</string>
-    <string name="add_glossary_key_terms">Add a glossary to view key terms</string>
+    <string name="glossaries_unavailable">No Glossaries Available</string>
+    <string name="add_glossary_key_terms">Add or import a glossary to view available glossaries list.</string>
     <string name="add_create_glossary">Add or Create a glossary</string>
     <string name="source_text">Source Text</string>
     <string name="glossary_code_not_recognized">Your code was not recognized.</string>
     <string name="checking_for_updates">Checking for updates...</string>
+    <string name="update_glossary">Update Glossary</string>
     <string name="no_updates_found">No updates found</string>
     <string name="updates_found">Glossaries with updates: %1$s</string>
     <string name="update_available">An Update is Available</string>
