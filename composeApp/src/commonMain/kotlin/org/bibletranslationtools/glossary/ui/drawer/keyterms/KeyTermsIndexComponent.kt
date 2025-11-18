@@ -9,6 +9,7 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.glossary_upload_failed
 import glossary.composeapp.generated.resources.glossary_uploaded_successfully
 import glossary.composeapp.generated.resources.source_text
+import glossary.composeapp.generated.resources.unauthorized
 import glossary.composeapp.generated.resources.uploading_glossary
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exists
@@ -32,6 +33,7 @@ import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.ui.components.UpdateStatus
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -83,6 +85,9 @@ class DefaultKeyTermsIndexComponent(
     private val directoryProvider: DirectoryProvider by inject()
     private val glossaryApi: GlossaryApi by inject()
     private val exportGlossaryUseCase: ExportGlossary by inject()
+
+    private val appState: AppStateStore by inject()
+    private val userStateHolder = appState.userStateHolder
 
     private val _model = MutableValue(KeyTermsIndexComponent.Model())
     override val model: Value<KeyTermsIndexComponent.Model> = _model
@@ -145,38 +150,46 @@ class DefaultKeyTermsIndexComponent(
 
     override fun updateGlossary() {
         componentScope.launch {
-            val glossary = _model.value.glossary ?: return@launch
+            val unauthorized = getString(Res.string.unauthorized)
 
-            val progress = Progress(
-                value = -1f,
-                message = getString(Res.string.uploading_glossary)
-            )
-            _model.update { it.copy(progress = progress) }
+            userStateHolder.state.value.user?.let { user ->
+                val glossary = _model.value.glossary ?: return@launch
 
-            val message = withContext(Dispatchers.Default) {
-                val uploadPath = directoryProvider.createTempFile("upload", ".zip")
-                val uploadFile = PlatformFile(uploadPath)
+                val progress = Progress(
+                    value = -1f,
+                    message = getString(Res.string.uploading_glossary)
+                )
+                _model.update { it.copy(progress = progress) }
 
-                exportGlossaryUseCase(glossary, uploadFile)
+                val message = withContext(Dispatchers.Default) {
+                    val uploadPath = directoryProvider.createTempFile("upload", ".zip")
+                    val uploadFile = PlatformFile(uploadPath)
 
-                if (uploadFile.exists() && uploadFile.size() > 0) {
-                    val result = glossaryApi.uploadGlossary(uploadFile)
-                    if (result is NetworkResult.Success) {
-                        glossaryRepository.setGlossaryVersion(
-                            result.data.toLong(),
-                            glossary.id!!
-                        )
-                        getString(Res.string.glossary_uploaded_successfully)
+                    exportGlossaryUseCase(glossary, uploadFile)
+
+                    if (uploadFile.exists() && uploadFile.size() > 0) {
+                        val result = glossaryApi.uploadGlossary(uploadFile, user.token)
+                        if (result is NetworkResult.Success) {
+                            glossaryRepository.setGlossaryVersion(
+                                result.data.toLong(),
+                                glossary.id!!
+                            )
+                            getString(Res.string.glossary_uploaded_successfully)
+                        } else {
+                            println(result)
+                            getString(Res.string.glossary_upload_failed)
+                        }
                     } else {
-                        println(result)
                         getString(Res.string.glossary_upload_failed)
                     }
-                } else {
-                    getString(Res.string.glossary_upload_failed)
+                }
+
+                _model.update { it.copy(progress = null, snackBarMessage = message) }
+            } ?: run {
+                _model.update {
+                    it.copy(snackBarMessage = unauthorized)
                 }
             }
-
-            _model.update { it.copy(progress = null, snackBarMessage = message) }
         }
     }
 

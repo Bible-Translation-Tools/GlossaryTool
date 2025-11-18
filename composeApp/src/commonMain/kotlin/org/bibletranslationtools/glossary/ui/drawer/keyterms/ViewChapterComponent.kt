@@ -43,7 +43,7 @@ class DefaultViewChapterComponent(
     override val model: Value<ViewChapterComponent.Model> = _model
 
     private val appStateStore: AppStateStore by inject()
-    private val resourceState = appStateStore.resourceStateHolder.resourceState
+    private val resourceState = appStateStore.resourceStateHolder.state
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 

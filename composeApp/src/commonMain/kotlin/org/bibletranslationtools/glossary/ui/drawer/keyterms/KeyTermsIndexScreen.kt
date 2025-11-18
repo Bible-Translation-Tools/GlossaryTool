@@ -76,7 +76,7 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
     val model by component.model.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
-    val glossaryState by appStateStore.glossaryStateHolder.glossaryState
+    val glossaryState by appStateStore.glossaryStateHolder.state
         .collectAsStateWithLifecycle()
 
     var currentPhrases by remember {

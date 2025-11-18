@@ -105,4 +105,10 @@
     <string name="try_again">Please try again</string>
     <string name="share">Share</string>
     <string name="select">Select</string>
+    <string name="login">Log in</string>
+    <string name="login_wacs">Log in with WACS</string>
+    <string name="login_wacs_info">Log in using your WACS credentials</string>
+    <string name="login_success">Logged in successfully</string>
+    <string name="login_progress">Authenticating... Please wait.</string>
+    <string name="unauthorized">You need to be authorized to execute this action</string>
 </resources>

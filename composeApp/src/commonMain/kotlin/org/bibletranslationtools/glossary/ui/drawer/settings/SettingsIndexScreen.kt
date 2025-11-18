@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +23,7 @@ import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -33,8 +35,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
@@ -48,6 +52,7 @@ import glossary.composeapp.generated.resources.format_list_bulleted
 import glossary.composeapp.generated.resources.format_list_bulleted_add
 import glossary.composeapp.generated.resources.interface_settings
 import glossary.composeapp.generated.resources.language
+import glossary.composeapp.generated.resources.login_wacs
 import glossary.composeapp.generated.resources.new_glossary
 import glossary.composeapp.generated.resources.other_settings
 import glossary.composeapp.generated.resources.person_edit
@@ -67,14 +72,21 @@ import org.bibletranslationtools.glossary.ui.components.SettingsClickableItem
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
 import org.bibletranslationtools.glossary.ui.components.SettingsSwitchItem
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
+import org.bibletranslationtools.glossary.ui.dialogs.LoginDialog
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 @Composable
 fun SettingsIndexScreen(component: SettingsIndexComponent) {
     val model by component.model.subscribeAsState()
+
+    val appStateStore = koinInject<AppStateStore>()
+    val userState by appStateStore.userStateHolder.state
+        .collectAsStateWithLifecycle()
 
     var theme by rememberStringSetting(
         Settings.THEME,
@@ -92,6 +104,8 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
     val scrollState = rememberScrollState()
     val snackBar = LocalSnackBarHostState.current
     val scope = rememberCoroutineScope()
+
+    var showLoginDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(isDarkModeEnabled) {
         theme = if (isDarkModeEnabled) {
@@ -123,25 +137,41 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                         modifier = Modifier.fillMaxSize()
                             .verticalScroll(scrollState)
                     ) {
-                        Column(
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = "\uD83D\uDE00",
-                                fontSize = 40.sp
-                            )
-                            Text(
-                                text = "User",
-                                fontSize = 24.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "user@mail.net",
-                                fontSize = 16.sp,
-                                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
-                            )
+                        userState.user?.let { user ->
+                            Column(
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(
+                                    text = "\uD83D\uDE00",
+                                    fontSize = 40.sp,
+                                    modifier = Modifier.clickable {
+                                        component.logout()
+                                    }
+                                )
+                                Text(
+                                    text = user.username,
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        } ?: run {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                TextButton(
+                                    onClick = { showLoginDialog = true }
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.login_wacs),
+                                        textDecoration = TextDecoration.Underline
+                                    )
+                                }
+                            }
+
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
@@ -275,6 +305,13 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                 }
             }
         }
+    }
+
+    if (showLoginDialog) {
+        LoginDialog(
+            onDismiss = { showLoginDialog = false },
+            onLogin = component::login
+        )
     }
 
     model.progress?.let { progress ->

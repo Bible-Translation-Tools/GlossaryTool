@@ -13,6 +13,7 @@ import com.arkivanov.essenty.instancekeeper.getOrCreate
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.main.SettingsIntent
@@ -36,7 +37,9 @@ class DefaultSettingsComponent(
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onFullscreen: (Boolean) -> Unit,
-    private val onImportFinished: () -> Unit
+    private val onImportFinished: () -> Unit,
+    private val onLogin: (User) -> Unit,
+    private val onLogout: () -> Unit
 ) : SettingsComponent, ComponentContext by componentContext {
 
     private val navigation = StackNavigation<Config>()
@@ -78,7 +81,9 @@ class DefaultSettingsComponent(
                     },
                     onViewGlossaries = {
                         navigation.bringToFront(Config.ViewGlossaries)
-                    }
+                    },
+                    onLogin = onLogin,
+                    onLogout = onLogout
                 )
             )
             is Config.CreateGlossary -> SettingsComponent.Child.CreateGlossary(

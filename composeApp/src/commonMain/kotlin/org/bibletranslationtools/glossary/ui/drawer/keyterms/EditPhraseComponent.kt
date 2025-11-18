@@ -51,8 +51,8 @@ class DefaultEditPhraseComponent(
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    private val resourceState = appStateStore.resourceStateHolder.resourceState
-    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
+    private val resourceState = appStateStore.resourceStateHolder.state
+    private val glossaryState = appStateStore.glossaryStateHolder.state
 
     init {
         doOnResume {

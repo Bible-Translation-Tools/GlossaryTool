@@ -11,6 +11,7 @@ object Settings {
     const val BOOK = "book"
     const val CHAPTER = "chapter"
     const val GLOSSARY = "glossary"
+    const val JWT_TOKEN = "jwt_token"
 }
 
 object Theme {

@@ -73,8 +73,8 @@ class DefaultReadIndexComponent(
     private val _model = MutableValue(ReadIndexComponent.Model())
     override val model: Value<ReadIndexComponent.Model> = _model
 
-    private val resourceState = appStateStore.resourceStateHolder.resourceState
-    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
+    private val resourceState = appStateStore.resourceStateHolder.state
+    private val glossaryState = appStateStore.glossaryStateHolder.state
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 

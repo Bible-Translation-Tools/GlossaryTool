@@ -8,14 +8,18 @@ import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.checking_for_updates
 import glossary.composeapp.generated.resources.error_checking_updates
+import glossary.composeapp.generated.resources.login_progress
+import glossary.composeapp.generated.resources.login_success
 import glossary.composeapp.generated.resources.no_updates_found
 import glossary.composeapp.generated.resources.updates_found
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
+import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
@@ -34,6 +38,8 @@ interface SettingsIndexComponent : DrawerContext {
         val snackBarMessage: String? = null
     )
 
+    fun login(username: String, password: String)
+    fun logout()
     fun createGlossary()
     fun viewGlossaries()
     fun checkUpdates()
@@ -44,7 +50,9 @@ class DefaultSettingsIndexComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
     private val onCreateGlossary: () -> Unit,
-    private val onViewGlossaries: () -> Unit
+    private val onViewGlossaries: () -> Unit,
+    private val onLogin: (User) -> Unit,
+    private val onLogout: () -> Unit
 ) : DrawerComponent(componentContext, parentContext), SettingsIndexComponent, KoinComponent {
 
     private val glossaryApi: GlossaryApi by inject()
@@ -58,6 +66,43 @@ class DefaultSettingsIndexComponent(
         doOnResume {
             setFullscreen(false)
         }
+    }
+
+    override fun login(username: String, password: String) {
+        componentScope.launch {
+            val loginProgress = getString(Res.string.login_progress)
+            val success = getString(Res.string.login_success)
+
+            _model.update {
+                it.copy(
+                    progress = Progress(value = -1f, message = loginProgress)
+                )
+            }
+
+            withContext(Dispatchers.Default) {
+                glossaryApi.login(username, password).let { result ->
+                    when (result) {
+                        is NetworkResult.Success -> {
+                            onLogin(result.data)
+                            _model.update {
+                                it.copy(snackBarMessage = success)
+                            }
+                        }
+                        is NetworkResult.Error -> {
+                            _model.update {
+                                it.copy(snackBarMessage = result.message)
+                            }
+                        }
+                    }
+                }
+            }
+
+            _model.update { it.copy(progress = null) }
+        }
+    }
+
+    override fun logout() {
+        onLogout()
     }
 
     override fun createGlossary() {

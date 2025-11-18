@@ -34,6 +34,8 @@ import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolder
 import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolderImpl
 import org.bibletranslationtools.glossary.ui.state.ResourceStateHolder
 import org.bibletranslationtools.glossary.ui.state.ResourceStateHolderImpl
+import org.bibletranslationtools.glossary.ui.state.UserStateHolder
+import org.bibletranslationtools.glossary.ui.state.UserStateHolderImpl
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -60,5 +62,6 @@ val sharedModule = module {
 
     singleOf(::ResourceStateHolderImpl).bind<ResourceStateHolder>()
     singleOf(::GlossaryStateHolderImpl).bind<GlossaryStateHolder>()
+    singleOf(::UserStateHolderImpl).bind<UserStateHolder>()
     singleOf(::AppStateStoreImpl).bind<AppStateStore>()
 }

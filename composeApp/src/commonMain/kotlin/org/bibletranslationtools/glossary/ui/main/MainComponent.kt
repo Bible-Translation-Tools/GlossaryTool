@@ -21,10 +21,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.data.api.User
+import org.bibletranslationtools.glossary.domain.GlossaryApi
+import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.DefaultKeyTermsComponent
@@ -87,6 +91,7 @@ interface MainComponent: ParentContext {
     val drawerSlot: Value<ChildSlot<DrawerConfig, DrawerContext>>
 
     fun setFullscreenDrawer(fullscreen: Boolean)
+    fun verifyLogin(token: String?)
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
@@ -100,7 +105,9 @@ class DefaultMainComponent(
 ) : MainComponent, KoinComponent, ComponentContext by componentContext {
 
     private val appStateStore: AppStateStore by inject()
+    private val userStateHolder = appStateStore.userStateHolder
     private val mainState = instanceKeeper.getOrCreate { MainStateKeeper() }
+    private val glossaryApi: GlossaryApi by inject()
 
     private val _model = MutableValue(MainComponent.Model())
     override val model: Value<MainComponent.Model> = _model
@@ -185,6 +192,40 @@ class DefaultMainComponent(
         _model.update { it.copy(fullscreenDrawer = fullscreen) }
     }
 
+    override fun verifyLogin(token: String?) {
+        componentScope.launch {
+            token?.let {
+                withContext(Dispatchers.Default) {
+                    glossaryApi.verifyLogin(it).let { result ->
+                        when (result) {
+                            is NetworkResult.Success -> {
+                                val user = User(
+                                    username = result.data,
+                                    token = it
+                                )
+                                userStateHolder.setUser(user)
+                            }
+                            is NetworkResult.Error -> {
+                                logout()
+                                println(result.message)
+                            }
+                        }
+                    }
+                }
+            } ?: run {
+                logout()
+            }
+        }
+    }
+
+    private fun login(user: User) {
+        userStateHolder.setUser(user)
+    }
+
+    private fun logout() {
+        userStateHolder.setUser(null)
+    }
+
     private fun onNavigateViewPhrase(phraseId: String) {
         val intent = KeyTermsIntent.ViewPhrase(phraseId)
         drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
@@ -211,12 +252,12 @@ class DefaultMainComponent(
 
     private fun selectActiveResource(resource: Resource) {
         _model.update { it.copy(activeResource = resource) }
-        appStateStore.resourceStateHolder.updateResource(resource)
+        appStateStore.resourceStateHolder.setResource(resource)
     }
 
     private fun selectActiveGlossary(glossary: Glossary, openKeyTerms: Boolean = false) {
         _model.update { it.copy(activeGlossary = glossary) }
-        appStateStore.glossaryStateHolder.updateGlossary(glossary)
+        appStateStore.glossaryStateHolder.setGlossary(glossary)
 
         componentScope.launch {
             if (openKeyTerms) {
@@ -245,7 +286,9 @@ class DefaultMainComponent(
                         delay(500)
                         showKeyTermsDrawer()
                     }
-                }
+                },
+                onLogin = ::login,
+                onLogout = ::logout
             )
             is DrawerConfig.KeyTerms -> DefaultKeyTermsComponent(
                 componentContext = context,

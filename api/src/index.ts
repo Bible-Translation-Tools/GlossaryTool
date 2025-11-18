@@ -1,11 +1,13 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import DbHelper from "./db/helper";
+import type { JwtVariables } from "hono/jwt";
 import {
   glossaryTable,
   phraseTable,
   refTable,
   resourceTable,
+  usersTable,
 } from "./db/schema";
 import {
   and,
@@ -25,8 +27,10 @@ import { load as parseYaml, dump as stringifyYaml } from "js-yaml";
 import { Glossary, GlossaryUpdate } from "./glossary.types";
 import { Manifest } from "./resource.types";
 import { version } from "uuid";
+import { TokenRes, UserRes } from "./user.types";
+import { jwt, sign } from "hono/jwt";
 
-interface AppVariables {
+interface AppVariables extends JwtVariables {
   db: DbHelper;
 }
 
@@ -43,14 +47,101 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// app.use("/api/*", async (c, next) => {
-//   const jwtMiddleware = jwt({
-//     secret: c.env.JWT_SECRET_KEY,
-//   });
-//   return jwtMiddleware(c, next);
-// });
+app.use("/private/api/*", async (c, next) => {
+  const jwtMiddleware = jwt({
+    secret: c.env.JWT_SECRET_KEY,
+  });
+  return jwtMiddleware(c, next);
+});
 
-app.post("/api/glossary", async (c) => {
+app.post("/public/api/login", async (c) => {
+  const dbHelper = c.get("db");
+  const { username, password } = await c.req.json<{
+    username: string;
+    password: string;
+  }>();
+
+  try {
+    const wacsUrl = `https://content.bibletranslationtools.org/api/v1/users/${username}/tokens`;
+    const b64Creds = btoa(`${username}:${password}`);
+    const res = await fetch(wacsUrl, {
+      method: "POST",
+      headers: {
+        authorization: `Basic ${b64Creds}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name: `glossary-api-token_${Date.now()}`,
+        scopes: ["write:repository", "write:user"],
+      }),
+    });
+
+    if (!res.ok) {
+      const resHeadersDbug: Record<string, string> = {};
+      for (const pair of res.headers.entries()) {
+        const key = pair[0];
+        const v = pair[1];
+        if (key.toLowerCase() !== "authorization") {
+          resHeadersDbug[key] = v;
+        }
+      }
+      throw new Error("Failed to get WACS api token");
+    }
+
+    const token = (await res.json()) as TokenRes;
+    const userEndpoint = `https://content.bibletranslationtools.org/api/v1/user`;
+    const apiToken = token.sha1;
+    const userRes = await fetch(userEndpoint, {
+      headers: {
+        Authorization: `token ${apiToken}`,
+        Accept: "application/json",
+      },
+    });
+    if (!userRes.ok) {
+      const body = await userRes.text();
+      throw new Error("Failed to get user info");
+    }
+    const userData = (await userRes.json()) as UserRes;
+
+    await dbHelper
+      .getDb()
+      .insert(usersTable)
+      .values({
+        email: userData.email,
+        username: userData.username,
+        wacsUserId: userData.id,
+      })
+      .onConflictDoUpdate({
+        target: usersTable.email,
+        set: {
+          username: sql`EXCLUDED.username`,
+          updatedAt: new Date(),
+        },
+      });
+
+    const payload = {
+      username: userData.username,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // expires in 1 day
+    };
+
+    const jwtToken = await sign(payload, c.env.JWT_SECRET_KEY);
+
+    return c.json({
+      username: userData.username,
+      token: jwtToken,
+    });
+  } catch (error: any) {
+    return c.json(error.message || "Unknown error", 500);
+  }
+});
+
+// Just to verify if token is not expired
+app.get("/private/api/verify", async (c) => {
+  const payload = c.get("jwtPayload");
+  return c.text(payload.username);
+});
+
+app.post("/private/api/glossary", async (c) => {
   const dbHelper = c.get("db");
 
   try {
@@ -202,7 +293,7 @@ app.post("/api/glossary", async (c) => {
   }
 });
 
-app.get("/api/glossary/:code", async (c) => {
+app.get("/public/api/glossary/:code", async (c) => {
   const dbHelper = c.get("db");
   const code = c.req.param("code");
 
@@ -260,7 +351,7 @@ app.get("/api/glossary/:code", async (c) => {
   }
 });
 
-app.post("/api/glossary/check_updates", async (c) => {
+app.post("/public/api/glossary/check_updates", async (c) => {
   const dbHelper = c.get("db");
   const glossaries = await c.req.json<GlossaryUpdate[]>();
 

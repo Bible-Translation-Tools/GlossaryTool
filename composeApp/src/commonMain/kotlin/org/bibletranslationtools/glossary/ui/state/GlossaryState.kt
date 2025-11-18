@@ -10,16 +10,16 @@ data class GlossaryState(
 )
 
 interface GlossaryStateHolder {
-    val glossaryState: StateFlow<GlossaryState>
-    fun updateGlossary(glossary: Glossary)
+    val state: StateFlow<GlossaryState>
+    fun setGlossary(glossary: Glossary)
 }
 
 class GlossaryStateHolderImpl : GlossaryStateHolder {
-    private val _glossaryState = MutableStateFlow(GlossaryState())
-    override val glossaryState: StateFlow<GlossaryState> = _glossaryState
+    private val _state = MutableStateFlow(GlossaryState())
+    override val state: StateFlow<GlossaryState> = _state
 
-    override fun updateGlossary(glossary: Glossary) {
-        _glossaryState.update { current ->
+    override fun setGlossary(glossary: Glossary) {
+        _state.update { current ->
             current.copy(glossary = glossary)
         }
     }

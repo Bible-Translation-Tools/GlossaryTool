@@ -57,9 +57,9 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
     val model by component.model.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
-    val resourceState by appStateStore.resourceStateHolder.resourceState
+    val resourceState by appStateStore.resourceStateHolder.state
         .collectAsStateWithLifecycle()
-    val glossaryState by appStateStore.glossaryStateHolder.glossaryState
+    val glossaryState by appStateStore.glossaryStateHolder.state
         .collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()

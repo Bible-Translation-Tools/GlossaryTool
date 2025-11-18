@@ -26,6 +26,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
@@ -42,11 +43,17 @@ import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsScreen
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
 import org.bibletranslationtools.glossary.ui.resources.ResourcesScreen
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun MainScreen(component: MainComponent) {
     val model by component.model.subscribeAsState()
+
+    val appStateStore = koinInject<AppStateStore>()
+    val userState by appStateStore.userStateHolder.state
+        .collectAsStateWithLifecycle()
 
     var selectedResource by rememberStringSetting(
         Settings.RESOURCE,
@@ -63,6 +70,9 @@ fun MainScreen(component: MainComponent) {
         Settings.CHAPTER,
         1
     )
+    var jwtToken by rememberStringSettingOrNull(
+        Settings.JWT_TOKEN
+    )
 
     val roundedShape = DrawerDefaults.shape
     val flatShape = RectangleShape
@@ -76,6 +86,7 @@ fun MainScreen(component: MainComponent) {
     }
 
     val snackBarHostState = remember { SnackbarHostState() }
+    var initialized by remember { mutableStateOf(false) }
 
     LaunchedEffect(model.activeResource) {
         model.activeResource?.let { resource ->
@@ -90,6 +101,23 @@ fun MainScreen(component: MainComponent) {
             if (glossary.code != selectedGlossary) {
                 selectedGlossary = glossary.code
             }
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        component.verifyLogin(jwtToken)
+    }
+
+    LaunchedEffect(userState.user) {
+        userState.user?.token?.let { token ->
+            jwtToken = token
+        } ?: run {
+            // If user is null after initialization
+            // then we assume user is logged out
+            if (initialized) {
+                jwtToken = null
+            }
+            initialized = true
         }
     }
 

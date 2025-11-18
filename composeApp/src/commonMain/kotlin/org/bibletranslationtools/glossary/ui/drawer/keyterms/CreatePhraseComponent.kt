@@ -49,8 +49,8 @@ class DefaultCreatePhraseComponent(
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    private val resourceState = appStateStore.resourceStateHolder.resourceState
-    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
+    private val resourceState = appStateStore.resourceStateHolder.state
+    private val glossaryState = appStateStore.glossaryStateHolder.state
     private var sourceText: String? = null
     private var exclusions: Set<String> = emptySet()
     private var searchJob: Job? = null

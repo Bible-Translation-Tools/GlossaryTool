@@ -78,7 +78,7 @@ class DefaultSplashComponent(
             res.copy(id = dbRes.id, url = dbRes.url)
         }
 
-        appStateStore.resourceStateHolder.updateResource(resource)
+        appStateStore.resourceStateHolder.setResource(resource)
     }
 
     private suspend fun loadGlossary(glossaryCode: String?) {
@@ -89,7 +89,7 @@ class DefaultSplashComponent(
         withContext(Dispatchers.Default) {
             glossaryCode?.let { code ->
                 glossaryRepository.getGlossary(code)?.let { glossary ->
-                    appStateStore.glossaryStateHolder.updateGlossary(glossary)
+                    appStateStore.glossaryStateHolder.setGlossary(glossary)
                 }
             }
         }

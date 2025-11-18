@@ -55,7 +55,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
     val model by component.model.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
-    val resourceState by appStateStore.resourceStateHolder.resourceState
+    val resourceState by appStateStore.resourceStateHolder.state
         .collectAsStateWithLifecycle()
 
     Column(

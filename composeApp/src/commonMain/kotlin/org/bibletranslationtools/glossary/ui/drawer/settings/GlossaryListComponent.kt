@@ -69,7 +69,7 @@ class DefaultGlossaryListComponent(
     private val resourceContainerAccessor: ResourceContainerAccessor by inject()
     private val exportGlossaryUseCase: ExportGlossary by inject()
 
-    private val glossaryState = appStateStore.glossaryStateHolder.glossaryState
+    private val glossaryState = appStateStore.glossaryStateHolder.state
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     private val _model = MutableValue(GlossaryListComponent.Model())

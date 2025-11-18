@@ -10,16 +10,16 @@ data class ResourceState(
 )
 
 interface ResourceStateHolder {
-    val resourceState: StateFlow<ResourceState>
-    fun updateResource(resource: Resource)
+    val state: StateFlow<ResourceState>
+    fun setResource(resource: Resource)
 }
 
 class ResourceStateHolderImpl : ResourceStateHolder {
-    private val _resourceState = MutableStateFlow(ResourceState())
-    override val resourceState: StateFlow<ResourceState> = _resourceState
+    private val _state = MutableStateFlow(ResourceState())
+    override val state: StateFlow<ResourceState> = _state
 
-    override fun updateResource(resource: Resource) {
-        _resourceState.update { current ->
+    override fun setResource(resource: Resource) {
+        _state.update { current ->
             current.copy(resource = resource)
         }
     }
