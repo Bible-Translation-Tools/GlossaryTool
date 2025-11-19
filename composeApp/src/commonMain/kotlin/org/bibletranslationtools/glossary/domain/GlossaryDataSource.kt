@@ -34,7 +34,6 @@ class GlossaryDataSourceImpl(db: GlossaryDatabase): GlossaryDataSource {
         val result = queries.insert(
             id = glossary.id,
             code = glossary.code,
-            author = glossary.author,
             sourceLanguage = glossary.sourceLanguage,
             targetLanguage = glossary.targetLanguage,
             version = glossary.version,

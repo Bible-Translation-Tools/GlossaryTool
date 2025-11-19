@@ -65,6 +65,7 @@ import glossary.composeapp.generated.resources.terms_and_conditions
 import glossary.composeapp.generated.resources.user_settings
 import glossary.composeapp.generated.resources.view_glossaries
 import kotlinx.coroutines.launch
+import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.domain.Theme
 import org.bibletranslationtools.glossary.ui.components.SegmentedButtonRow
@@ -87,6 +88,8 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
     val appStateStore = koinInject<AppStateStore>()
     val userState by appStateStore.userStateHolder.state
         .collectAsStateWithLifecycle()
+    val glossaryState by appStateStore.glossaryStateHolder.state
+        .collectAsStateWithLifecycle()
 
     var theme by rememberStringSetting(
         Settings.THEME,
@@ -106,6 +109,16 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
     val scope = rememberCoroutineScope()
 
     var showLoginDialog by remember { mutableStateOf(false) }
+    var emoji by remember { mutableStateOf(userState.user?.emoji) }
+
+    val isAdmin by remember(glossaryState.users) {
+        mutableStateOf(
+            glossaryState.users
+                .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
+                .map { it.username }
+                .contains(userState.user?.username)
+        )
+    }
 
     LaunchedEffect(isDarkModeEnabled) {
         theme = if (isDarkModeEnabled) {
@@ -144,16 +157,16 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 Text(
-                                    text = "\uD83D\uDE00",
-                                    fontSize = 40.sp,
-                                    modifier = Modifier.clickable {
-                                        component.logout()
-                                    }
+                                    text = user.emoji,
+                                    fontSize = 40.sp
                                 )
                                 Text(
                                     text = user.username,
                                     fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.clickable {
+                                        component.logout()
+                                    }
                                 )
                             }
                         } ?: run {
@@ -236,18 +249,20 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                         SettingsSection(
                             title = stringResource(Res.string.user_settings)
                         ) {
-                            SettingsClickableItem(
-                                icon = painterResource(Res.drawable.person_edit),
-                                text = stringResource(Res.string.edit_account),
-                                onClick = {},
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                            SettingsClickableItem(
-                                icon = painterResource(Res.drawable.person_edit),
-                                text = stringResource(Res.string.edit_permissions),
-                                onClick = {},
-                                modifier = Modifier.fillMaxWidth()
-                            )
+                            if (isAdmin) {
+                                SettingsClickableItem(
+                                    icon = painterResource(Res.drawable.person_edit),
+                                    text = stringResource(Res.string.edit_account),
+                                    onClick = {},
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                SettingsClickableItem(
+                                    icon = painterResource(Res.drawable.person_edit),
+                                    text = stringResource(Res.string.edit_permissions),
+                                    onClick = {},
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                            }
                             SettingsClickableItem(
                                 icon = painterResource(Res.drawable.format_list_bulleted_add),
                                 text = stringResource(Res.string.new_glossary),

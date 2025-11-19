@@ -7,7 +7,11 @@ import {
   uniqueIndex,
   varchar,
   serial,
+  pgEnum,
 } from "drizzle-orm/pg-core";
+
+export const roleEnum = pgEnum("role", ["owner", "admin", "editor", "viewer"]);
+export type RoleType = (typeof roleEnum.enumValues)[number];
 
 export const usersTable = pgTable(
   "users",
@@ -16,6 +20,7 @@ export const usersTable = pgTable(
     wacsUserId: integer("wacs_user_id").notNull(),
     username: varchar("username", { length: 255 }).notNull(),
     email: varchar("email", { length: 255 }).notNull(),
+    emoji: varchar("emoji", { length: 255 }).notNull().default("😀"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -45,7 +50,6 @@ export const glossaryTable = pgTable(
   {
     id: text("id").primaryKey(),
     code: text("code").notNull(),
-    author: text("author").notNull(),
     sourceLanguage: text("source_language").notNull(),
     targetLanguage: text("target_language").notNull(),
     version: integer("version").notNull().default(1),
@@ -60,7 +64,7 @@ export const glossaryTable = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("idx_unique_glossary").on(table.code, table.author)]
+  (table) => [uniqueIndex("idx_unique_glossary").on(table.id, table.code)]
 );
 
 export const phraseTable = pgTable(
@@ -97,6 +101,26 @@ export const refTable = pgTable("refs", {
     .references(() => phraseTable.id, { onDelete: "cascade" }),
 });
 
+export const glossaryUsers = pgTable(
+  "glossary_users",
+  {
+    glossaryId: text("glossary_id")
+      .notNull()
+      .references(() => glossaryTable.id, { onDelete: "cascade" }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    role: roleEnum("role").notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_unique_glossary_user").on(table.glossaryId, table.userId),
+  ]
+);
+
+export const userEntityRelations = relations(usersTable, ({ many }) => ({
+  glossaries: many(glossaryUsers),
+}));
+
 export const resourceEntityRelations = relations(resourceTable, ({ many }) => ({
   glossaries: many(glossaryTable),
 }));
@@ -109,8 +133,20 @@ export const glossaryEntityRelations = relations(
       references: [resourceTable.id],
     }),
     phrases: many(phraseTable),
+    users: many(glossaryUsers),
   })
 );
+
+export const glossaryUsersRelations = relations(glossaryUsers, ({ one }) => ({
+  glossary: one(glossaryTable, {
+    fields: [glossaryUsers.glossaryId],
+    references: [glossaryTable.id],
+  }),
+  user: one(usersTable, {
+    fields: [glossaryUsers.userId],
+    references: [usersTable.id],
+  }),
+}));
 
 export const phraseEntityRelations = relations(
   phraseTable,

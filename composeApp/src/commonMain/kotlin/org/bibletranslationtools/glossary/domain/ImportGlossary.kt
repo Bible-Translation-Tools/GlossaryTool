@@ -106,7 +106,6 @@ class ImportGlossary(
         return Glossary(
             id = glossary.id,
             code = glossary.code,
-            author = glossary.author,
             sourceLanguage = sourceLanguage,
             targetLanguage = targetLanguage,
             version = glossary.version,

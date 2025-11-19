@@ -4,9 +4,12 @@ import DbHelper from "./db/helper";
 import type { JwtVariables } from "hono/jwt";
 import {
   glossaryTable,
+  glossaryUsers,
   phraseTable,
   refTable,
   resourceTable,
+  roleEnum,
+  RoleType,
   usersTable,
 } from "./db/schema";
 import {
@@ -27,7 +30,7 @@ import { load as parseYaml, dump as stringifyYaml } from "js-yaml";
 import { Glossary, GlossaryUpdate } from "./glossary.types";
 import { Manifest } from "./resource.types";
 import { version } from "uuid";
-import { TokenRes, UserRes } from "./user.types";
+import { ErrorDetails, GlossaryUser, TokenRes, UserRes } from "./user.types";
 import { jwt, sign } from "hono/jwt";
 
 interface AppVariables extends JwtVariables {
@@ -85,7 +88,7 @@ app.post("/public/api/login", async (c) => {
           resHeadersDbug[key] = v;
         }
       }
-      throw new Error("Failed to get WACS api token");
+      throw new Error("Failed to get WACS api token.");
     }
 
     const token = (await res.json()) as TokenRes;
@@ -99,7 +102,7 @@ app.post("/public/api/login", async (c) => {
     });
     if (!userRes.ok) {
       const body = await userRes.text();
-      throw new Error("Failed to get user info");
+      throw new Error("Failed to get user info.");
     }
     const userData = (await userRes.json()) as UserRes;
 
@@ -119,30 +122,52 @@ app.post("/public/api/login", async (c) => {
         },
       });
 
-    const payload = {
+    const userDb = await dbHelper.getDb().query.usersTable.findFirst({
+      where: eq(usersTable.username, userData.username),
+    });
+
+    if (!userDb) {
+      throw new Error("User is not in the database.");
+    }
+
+    const jwtPayload = {
+      id: userDb.id,
       username: userData.username,
+      emoji: userDb.emoji,
       exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // expires in 1 day
     };
 
-    const jwtToken = await sign(payload, c.env.JWT_SECRET_KEY);
+    const jwtToken = await sign(jwtPayload, c.env.JWT_SECRET_KEY);
 
     return c.json({
       username: userData.username,
+      emoji: userDb.emoji,
       token: jwtToken,
     });
   } catch (error: any) {
-    return c.json(error.message || "Unknown error", 500);
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to login.",
+        details: error.message || "Unknown error.",
+      },
+      400
+    );
   }
 });
 
 // Just to verify if token is not expired
 app.get("/private/api/verify", async (c) => {
-  const payload = c.get("jwtPayload");
-  return c.text(payload.username);
+  const auth = c.get("jwtPayload");
+  return c.json({
+    username: auth.username,
+    emoji: auth.emoji,
+    token: "noop",
+  });
 });
 
 app.post("/private/api/glossary", async (c) => {
   const dbHelper = c.get("db");
+  const auth = c.get("jwtPayload");
 
   try {
     const zipArrayBuffer = await c.req.arrayBuffer();
@@ -190,9 +215,8 @@ app.post("/private/api/glossary", async (c) => {
     }
 
     if (glossary == null && manifest == null) {
-      return c.json(
-        { error: "Could not find glossary.json or resource.zip/manifest.yml" },
-        404
+      throw new Error(
+        "Could not find glossary.json or resource.zip/manifest.yml"
       );
     }
 
@@ -219,15 +243,13 @@ app.post("/private/api/glossary", async (c) => {
       .values({
         id: glossary!.id,
         code: glossary!.code,
-        author: glossary!.author,
         sourceLanguage: glossary!.sourceLanguage,
         targetLanguage: glossary!.targetLanguage,
         resourceId: resourceId,
       })
       .onConflictDoUpdate({
-        target: [glossaryTable.code, glossaryTable.author],
+        target: [glossaryTable.id, glossaryTable.code],
         set: {
-          author: glossary!.author,
           sourceLanguage: glossary!.sourceLanguage,
           targetLanguage: glossary!.targetLanguage,
           resourceId: resourceId,
@@ -237,9 +259,23 @@ app.post("/private/api/glossary", async (c) => {
 
     const glossaryId = insertGlossary[0].id;
 
-    for (const phrase of glossary!.phrases) {
-      // Use a single transaction for each phrase and its refs
-      await dbHelper.getDb().transaction(async (tx) => {
+    await dbHelper
+      .getDb()
+      .insert(glossaryUsers)
+      .values({
+        glossaryId: glossaryId,
+        userId: auth.id,
+        role: "owner",
+      })
+      .onConflictDoUpdate({
+        target: [glossaryUsers.glossaryId, glossaryUsers.userId],
+        set: {
+          role: "owner",
+        },
+      });
+
+    await dbHelper.getDb().transaction(async (tx) => {
+      for (const phrase of glossary!.phrases) {
         const insertPhrase = await tx
           .insert(phraseTable)
           .values({
@@ -270,25 +306,101 @@ app.post("/private/api/glossary", async (c) => {
               target: [refTable.id],
             });
         }
-      });
-    }
+      }
+    });
 
-    const updated = await dbHelper
-      .getDb()
-      .query.glossaryTable.findFirst({
-        where: eq(glossaryTable.id, glossaryId),
-      })
-      .execute();
+    const updated = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.id, glossaryId),
+    });
 
     if (!updated) {
-      return c.json({ error: "Could not find glossary" }, 404);
+      throw new Error("Could not find glossary.");
     }
 
     return c.json(updated.version);
-  } catch (error) {
-    return c.json(
-      { error: "Failed to process raw zip file.", details: error },
-      500
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to process glossary file.",
+        details: error.message || "Unknown error.",
+      },
+      400
+    );
+  }
+});
+
+app.post("/private/api/glossary/:code/role", async (c) => {
+  const dbHelper = c.get("db");
+  const auth = c.get("jwtPayload");
+  const code = c.req.param("code");
+  const { username, role } = await c.req.json<{
+    username: string;
+    role: RoleType;
+  }>();
+
+  try {
+    const userRole = role as RoleType;
+
+    if (!roleEnum.enumValues.includes(userRole) || userRole === "owner") {
+      throw new Error("Invalid role.");
+    }
+
+    const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.code, code),
+      with: {
+        users: {
+          with: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!glossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    const glossaryAdmins = glossary.users
+      .filter((user) => ["owner", "admin"].includes(user.role))
+      .map((user) => user.user.username);
+
+    if (!glossaryAdmins.includes(auth.username)) {
+      throw new Error(
+        "You don't have permissions to assign roles to this glossary."
+      );
+    }
+
+    const user = await dbHelper.getDb().query.usersTable.findFirst({
+      where: eq(usersTable.username, username),
+    });
+
+    if (!user) {
+      throw new Error("Invalid user.");
+    }
+
+    await dbHelper
+      .getDb()
+      .insert(glossaryUsers)
+      .values({
+        glossaryId: glossary.id,
+        userId: user.id,
+        role: userRole,
+      })
+      .onConflictDoUpdate({
+        target: [glossaryUsers.glossaryId, glossaryUsers.userId],
+        set: {
+          role: userRole,
+        },
+      });
+
+    return c.json(true);
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to assign role.",
+        details: error.message || "Unknown error.",
+      },
+      400
     );
   }
 });
@@ -314,7 +426,7 @@ app.get("/public/api/glossary/:code", async (c) => {
       })) || null;
 
     if (!glossary) {
-      return c.json({ error: "Could not find glossary" }, 404);
+      throw new Error("Code doesn't exist.");
     }
 
     const resourceFilename = `${glossary!.resource.language}_${
@@ -323,9 +435,8 @@ app.get("/public/api/glossary/:code", async (c) => {
 
     const resourceFile = await c.env.R2_BUCKET.get(resourceFilename);
     if (resourceFile === null) {
-      return c.json(
-        { error: `Resource file "${resourceFilename}" not found in R2.` },
-        404
+      throw new Error(
+        `Resource file "${resourceFilename}" not found in R2 bucket.`
       );
     }
     const resourceBytes = await resourceFile.arrayBuffer();
@@ -343,10 +454,141 @@ app.get("/public/api/glossary/:code", async (c) => {
         "Content-Disposition": `attachment; filename="${filename}"`,
       },
     });
-  } catch (error) {
-    return c.json(
-      { error: "Failed to process raw zip file.", details: error },
-      500
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to process raw zip file.",
+        details: error.message || "Unknown error.",
+      },
+      400
+    );
+  }
+});
+
+app.get("/private/api/glossary/:code/users", async (c) => {
+  const dbHelper = c.get("db");
+  const code = c.req.param("code");
+  const auth = c.get("jwtPayload");
+
+  try {
+    const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.code, code),
+      with: {
+        users: {
+          with: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!glossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    const glossaryAdmins = glossary.users
+      .filter((user) => ["owner", "admin"].includes(user.role))
+      .map((user) => user.user.username);
+
+    if (glossaryAdmins.includes(auth.username)) {
+      return c.json<GlossaryUser[]>(
+        glossary.users.map((user) => {
+          return {
+            username: user.user.username,
+            emoji: user.user.emoji,
+            role: user.role,
+            code: glossary.code,
+          };
+        })
+      );
+    } else {
+      return c.json([]);
+    }
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to get glossary users.",
+        details: error.message || "Unknown error.",
+      },
+      400
+    );
+  }
+});
+
+app.get("/private/api/glossary/:code/join", async (c) => {
+  const dbHelper = c.get("db");
+  const code = c.req.param("code");
+  const auth = c.get("jwtPayload");
+
+  try {
+    const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.code, code),
+      with: {
+        users: {
+          with: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!glossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    const users = glossary.users.map((user) => user.user.username);
+
+    if (!users.includes(auth.username)) {
+      await dbHelper
+        .getDb()
+        .insert(glossaryUsers)
+        .values({
+          glossaryId: glossary.id,
+          userId: auth.id,
+          role: "viewer",
+        })
+        .onConflictDoUpdate({
+          target: [glossaryUsers.glossaryId, glossaryUsers.userId],
+          set: {
+            role: "viewer",
+          },
+        });
+    }
+
+    const updatedGlossary = await dbHelper
+      .getDb()
+      .query.glossaryTable.findFirst({
+        where: eq(glossaryTable.code, code),
+        with: {
+          users: {
+            with: {
+              user: true,
+            },
+          },
+        },
+      });
+
+    if (!updatedGlossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    return c.json<GlossaryUser[]>(
+      updatedGlossary.users.map((user) => {
+        return {
+          username: user.user.username,
+          emoji: user.user.emoji,
+          role: user.role,
+          code: glossary.code,
+        };
+      })
+    );
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to get glossary users.",
+        details: error.message || "Unknown error.",
+      },
+      400
     );
   }
 });
@@ -382,10 +624,13 @@ app.post("/public/api/glossary/check_updates", async (c) => {
     }));
 
     return c.json(updates);
-  } catch (error) {
-    return c.json(
-      { error: "Failed to check for updates.", details: error },
-      500
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to check for updates.",
+        details: error.message || "Unknown error.",
+      },
+      400
     );
   }
 });

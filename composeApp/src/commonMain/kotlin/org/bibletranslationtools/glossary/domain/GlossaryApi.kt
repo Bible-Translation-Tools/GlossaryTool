@@ -15,15 +15,25 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.utils.io.toByteArray
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
+import org.bibletranslationtools.glossary.data.api.GlossaryUser
 import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.data.api.UserAuth
+import org.bibletranslationtools.glossary.data.api.UserRole
 
 interface GlossaryApi {
     suspend fun downloadGlossary(code: String): NetworkResult<ByteArray>
     suspend fun uploadGlossary(file: PlatformFile, token: String): NetworkResult<Int>
+    suspend fun setGlossaryRole(
+        code: String,
+        username: String,
+        role: UserRole,
+        token: String
+    ): NetworkResult<Boolean>
     suspend fun checkUpdates(glossaries: List<GlossaryUpdate>): NetworkResult<List<GlossaryUpdate>>
     suspend fun login(username: String, password: String): NetworkResult<User>
-    suspend fun verifyLogin(token: String): NetworkResult<String>
+    suspend fun verifyLogin(token: String): NetworkResult<User>
+    suspend fun getGlossaryUsers(code: String, token: String): NetworkResult<List<GlossaryUser>>
+    suspend fun joinGlossary(code: String, token: String): NetworkResult<List<GlossaryUser>>
 }
 
 class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
@@ -58,6 +68,27 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
                 bearerAuth(token)
             }
             response.body()
+        }
+    }
+
+    override suspend fun setGlossaryRole(
+        code: String,
+        username: String,
+        role: UserRole,
+        token: String
+    ): NetworkResult<Boolean> {
+        return ApiHelper.callApi {
+            val response = httpClient.post("$PRIVATE_API/glossary/$code/role") {
+                setBody(mapOf("username" to username, "role" to role))
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error setting user role"
+                )
+            }
         }
     }
 
@@ -97,7 +128,7 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
         }
     }
 
-    override suspend fun verifyLogin(token: String): NetworkResult<String> {
+    override suspend fun verifyLogin(token: String): NetworkResult<User> {
         return ApiHelper.callApi {
             val response = httpClient.get("$PRIVATE_API/verify") {
                 accept(ContentType.Application.Json)
@@ -109,6 +140,46 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
                 throw ServerResponseException(
                     response,
                     "Authentication verification error"
+                )
+            }
+        }
+    }
+
+    override suspend fun getGlossaryUsers(
+        code: String,
+        token: String
+    ): NetworkResult<List<GlossaryUser>> {
+        return ApiHelper.callApi {
+            val response = httpClient.get("$PRIVATE_API/glossary/$code/users") {
+                accept(ContentType.Application.Json)
+                bearerAuth(token)
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error getting glossary users"
+                )
+            }
+        }
+    }
+
+    override suspend fun joinGlossary(
+        code: String,
+        token: String
+    ): NetworkResult<List<GlossaryUser>> {
+        return ApiHelper.callApi {
+            val response = httpClient.get("$PRIVATE_API/glossary/$code/join") {
+                accept(ContentType.Application.Json)
+                bearerAuth(token)
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error joining glossary"
                 )
             }
         }

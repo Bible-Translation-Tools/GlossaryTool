@@ -25,7 +25,6 @@ export interface Resource {
 export interface Glossary {
   id: string;
   code: string;
-  author: string;
   sourceLanguage: string;
   targetLanguage: string;
   createdAt: string;

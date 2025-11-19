@@ -11,7 +11,6 @@ import org.bibletranslationtools.glossary.toTimestamp
 @Serializable
 data class Glossary(
     val code: String,
-    val author: String,
     val sourceLanguage: Language,
     val targetLanguage: Language,
     val version: Int,
@@ -28,7 +27,6 @@ fun GlossaryEntity.toModel(
 ): Glossary {
     return Glossary(
         code = code,
-        author = author,
         sourceLanguage = sourceLanguage,
         targetLanguage = targetLanguage,
         version = version.toInt(),
@@ -43,7 +41,6 @@ fun GlossaryEntity.toModel(
 fun Glossary.toEntity(): GlossaryEntity {
     return GlossaryEntity(
         code = code,
-        author = author,
         sourceLanguage = sourceLanguage.slug,
         targetLanguage = targetLanguage.slug,
         version = version.toLong(),

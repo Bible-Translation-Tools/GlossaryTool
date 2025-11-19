@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.ui.drawer.keyterms
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -38,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -50,12 +52,14 @@ import glossary.composeapp.generated.resources.add_glossary_key_terms
 import glossary.composeapp.generated.resources.create_glossary
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.glossary_code
+import glossary.composeapp.generated.resources.join_glossary
 import glossary.composeapp.generated.resources.key_terms
 import glossary.composeapp.generated.resources.key_terms_unavailable
 import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.search
 import glossary.composeapp.generated.resources.update_glossary
 import kotlinx.coroutines.launch
+import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.GlossaryUpdate
@@ -77,6 +81,8 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
 
     val appStateStore = koinInject<AppStateStore>()
     val glossaryState by appStateStore.glossaryStateHolder.state
+        .collectAsStateWithLifecycle()
+    val userState by appStateStore.userStateHolder.state
         .collectAsStateWithLifecycle()
 
     var currentPhrases by remember {
@@ -108,6 +114,23 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
 
     val coroutineScope = rememberCoroutineScope()
     val snackBar = LocalSnackBarHostState.current
+
+    val isAdmin by remember(glossaryState.users) {
+        mutableStateOf(
+            glossaryState.users
+                .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
+                .map { it.username }
+                .contains(userState.user?.username)
+        )
+    }
+
+    val joined by remember(glossaryState.users) {
+        mutableStateOf(
+            glossaryState.users
+                .map { it.username }
+                .contains(userState.user?.username)
+        )
+    }
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let { glossary ->
@@ -159,10 +182,23 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    model.glossary?.let { glossary ->
-                        Spacer(modifier = Modifier.height(16.dp))
+                    if (!joined) {
+                        Text(
+                            text = stringResource(Res.string.join_glossary),
+                            textDecoration = TextDecoration.Underline,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 16.sp,
+                            modifier = Modifier.clickable {
+                                userState.user?.let { user ->
+                                    component.joinGlossary(user)
+                                }
+                            }
+                        )
+                    }
 
+                    model.glossary?.let { glossary ->
                         if (glossary.hasUpdate || glossaryUpdateStatus != UpdateStatus.DEFAULT) {
+                            Spacer(modifier = Modifier.height(16.dp))
                             GlossaryUpdate(
                                 status = glossaryUpdateStatus,
                                 onDownload = component::downloadGlossary,
@@ -338,16 +374,18 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                                 )
                             }
 
-                            ElevatedButton(
-                                onClick = component::updateGlossary,
-                                shape = MaterialTheme.shapes.medium,
-                                colors = ButtonDefaults.elevatedButtonColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                ),
-                                modifier = Modifier.fillMaxWidth()
-                                    .height(40.dp)
-                            ) {
-                                Text(stringResource(Res.string.update_glossary))
+                            if (isAdmin) {
+                                ElevatedButton(
+                                    onClick = component::updateGlossary,
+                                    shape = MaterialTheme.shapes.medium,
+                                    colors = ButtonDefaults.elevatedButtonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                                    ),
+                                    modifier = Modifier.fillMaxWidth()
+                                        .height(40.dp)
+                                ) {
+                                    Text(stringResource(Res.string.update_glossary))
+                                }
                             }
                         }
                     }

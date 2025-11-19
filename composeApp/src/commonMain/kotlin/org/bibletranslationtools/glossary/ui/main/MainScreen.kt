@@ -54,6 +54,8 @@ fun MainScreen(component: MainComponent) {
     val appStateStore = koinInject<AppStateStore>()
     val userState by appStateStore.userStateHolder.state
         .collectAsStateWithLifecycle()
+    val glossaryState by appStateStore.glossaryStateHolder.state
+        .collectAsStateWithLifecycle()
 
     var selectedResource by rememberStringSetting(
         Settings.RESOURCE,
@@ -118,6 +120,14 @@ fun MainScreen(component: MainComponent) {
                 jwtToken = null
             }
             initialized = true
+        }
+    }
+
+    LaunchedEffect(userState.user, glossaryState.glossary) {
+        userState.user?.let { user ->
+            glossaryState.glossary?.let { glossary ->
+                component.getGlossaryUsers(glossary, user)
+            }
         }
     }
 

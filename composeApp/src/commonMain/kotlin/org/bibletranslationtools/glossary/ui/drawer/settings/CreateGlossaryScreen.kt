@@ -149,7 +149,7 @@ fun CreateGlossaryScreen(component: CreateGlossaryComponent) {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = error,
+                                text = error.error,
                                 color = MaterialTheme.colorScheme.error
                             )
                             Spacer(modifier = Modifier.height(24.dp))

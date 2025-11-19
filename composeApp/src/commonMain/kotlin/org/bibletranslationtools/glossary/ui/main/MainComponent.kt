@@ -92,6 +92,7 @@ interface MainComponent: ParentContext {
 
     fun setFullscreenDrawer(fullscreen: Boolean)
     fun verifyLogin(token: String?)
+    fun getGlossaryUsers(glossary: Glossary, user: User)
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
@@ -106,6 +107,7 @@ class DefaultMainComponent(
 
     private val appStateStore: AppStateStore by inject()
     private val userStateHolder = appStateStore.userStateHolder
+    private val glossaryStateHolder = appStateStore.glossaryStateHolder
     private val mainState = instanceKeeper.getOrCreate { MainStateKeeper() }
     private val glossaryApi: GlossaryApi by inject()
 
@@ -199,11 +201,7 @@ class DefaultMainComponent(
                     glossaryApi.verifyLogin(it).let { result ->
                         when (result) {
                             is NetworkResult.Success -> {
-                                val user = User(
-                                    username = result.data,
-                                    token = it
-                                )
-                                userStateHolder.setUser(user)
+                                userStateHolder.setUser(result.data.copy(token = it))
                             }
                             is NetworkResult.Error -> {
                                 logout()
@@ -215,6 +213,23 @@ class DefaultMainComponent(
             } ?: run {
                 logout()
             }
+        }
+    }
+
+    override fun getGlossaryUsers(glossary: Glossary, user: User) {
+        componentScope.launch {
+            val users = withContext(Dispatchers.Default) {
+                glossaryApi.getGlossaryUsers(glossary.code, user.token).let { result ->
+                    when (result) {
+                        is NetworkResult.Success -> result.data
+                        is NetworkResult.Error -> {
+                            println(result.message.error)
+                            emptyList()
+                        }
+                    }
+                }
+            }
+            glossaryStateHolder.setUsers(users)
         }
     }
 

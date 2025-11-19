@@ -7,7 +7,6 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_glossary_error
 import glossary.composeapp.generated.resources.downloading_wait
 import glossary.composeapp.generated.resources.resource_not_found
-import glossary.composeapp.generated.resources.unknown_error
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -20,6 +19,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.data.api.ErrorDetails
 import org.bibletranslationtools.glossary.data.stet.Stet
 import org.bibletranslationtools.glossary.domain.CatalogApi
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
@@ -46,7 +46,7 @@ interface CreateGlossaryComponent : DrawerContext {
         val sourceLanguage: Language? = null,
         val targetLanguage: Language? = null,
         val resourceRequest: ResourceRequest? = null,
-        val error: String? = null,
+        val error: ErrorDetails? = null,
         val progress: Progress? = null
     )
 
@@ -132,7 +132,7 @@ class DefaultCreateGlossaryComponent(
             val resource = resources.find { it.type != "udb" && it.type != "ulb" }
                 ?: resources.firstOrNull { it.type == "ulb" }
 
-            var error: String? = null
+            var error: ErrorDetails? = null
 
             if (resource != null) {
                 val id = "${resource.lang}_${resource.type}"
@@ -158,10 +158,11 @@ class DefaultCreateGlossaryComponent(
                     )
                 } else {
                     error = (result as NetworkResult.Error).message
-                        ?: getString(Res.string.unknown_error)
                 }
             } else {
-                error = getString(Res.string.resource_not_found)
+                error = ErrorDetails(
+                    error = getString(Res.string.resource_not_found)
+                )
             }
 
             sharedState.updateProgress(null)
@@ -186,10 +187,9 @@ class DefaultCreateGlossaryComponent(
         resource: Resource,
         sourceLanguage: Language,
         targetLanguage: Language
-    ): String? {
+    ): ErrorDetails? {
         val glossary = Glossary(
             code = code,
-            author = "User",
             sourceLanguage = sourceLanguage,
             targetLanguage = targetLanguage,
             version = 1,
@@ -212,7 +212,9 @@ class DefaultCreateGlossaryComponent(
             error = getString(Res.string.create_glossary_error)
         }
 
-        return error
+        return error?.let {
+            ErrorDetails(error = it)
+        }
     }
 
     private suspend fun findResource(): Resource? {

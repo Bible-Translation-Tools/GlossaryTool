@@ -6,6 +6,7 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.instancekeeper.InstanceKeeper
 import org.bibletranslationtools.glossary.data.Language
 import org.bibletranslationtools.glossary.data.Progress
+import org.bibletranslationtools.glossary.data.api.ErrorDetails
 
 class CreateGlossaryStateKeeper : InstanceKeeper.Instance {
     private val _model = MutableValue(CreateGlossaryComponent.Model())
@@ -15,7 +16,7 @@ class CreateGlossaryStateKeeper : InstanceKeeper.Instance {
         _model.update { it.copy(isSaving = value) }
     }
 
-    fun updateError(message: String?) {
+    fun updateError(message: ErrorDetails?) {
         _model.update { it.copy(error = message) }
     }
 

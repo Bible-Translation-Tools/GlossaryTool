@@ -6,7 +6,6 @@ import kotlinx.serialization.Serializable
 data class ManifestGlossary(
     val id: String,
     val code: String,
-    val author: String,
     val sourceLanguage: String,
     val targetLanguage: String,
     val version: Int,

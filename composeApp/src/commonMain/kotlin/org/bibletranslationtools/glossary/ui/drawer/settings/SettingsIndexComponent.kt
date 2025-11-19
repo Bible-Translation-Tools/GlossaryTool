@@ -90,7 +90,7 @@ class DefaultSettingsIndexComponent(
                         }
                         is NetworkResult.Error -> {
                             _model.update {
-                                it.copy(snackBarMessage = result.message)
+                                it.copy(snackBarMessage = result.message.error)
                             }
                         }
                     }

@@ -8,6 +8,8 @@ import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.glossary_upload_failed
 import glossary.composeapp.generated.resources.glossary_uploaded_successfully
+import glossary.composeapp.generated.resources.join_glossary_progress
+import glossary.composeapp.generated.resources.join_glossary_success
 import glossary.composeapp.generated.resources.source_text
 import glossary.composeapp.generated.resources.unauthorized
 import glossary.composeapp.generated.resources.uploading_glossary
@@ -24,6 +26,7 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
@@ -65,6 +68,7 @@ interface KeyTermsIndexComponent : DrawerContext {
     fun updateGlossary()
     fun navigateViewPhrase(phraseId: String)
     fun downloadGlossary()
+    fun joinGlossary(user: User)
     fun clearHasUpdate()
     fun clearSnackBarMessage()
 }
@@ -88,6 +92,7 @@ class DefaultKeyTermsIndexComponent(
 
     private val appState: AppStateStore by inject()
     private val userStateHolder = appState.userStateHolder
+    private val glossaryStateHolder = appState.glossaryStateHolder
 
     private val _model = MutableValue(KeyTermsIndexComponent.Model())
     override val model: Value<KeyTermsIndexComponent.Model> = _model
@@ -225,6 +230,35 @@ class DefaultKeyTermsIndexComponent(
                 } ?: run {
                     _model.update { it.copy(updateStatus = UpdateStatus.FAILED) }
                 }
+            }
+        }
+    }
+
+    override fun joinGlossary(user: User) {
+        _model.value.glossary?.let { glossary ->
+            componentScope.launch {
+                val successMessage = getString(Res.string.join_glossary_success)
+                val progressMessage = getString(Res.string.join_glossary_progress)
+
+                _model.update { it.copy(progress = Progress(-1f, progressMessage)) }
+
+                val users = withContext(Dispatchers.Default) {
+                    glossaryApi.joinGlossary(glossary.code, user.token).let { result ->
+                        when (result) {
+                            is NetworkResult.Success -> {
+                                _model.update { it.copy(snackBarMessage = successMessage) }
+                                result.data
+                            }
+                            is NetworkResult.Error -> {
+                                _model.update { it.copy(snackBarMessage = result.message.error) }
+                                emptyList()
+                            }
+                        }
+                    }
+                }
+                println(users)
+                glossaryStateHolder.setUsers(users)
+                _model.update { it.copy(progress = null) }
             }
         }
     }

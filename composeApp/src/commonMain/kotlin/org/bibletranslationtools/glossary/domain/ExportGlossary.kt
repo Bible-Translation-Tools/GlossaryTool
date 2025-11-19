@@ -25,7 +25,6 @@ class ExportGlossary(
         val export = ManifestGlossary(
             id = glossary.id!!,
             code = glossary.code,
-            author = glossary.author,
             sourceLanguage = glossary.sourceLanguage.slug,
             targetLanguage = glossary.targetLanguage.slug,
             version = glossary.version,
