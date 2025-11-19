@@ -27,6 +27,7 @@ interface SettingsComponent: DrawerContext {
         data class SelectLanguage(val component: SelectLanguageComponent) : Child
         data class ViewGlossaries(val component: GlossaryListComponent) : Child
         data class ImportGlossary(val component: ImportGlossaryComponent) : Child
+        data class EditPermissions(val component: EditPermissionsComponent) : Child
     }
 }
 
@@ -83,7 +84,10 @@ class DefaultSettingsComponent(
                         navigation.bringToFront(Config.ViewGlossaries)
                     },
                     onLogin = onLogin,
-                    onLogout = onLogout
+                    onLogout = onLogout,
+                    onEditPermissions = {
+                        navigation.bringToFront(Config.EditPermissions)
+                    }
                 )
             )
             is Config.CreateGlossary -> SettingsComponent.Child.CreateGlossary(
@@ -137,6 +141,12 @@ class DefaultSettingsComponent(
                     onImportFinished = { onImportFinished() }
                 )
             )
+            is Config.EditPermissions -> SettingsComponent.Child.EditPermissions(
+                DefaultEditPermissionsComponent(
+                    componentContext = context,
+                    parentContext = this
+                )
+            )
         }
     }
 
@@ -170,5 +180,7 @@ class DefaultSettingsComponent(
         data class SelectLanguage(val type: LanguageType) : Config
         @Serializable
         data class ImportGlossary(val autoImportManually: Boolean = false) : Config
+        @Serializable
+        data object EditPermissions : Config
     }
 }

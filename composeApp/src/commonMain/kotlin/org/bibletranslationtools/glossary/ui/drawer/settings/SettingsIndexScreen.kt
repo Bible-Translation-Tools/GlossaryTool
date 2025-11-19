@@ -259,7 +259,7 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                                 SettingsClickableItem(
                                     icon = painterResource(Res.drawable.person_edit),
                                     text = stringResource(Res.string.edit_permissions),
-                                    onClick = {},
+                                    onClick = component::editPermissions,
                                     modifier = Modifier.fillMaxWidth()
                                 )
                             }

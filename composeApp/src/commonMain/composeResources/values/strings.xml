@@ -114,4 +114,10 @@
     <string name="join_glossary">Join</string>
     <string name="join_glossary_progress">Joining glossary...</string>
     <string name="join_glossary_success">Joined successfully</string>
+    <string name="active_users">Active Users</string>
+    <string name="you">You</string>
+    <string name="user_role_owner">Owner</string>
+    <string name="user_role_editor">Editor</string>
+    <string name="user_role_viewer">Viewer</string>
+    <string name="user_role_admin">Admin</string>
 </resources>

@@ -43,6 +43,7 @@ interface SettingsIndexComponent : DrawerContext {
     fun createGlossary()
     fun viewGlossaries()
     fun checkUpdates()
+    fun editPermissions()
     fun clearSnackBarMessage()
 }
 
@@ -52,7 +53,8 @@ class DefaultSettingsIndexComponent(
     private val onCreateGlossary: () -> Unit,
     private val onViewGlossaries: () -> Unit,
     private val onLogin: (User) -> Unit,
-    private val onLogout: () -> Unit
+    private val onLogout: () -> Unit,
+    private val onEditPermissions: () -> Unit
 ) : DrawerComponent(componentContext, parentContext), SettingsIndexComponent, KoinComponent {
 
     private val glossaryApi: GlossaryApi by inject()
@@ -153,6 +155,10 @@ class DefaultSettingsIndexComponent(
 
             _model.update { it.copy(progress = null, snackBarMessage = result) }
         }
+    }
+
+    override fun editPermissions() {
+        onEditPermissions()
     }
 
     override fun clearSnackBarMessage() {

@@ -17,6 +17,7 @@ fun SettingsScreen(component: SettingsComponent) {
             is SettingsComponent.Child.ViewGlossaries -> GlossaryListScreen(child.component)
             is SettingsComponent.Child.SelectLanguage -> SelectLanguageScreen(child.component)
             is SettingsComponent.Child.ImportGlossary -> ImportGlossaryScreen(child.component)
+            is SettingsComponent.Child.EditPermissions -> EditPermissionsScreen(child.component)
         }
     }
 }
