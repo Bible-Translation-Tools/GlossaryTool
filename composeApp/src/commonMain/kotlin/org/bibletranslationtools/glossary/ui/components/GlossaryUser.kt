@@ -49,14 +49,16 @@ fun GlossaryUser(
                 fontWeight = FontWeight.W600
             )
             Text(
-                text = user.role.localize()
+                text = user.role.localizedName()
             )
         }
 
-        TextButton(
-            onClick = onEdit
-        ) {
-            Text(text = stringResource(Res.string.edit))
+        if (!isOwner) {
+            TextButton(
+                onClick = onEdit
+            ) {
+                Text(text = stringResource(Res.string.edit))
+            }
         }
     }
 }

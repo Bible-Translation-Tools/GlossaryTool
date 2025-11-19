@@ -14,6 +14,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -21,9 +25,14 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.active_users
 import glossary.composeapp.generated.resources.edit_permissions
+import kotlinx.coroutines.launch
+import org.bibletranslationtools.glossary.data.api.GlossaryUser
+import org.bibletranslationtools.glossary.ui.components.EditPermissionsBar
 import org.bibletranslationtools.glossary.ui.components.GlossaryUser
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
+import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
+import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -37,6 +46,10 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
         .collectAsStateWithLifecycle()
     val glossaryState by appStateStore.glossaryStateHolder.state
         .collectAsStateWithLifecycle()
+
+    var selectedUser by remember { mutableStateOf<GlossaryUser?>(null) }
+    val snackBar = LocalSnackBarHostState.current
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -70,7 +83,9 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
                                 GlossaryUser(
                                     user = user,
                                     isOwner = user.username == userState.user?.username,
-                                    onEdit = {},
+                                    onEdit = {
+                                        selectedUser = user
+                                    },
                                     modifier = Modifier.fillMaxWidth()
                                 )
 
@@ -82,6 +97,33 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
                     }
                 }
             }
+        }
+    }
+
+    selectedUser?.let { user ->
+        EditPermissionsBar(
+            user,
+            onSave = { role ->
+                if (user.role != role) {
+                    glossaryState.glossary?.let { glossary ->
+                        component.updateUserRole(glossary, user, role)
+                    }
+                }
+            },
+            onDismiss = {
+                selectedUser = null
+            }
+        )
+    }
+
+    model.progress?.let { progress ->
+        ProgressDialog(progress)
+    }
+
+    model.snackBarMessage?.let { message ->
+        scope.launch {
+            component.clearSnackBarMessage()
+            snackBar?.showSnackbar(message)
         }
     }
 }

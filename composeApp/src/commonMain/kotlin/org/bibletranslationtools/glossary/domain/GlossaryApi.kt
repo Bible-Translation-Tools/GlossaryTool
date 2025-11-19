@@ -5,7 +5,6 @@ import io.github.vinceglb.filekit.readBytes
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ServerResponseException
-import io.ktor.client.request.accept
 import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.get
 import io.ktor.client.request.post
@@ -17,23 +16,22 @@ import io.ktor.utils.io.toByteArray
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
 import org.bibletranslationtools.glossary.data.api.GlossaryUser
 import org.bibletranslationtools.glossary.data.api.User
-import org.bibletranslationtools.glossary.data.api.UserAuth
 import org.bibletranslationtools.glossary.data.api.UserRole
 
 interface GlossaryApi {
     suspend fun downloadGlossary(code: String): NetworkResult<ByteArray>
     suspend fun uploadGlossary(file: PlatformFile, token: String): NetworkResult<Int>
-    suspend fun setGlossaryRole(
-        code: String,
-        username: String,
-        role: UserRole,
-        token: String
-    ): NetworkResult<Boolean>
     suspend fun checkUpdates(glossaries: List<GlossaryUpdate>): NetworkResult<List<GlossaryUpdate>>
     suspend fun login(username: String, password: String): NetworkResult<User>
     suspend fun verifyLogin(token: String): NetworkResult<User>
     suspend fun getGlossaryUsers(code: String, token: String): NetworkResult<List<GlossaryUser>>
     suspend fun joinGlossary(code: String, token: String): NetworkResult<List<GlossaryUser>>
+    suspend fun updateUserRole(
+        code: String,
+        username: String,
+        role: UserRole,
+        token: String
+    ): NetworkResult<List<GlossaryUser>>
 }
 
 class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
@@ -63,32 +61,10 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
     override suspend fun uploadGlossary(file: PlatformFile, token: String): NetworkResult<Int> {
         return ApiHelper.callApi {
             val response = httpClient.post("$PRIVATE_API/glossary") {
-                setBody(file.readBytes())
-                accept(ContentType.Application.Json)
                 bearerAuth(token)
+                setBody(file.readBytes())
             }
             response.body()
-        }
-    }
-
-    override suspend fun setGlossaryRole(
-        code: String,
-        username: String,
-        role: UserRole,
-        token: String
-    ): NetworkResult<Boolean> {
-        return ApiHelper.callApi {
-            val response = httpClient.post("$PRIVATE_API/glossary/$code/role") {
-                setBody(mapOf("username" to username, "role" to role))
-            }
-            if (response.status.value in 200..299) {
-                response.body()
-            } else {
-                throw ServerResponseException(
-                    response,
-                    "Error setting user role"
-                )
-            }
         }
     }
 
@@ -114,7 +90,7 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
     override suspend fun login(username: String, password: String): NetworkResult<User> {
         return ApiHelper.callApi {
             val response = httpClient.post("$PUBLIC_API/login") {
-                setBody(UserAuth(username, password))
+                setBody(mapOf("username" to username, "password" to password))
                 contentType(ContentType.Application.Json)
             }
             if (response.status.value in 200..299) {
@@ -131,7 +107,6 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
     override suspend fun verifyLogin(token: String): NetworkResult<User> {
         return ApiHelper.callApi {
             val response = httpClient.get("$PRIVATE_API/verify") {
-                accept(ContentType.Application.Json)
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -151,7 +126,6 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
     ): NetworkResult<List<GlossaryUser>> {
         return ApiHelper.callApi {
             val response = httpClient.get("$PRIVATE_API/glossary/$code/users") {
-                accept(ContentType.Application.Json)
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -171,7 +145,6 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
     ): NetworkResult<List<GlossaryUser>> {
         return ApiHelper.callApi {
             val response = httpClient.get("$PRIVATE_API/glossary/$code/join") {
-                accept(ContentType.Application.Json)
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -180,6 +153,29 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
                 throw ServerResponseException(
                     response,
                     "Error joining glossary"
+                )
+            }
+        }
+    }
+
+    override suspend fun updateUserRole(
+        code: String,
+        username: String,
+        role: UserRole,
+        token: String
+    ): NetworkResult<List<GlossaryUser>> {
+        return ApiHelper.callApi {
+            val response = httpClient.post("$PRIVATE_API/glossary/$code/role") {
+                bearerAuth(token)
+                setBody(mapOf("username" to username, "role" to role.name.lowercase()))
+                contentType(ContentType.Application.Json)
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error updating user role"
                 )
             }
         }

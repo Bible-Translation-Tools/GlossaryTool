@@ -393,7 +393,33 @@ app.post("/private/api/glossary/:code/role", async (c) => {
         },
       });
 
-    return c.json(true);
+    const updatedGlossary = await dbHelper
+      .getDb()
+      .query.glossaryTable.findFirst({
+        where: eq(glossaryTable.code, code),
+        with: {
+          users: {
+            with: {
+              user: true,
+            },
+          },
+        },
+      });
+
+    if (!updatedGlossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    return c.json<GlossaryUser[]>(
+      updatedGlossary.users.map((user) => {
+        return {
+          username: user.user.username,
+          emoji: user.user.emoji,
+          role: user.role,
+          code: glossary.code,
+        };
+      })
+    );
   } catch (error: any) {
     return c.json<ErrorDetails>(
       {
