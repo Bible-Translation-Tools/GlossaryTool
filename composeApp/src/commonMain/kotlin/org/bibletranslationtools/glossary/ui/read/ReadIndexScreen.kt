@@ -154,7 +154,10 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .padding(top = 36.dp, bottom = 18.dp)
+    ) {
         Column(modifier = Modifier.weight(1f)) {
             Box(
                 modifier = Modifier

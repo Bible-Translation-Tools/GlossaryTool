@@ -51,9 +51,14 @@ fun GlossaryItem(
     onShare: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val textColor = if (isSelected) {
+        MaterialTheme.colorScheme.primary
+    } else Color.Unspecified
+
     val borderColor = if (isSelected) {
         MaterialTheme.colorScheme.primary
     } else MaterialTheme.colorScheme.outlineVariant
+
     val borderSize = if (isSelected) 2.dp else 1.dp
 
     Card(
@@ -75,6 +80,7 @@ fun GlossaryItem(
                 text = item.glossary.code,
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
+                color = textColor
             )
             Row(
                 verticalAlignment = Alignment.CenterVertically
@@ -82,9 +88,7 @@ fun GlossaryItem(
                 if (isActive) {
                     Text(
                         text = stringResource(Res.string.active),
-                        color = if (isSelected) {
-                            MaterialTheme.colorScheme.primary
-                        } else Color.Unspecified,
+                        color = textColor,
                         fontWeight = FontWeight.W500,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -115,16 +119,19 @@ fun GlossaryItem(
             Text(
                 text = item.glossary.sourceLanguage.name,
                 fontWeight = FontWeight.W500,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor
             )
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowRight,
-                contentDescription = "to"
+                contentDescription = "to",
+                tint = textColor
             )
             Text(
                 text = item.glossary.targetLanguage.name,
                 fontWeight = FontWeight.W500,
-                style = MaterialTheme.typography.bodyLarge
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor
             )
         }
 

@@ -27,10 +27,10 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,11 +68,15 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.domain.Theme
-import org.bibletranslationtools.glossary.ui.components.SegmentedButtonRow
+import org.bibletranslationtools.glossary.ui.components.FloatingSegmentedSelector
 import org.bibletranslationtools.glossary.ui.components.SettingsClickableItem
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
 import org.bibletranslationtools.glossary.ui.components.SettingsSwitchItem
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
+import org.bibletranslationtools.glossary.ui.data.localize
+import org.bibletranslationtools.glossary.ui.data.toFontFamilySetting
+import org.bibletranslationtools.glossary.ui.data.toFontSizeSetting
+import org.bibletranslationtools.glossary.ui.data.toLineHeightSetting
 import org.bibletranslationtools.glossary.ui.dialogs.LoginDialog
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
@@ -100,15 +104,50 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
         mutableStateOf(darkModeEnabled(theme, isSystemInDarkTheme))
     }
 
-    var selectedIndex by remember { mutableIntStateOf(0) }
-    var selectedIndex2 by remember { mutableIntStateOf(0) }
-    var selectedIndex3 by remember { mutableIntStateOf(0) }
+    var savedFontFamily by rememberStringSetting(
+        Settings.FONT_FAMILY,
+        "SansSerif"
+    )
+    val fontFamilies = listOf(
+        "Serif".toFontFamilySetting(),
+        "SansSerif".toFontFamilySetting(),
+        "Cursive".toFontFamilySetting()
+    )
+    var selectedFontFamily by remember {
+        mutableStateOf(savedFontFamily.toFontFamilySetting())
+    }
+
+    var savedFontSize by rememberStringSetting(
+        Settings.FONT_SIZE,
+        "medium"
+    )
+    val fontSizes = listOf(
+        "small".toFontSizeSetting(),
+        "medium".toFontSizeSetting(),
+        "large".toFontSizeSetting()
+    )
+    var selectedFontSize by remember {
+        mutableStateOf(savedFontSize.toFontSizeSetting())
+    }
+
+    var savedLineHeight by rememberStringSetting(
+        Settings.LINE_HEIGHT,
+        "default"
+    )
+    val lineHeights = listOf(
+        "small".toLineHeightSetting(),
+        "default".toLineHeightSetting(),
+        "large".toLineHeightSetting()
+    )
+    var selectedLineHeight by remember {
+        mutableStateOf(savedLineHeight.toLineHeightSetting())
+    }
 
     val scrollState = rememberScrollState()
     val snackBar = LocalSnackBarHostState.current
     val scope = rememberCoroutineScope()
 
-    var showLoginDialog by remember { mutableStateOf(false) }
+    var showLoginDialog by rememberSaveable { mutableStateOf(false) }
     var emoji by remember { mutableStateOf(userState.user?.emoji) }
 
     val isAdmin by remember(glossaryState.users) {
@@ -136,7 +175,7 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier.fillMaxSize()
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 ) {
                     TopDrawerBar(
                         title = stringResource(Res.string.settings),
@@ -192,23 +231,66 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                         SettingsSection(
                             title = stringResource(Res.string.source_text_settings)
                         ) {
-                            SegmentedButtonRow(
-                                options = listOf("Aa", "Aa", "Aa"),
-                                selectedIndex = selectedIndex,
-                                onSelectionChange = { selectedIndex = it }
-                            )
+                            FloatingSegmentedSelector(
+                                options = fontFamilies,
+                                selectedOption = selectedFontFamily,
+                                onOptionSelected = {
+                                    selectedFontFamily = it
+                                    savedFontFamily = it.name
+                                }
+                            ) { option, isSelected ->
+                                Text(
+                                    text = option.localize(),
+                                    fontWeight = if (isSelected) {
+                                        FontWeight.Bold
+                                    } else FontWeight.SemiBold,
+                                    fontFamily = option.family,
+                                    fontSize = 28.sp,
+                                    color = if (isSelected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                             Spacer(modifier = Modifier.height(16.dp))
-                            SegmentedButtonRow(
-                                options = listOf("Small", "Medium", "Large"),
-                                selectedIndex = selectedIndex2,
-                                onSelectionChange = { selectedIndex2 = it }
-                            )
+                            FloatingSegmentedSelector(
+                                options = fontSizes,
+                                selectedOption = selectedFontSize,
+                                onOptionSelected = {
+                                    selectedFontSize = it
+                                    savedFontSize = it.name
+                                }
+                            ) { option, isSelected ->
+                                Text(
+                                    text = option.localize(),
+                                    fontWeight = if (isSelected) {
+                                        FontWeight.Bold
+                                    } else FontWeight.W400,
+                                    fontSize = option.size,
+                                    color = if (isSelected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                             Spacer(modifier = Modifier.height(16.dp))
-                            SegmentedButtonRow(
-                                options = listOf("Small", "Default", "Large"),
-                                selectedIndex = selectedIndex3,
-                                onSelectionChange = { selectedIndex3 = it }
-                            )
+                            FloatingSegmentedSelector(
+                                options = lineHeights,
+                                selectedOption = selectedLineHeight,
+                                onOptionSelected = {
+                                    selectedLineHeight = it
+                                    savedLineHeight = it.name
+                                }
+                            ) { option, isSelected ->
+                                Text(
+                                    text = option.localize(),
+                                    fontWeight = if (isSelected) {
+                                        FontWeight.Bold
+                                    } else FontWeight.W400,
+                                    fontSize = 16.sp,
+                                    color = if (isSelected) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))

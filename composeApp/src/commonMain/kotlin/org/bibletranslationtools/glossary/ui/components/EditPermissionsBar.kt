@@ -71,6 +71,7 @@ fun EditPermissionsBar(
                     shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
                 )
                 .clickable(enabled = false, onClick = {})
+                .padding(bottom = 16.dp)
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(16.dp),

@@ -41,7 +41,10 @@ fun CreatePhraseScreen(component: CreatePhraseComponent) {
     val model by component.model.subscribeAsState()
     var searchQuery by rememberSaveable { mutableStateOf("") }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .padding(top = 16.dp)
+    ) {
         TopAppBar(
             actions = {
                 SearchField(

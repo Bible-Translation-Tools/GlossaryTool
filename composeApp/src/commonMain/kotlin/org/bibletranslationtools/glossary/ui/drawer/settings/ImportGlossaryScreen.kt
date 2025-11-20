@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.LinearProgressIndicator
@@ -49,6 +50,12 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
 
     val focusRequesters = remember { List(5) { FocusRequester() } }
     val coroutineScope = rememberCoroutineScope()
+
+    val onImeAction = {
+        if (model.otpCode.none { it == null }) {
+            component.onDownloadClicked()
+        }
+    }
 
     LaunchedEffect(model.focusedIndex) {
         model.focusedIndex?.let { index ->
@@ -110,8 +117,10 @@ fun ImportGlossaryScreen(component: ImportGlossaryComponent) {
                             code = model.otpCode,
                             focusRequesters = focusRequesters,
                             onAction = { component.onOtpAction(it) },
+                            onImeAction = onImeAction,
                             isError = model.error != null,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier
+                                .widthIn(max = 600.dp)
                         )
 
                         if (model.error != null) {

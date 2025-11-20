@@ -127,4 +127,8 @@
     <string name="save_changes">Save Changes</string>
     <string name="updating_role">Updating role...</string>
     <string name="update_role_success">Permission updated successfully</string>
+    <string name="small">Small</string>
+    <string name="medium">Medium</string>
+    <string name="large">Large</string>
+    <string name="default">Default</string>
 </resources>

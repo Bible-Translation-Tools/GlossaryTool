@@ -20,10 +20,13 @@ fun OtpInput(
     code: List<String?>,
     focusRequesters: List<FocusRequester>,
     onAction: (OtpAction) -> Unit,
+    onImeAction: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     isError: Boolean = false
 ) {
+    val totalCount = code.size
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
@@ -33,6 +36,7 @@ fun OtpInput(
             OtpInputField(
                 char = char,
                 enabled = enabled,
+                isLastField = index == totalCount - 1,
                 isError = isError,
                 focusRequester = focusRequesters[index],
                 onFocusChanged = { isFocused ->
@@ -46,6 +50,7 @@ fun OtpInput(
                 onKeyboardBack = {
                     onAction(OtpAction.OnKeyboardBack)
                 },
+                onKeyboardAction = if (index == totalCount - 1) onImeAction else null,
                 modifier = Modifier.weight(1f)
                     .aspectRatio(1f)
             )

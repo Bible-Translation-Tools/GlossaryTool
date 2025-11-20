@@ -10,13 +10,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,6 +55,7 @@ import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.jetbrains.compose.resources.stringResource
 
+@Suppress("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun GlossaryListScreen(component: GlossaryListComponent) {
     val model by component.model.subscribeAsState()
@@ -85,41 +92,49 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
                         .padding(16.dp)
                 ) {
                     if (model.glossaries.isNotEmpty()) {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(16.dp),
-                            contentPadding = PaddingValues(bottom = 2.dp),
-                            state = scrollState,
-                            modifier = Modifier.heightIn(max = 412.dp)
-                        ) {
-                            items(model.glossaries) { item ->
-                                GlossaryItem(
-                                    item = item,
-                                    isSelected = model.selectedGlossary == item,
-                                    isActive = model.activeGlossary == item,
-                                    onSelected = { component.selectGlossary(item) },
-                                    onSelectedSave = component::saveGlossary,
-                                    onShare = {
-                                        coroutineScope.launch {
-                                            FileKit.openFileSaver(
-                                                suggestedName = "glossary-${item.glossary.code}",
-                                                extension = "zip"
-                                            )?.let { file ->
-                                                component.exportGlossary(file)
-                                            }
-                                        }
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                        Scaffold(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            floatingActionButton = {
+                                Button(
+                                    shape = CircleShape,
+                                    onClick = component::navigateImportGlossary,
+                                    contentPadding = PaddingValues(0.dp),
+                                    modifier = Modifier.size(48.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = "import glossary"
+                                    )
+                                }
                             }
-                        }
-
-                        Button(
-                            onClick = component::navigateImportGlossary,
-                            shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.fillMaxWidth()
-                                .height(48.dp)
                         ) {
-                            Text(stringResource(Res.string.add_glossary))
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                contentPadding = PaddingValues(bottom = 2.dp),
+                                state = scrollState,
+                                modifier = Modifier.heightIn(max = 412.dp)
+                            ) {
+                                items(model.glossaries) { item ->
+                                    GlossaryItem(
+                                        item = item,
+                                        isSelected = model.selectedGlossary == item,
+                                        isActive = model.activeGlossary == item,
+                                        onSelected = { component.selectGlossary(item) },
+                                        onSelectedSave = component::saveGlossary,
+                                        onShare = {
+                                            coroutineScope.launch {
+                                                FileKit.openFileSaver(
+                                                    suggestedName = "glossary-${item.glossary.code}",
+                                                    extension = "zip"
+                                                )?.let { file ->
+                                                    component.exportGlossary(file)
+                                                }
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                            }
                         }
                     } else {
                         Column(

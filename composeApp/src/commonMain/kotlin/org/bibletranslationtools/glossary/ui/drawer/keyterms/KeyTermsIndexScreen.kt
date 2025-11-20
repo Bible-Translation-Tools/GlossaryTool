@@ -73,7 +73,7 @@ import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-private val BOTTOM_BAR_HEIGHT = 80.dp
+private val BOTTOM_BAR_HEIGHT = 120.dp
 
 @Composable
 fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
@@ -182,7 +182,7 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    if (!joined) {
+                    if (!joined && model.glossary != null && userState.user != null) {
                         Text(
                             text = stringResource(Res.string.join_glossary),
                             textDecoration = TextDecoration.Underline,

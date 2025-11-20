@@ -4,13 +4,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberDrawerState
@@ -157,7 +155,7 @@ fun MainScreen(component: MainComponent) {
                 drawerContent = {
                     ModalDrawerSheet(
                         drawerContainerColor = MaterialTheme.colorScheme.surface,
-                        windowInsets = WindowInsets(0, 24, 0, 32),
+                        windowInsets = WindowInsets(0, 0, 0, 0),
                         drawerShape = drawerShape,
                         modifier = Modifier.then(
                             if (model.fullscreenDrawer) {
@@ -182,18 +180,13 @@ fun MainScreen(component: MainComponent) {
                 },
                 scrimColor = Color(0x800F2F4C)
             ) {
-                Scaffold(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ) { paddingValues ->
-                    Children(
-                        stack = component.childStack,
-                        animation = stackAnimation(Utils.slideHorizontally()),
-                        modifier = Modifier.padding(paddingValues)
-                    ) {
-                        when (val child = it.instance) {
-                            is MainComponent.Child.Read -> ReadScreen(child.component)
-                            is MainComponent.Child.Resources -> ResourcesScreen(child.component)
-                        }
+                Children(
+                    stack = component.childStack,
+                    animation = stackAnimation(Utils.slideHorizontally())
+                ) {
+                    when (val child = it.instance) {
+                        is MainComponent.Child.Read -> ReadScreen(child.component)
+                        is MainComponent.Child.Resources -> ResourcesScreen(child.component)
                     }
                 }
             }
