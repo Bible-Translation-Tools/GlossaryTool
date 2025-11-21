@@ -6,21 +6,27 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FormatLineSpacing
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.FontDownload
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -52,6 +58,7 @@ import glossary.composeapp.generated.resources.format_list_bulleted
 import glossary.composeapp.generated.resources.format_list_bulleted_add
 import glossary.composeapp.generated.resources.interface_settings
 import glossary.composeapp.generated.resources.language
+import glossary.composeapp.generated.resources.line_height
 import glossary.composeapp.generated.resources.login_wacs
 import glossary.composeapp.generated.resources.new_glossary
 import glossary.composeapp.generated.resources.other_settings
@@ -60,7 +67,9 @@ import glossary.composeapp.generated.resources.review_changes
 import glossary.composeapp.generated.resources.search_check
 import glossary.composeapp.generated.resources.settings
 import glossary.composeapp.generated.resources.shield_lock
+import glossary.composeapp.generated.resources.size
 import glossary.composeapp.generated.resources.source_text_settings
+import glossary.composeapp.generated.resources.style
 import glossary.composeapp.generated.resources.terms_and_conditions
 import glossary.composeapp.generated.resources.user_settings
 import glossary.composeapp.generated.resources.view_glossaries
@@ -73,10 +82,9 @@ import org.bibletranslationtools.glossary.ui.components.SettingsClickableItem
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
 import org.bibletranslationtools.glossary.ui.components.SettingsSwitchItem
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
-import org.bibletranslationtools.glossary.ui.data.localize
-import org.bibletranslationtools.glossary.ui.data.toFontFamilySetting
-import org.bibletranslationtools.glossary.ui.data.toFontSizeSetting
-import org.bibletranslationtools.glossary.ui.data.toLineHeightSetting
+import org.bibletranslationtools.glossary.ui.data.FontFamilySetting
+import org.bibletranslationtools.glossary.ui.data.FontSizeSetting
+import org.bibletranslationtools.glossary.ui.data.LineHeightSetting
 import org.bibletranslationtools.glossary.ui.dialogs.LoginDialog
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
@@ -109,12 +117,12 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
         "SansSerif"
     )
     val fontFamilies = listOf(
-        "Serif".toFontFamilySetting(),
-        "SansSerif".toFontFamilySetting(),
-        "Cursive".toFontFamilySetting()
+        FontFamilySetting.SERIF,
+        FontFamilySetting.SANS_SERIF,
+        FontFamilySetting.CURSIVE
     )
     var selectedFontFamily by remember {
-        mutableStateOf(savedFontFamily.toFontFamilySetting())
+        mutableStateOf(FontFamilySetting.of(savedFontFamily))
     }
 
     var savedFontSize by rememberStringSetting(
@@ -122,12 +130,12 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
         "medium"
     )
     val fontSizes = listOf(
-        "small".toFontSizeSetting(),
-        "medium".toFontSizeSetting(),
-        "large".toFontSizeSetting()
+        FontSizeSetting.SMALL,
+        FontSizeSetting.MEDIUM,
+        FontSizeSetting.LARGE
     )
     var selectedFontSize by remember {
-        mutableStateOf(savedFontSize.toFontSizeSetting())
+        mutableStateOf(FontSizeSetting.of(savedFontSize))
     }
 
     var savedLineHeight by rememberStringSetting(
@@ -135,12 +143,12 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
         "default"
     )
     val lineHeights = listOf(
-        "small".toLineHeightSetting(),
-        "default".toLineHeightSetting(),
-        "large".toLineHeightSetting()
+        LineHeightSetting.SMALL,
+        LineHeightSetting.DEFAULT,
+        LineHeightSetting.LARGE
     )
     var selectedLineHeight by remember {
-        mutableStateOf(savedLineHeight.toLineHeightSetting())
+        mutableStateOf(LineHeightSetting.of(savedLineHeight))
     }
 
     val scrollState = rememberScrollState()
@@ -231,6 +239,25 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                         SettingsSection(
                             title = stringResource(Res.string.source_text_settings)
                         ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.FontDownload,
+                                    contentDescription = "font style"
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = stringResource(Res.string.style),
+                                    fontWeight = FontWeight.W500
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = selectedFontFamily.name,
+                                    fontWeight = FontWeight.W500,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             FloatingSegmentedSelector(
                                 options = fontFamilies,
                                 selectedOption = selectedFontFamily,
@@ -244,7 +271,7 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                                     fontWeight = if (isSelected) {
                                         FontWeight.Bold
                                     } else FontWeight.SemiBold,
-                                    fontFamily = option.family,
+                                    fontFamily = option.value,
                                     fontSize = 28.sp,
                                     color = if (isSelected) {
                                         MaterialTheme.colorScheme.primary
@@ -252,6 +279,25 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                                 )
                             }
                             Spacer(modifier = Modifier.height(16.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.TextFields,
+                                    contentDescription = "font size"
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = stringResource(Res.string.size),
+                                    fontWeight = FontWeight.W500
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = selectedFontSize.localize(),
+                                    fontWeight = FontWeight.W500,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             FloatingSegmentedSelector(
                                 options = fontSizes,
                                 selectedOption = selectedFontSize,
@@ -265,13 +311,32 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
                                     fontWeight = if (isSelected) {
                                         FontWeight.Bold
                                     } else FontWeight.W400,
-                                    fontSize = option.size,
+                                    fontSize = option.value,
                                     color = if (isSelected) {
                                         MaterialTheme.colorScheme.primary
                                     } else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             Spacer(modifier = Modifier.height(16.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.FormatLineSpacing,
+                                    contentDescription = "line height"
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Text(
+                                    text = stringResource(Res.string.line_height),
+                                    fontWeight = FontWeight.W500
+                                )
+                                Spacer(modifier = Modifier.weight(1f))
+                                Text(
+                                    text = selectedLineHeight.localize(),
+                                    fontWeight = FontWeight.W500,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                             FloatingSegmentedSelector(
                                 options = lineHeights,
                                 selectedOption = selectedLineHeight,

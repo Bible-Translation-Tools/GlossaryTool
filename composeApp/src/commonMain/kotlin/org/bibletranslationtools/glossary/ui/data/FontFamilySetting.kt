@@ -3,20 +3,26 @@ package org.bibletranslationtools.glossary.ui.data
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.font.FontFamily
 
-data class FontFamilySetting(
-    val name: String,
-    val family: FontFamily,
-)
-
-fun String.toFontFamilySetting(): FontFamilySetting {
-    return when (this) {
-        "Serif" -> FontFamilySetting(this, FontFamily.Serif)
-        "Cursive" -> FontFamilySetting(this, FontFamily.Cursive)
-        else -> FontFamilySetting(this, FontFamily.SansSerif)
+class FontFamilySetting(
+    override val name: String,
+    override val value: FontFamily,
+) : FontSetting<FontFamily> {
+    @Composable
+    override fun localize(): String {
+        return "Aa"
     }
-}
 
-@Composable
-fun FontFamilySetting.localize(): String {
-    return "Aa"
+    companion object {
+        val SERIF = FontFamilySetting("Serif", FontFamily.Serif)
+        val SANS_SERIF = FontFamilySetting("SansSerif", FontFamily.SansSerif)
+        val CURSIVE = FontFamilySetting("Cursive", FontFamily.Cursive)
+
+        fun of(string: String): FontSetting<FontFamily> {
+            return when (string) {
+                "Serif" -> SERIF
+                "Cursive" -> CURSIVE
+                else -> SANS_SERIF
+            }
+        }
+    }
 }

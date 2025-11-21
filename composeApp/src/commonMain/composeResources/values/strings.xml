@@ -131,4 +131,7 @@
     <string name="medium">Medium</string>
     <string name="large">Large</string>
     <string name="default">Default</string>
+    <string name="style">Style</string>
+    <string name="size">Size</string>
+    <string name="line_height">Line Height</string>
 </resources>
