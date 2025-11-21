@@ -14,21 +14,21 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.edit
-import glossary.composeapp.generated.resources.you
+import glossary.composeapp.generated.resources.user_you
 import org.bibletranslationtools.glossary.data.api.GlossaryUser
+import org.bibletranslationtools.glossary.data.api.UserRole
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GlossaryUser(
     user: GlossaryUser,
-    isOwner: Boolean,
+    isMe: Boolean,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var name = user.username
-    if (isOwner) {
-        name += " (${stringResource(Res.string.you)})"
-    }
+    val name = if (isMe) {
+        stringResource(Res.string.user_you, user.username)
+    } else user.username
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -53,7 +53,7 @@ fun GlossaryUser(
             )
         }
 
-        if (!isOwner) {
+        if (!isMe && user.role != UserRole.OWNER) {
             TextButton(
                 onClick = onEdit
             ) {

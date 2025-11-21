@@ -82,7 +82,7 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
                             itemsIndexed(glossaryState.users) { index, user ->
                                 GlossaryUser(
                                     user = user,
-                                    isOwner = user.username == userState.user?.username,
+                                    isMe = user.username == userState.user?.username,
                                     onEdit = {
                                         selectedUser = user
                                     },

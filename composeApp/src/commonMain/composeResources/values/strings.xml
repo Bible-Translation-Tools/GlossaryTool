@@ -115,7 +115,7 @@
     <string name="join_glossary_progress">Joining glossary...</string>
     <string name="join_glossary_success">Joined successfully</string>
     <string name="active_users">Active Users</string>
-    <string name="you">You</string>
+    <string name="user_you">%1$s (You)</string>
     <string name="user_role_owner">Owner</string>
     <string name="user_role_editor">Editor</string>
     <string name="user_role_editor_desc">This role can view and edit glossary entries.</string>
@@ -125,7 +125,7 @@
     <string name="user_role_admin_desc">This role can manage user permissions, view and edit glossary entries, and approve updates.</string>
     <string name="edit_user_permission">Edit %1$s's Permission</string>
     <string name="save_changes">Save Changes</string>
-    <string name="updating_role">Updating role...</string>
+    <string name="updating_role">Updating permissions...</string>
     <string name="update_role_success">Permission updated successfully</string>
     <string name="small">Small</string>
     <string name="medium">Medium</string>
