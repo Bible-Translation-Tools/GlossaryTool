@@ -16,21 +16,25 @@ class LineHeightSetting(
     @Composable
     override fun localize(): String {
         return when (this.name) {
-            "small" -> stringResource(Res.string.small)
-            "large" -> stringResource(Res.string.large)
+            SMALL_NAME -> stringResource(Res.string.small)
+            LARGE_NAME -> stringResource(Res.string.large)
             else -> stringResource(Res.string.default)
         }
     }
 
     companion object {
-        val SMALL = LineHeightSetting("small", 12.8.sp)
-        val DEFAULT = LineHeightSetting("default", 16.sp)
-        val LARGE = LineHeightSetting("large", 20.sp)
+        private const val SMALL_NAME = "small"
+        private const val DEFAULT_NAME = "default"
+        private const val LARGE_NAME = "large"
+
+        val SMALL = LineHeightSetting(SMALL_NAME, 16.sp)
+        val DEFAULT = LineHeightSetting(DEFAULT_NAME, 32.sp)
+        val LARGE = LineHeightSetting(LARGE_NAME, 48.sp)
 
         fun of(string: String): FontSetting<TextUnit> {
             return when (string) {
-                "small" -> SMALL
-                "large" -> LARGE
+                SMALL_NAME -> SMALL
+                LARGE_NAME -> LARGE
                 else -> DEFAULT
             }
         }

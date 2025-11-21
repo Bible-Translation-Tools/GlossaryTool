@@ -29,6 +29,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
@@ -38,12 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_audio
 import glossary.composeapp.generated.resources.edit
 import glossary.composeapp.generated.resources.key_terms
+import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
+import org.bibletranslationtools.glossary.ui.data.FontFamilySetting
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -57,6 +63,17 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
     val appStateStore = koinInject<AppStateStore>()
     val resourceState by appStateStore.resourceStateHolder.state
         .collectAsStateWithLifecycle()
+
+    var savedFontFamily by rememberStringSetting(
+        Settings.FONT_FAMILY,
+        "SansSerif"
+    )
+
+    val fontFamily by remember(savedFontFamily) {
+        mutableStateOf(
+            FontFamilySetting.of(savedFontFamily).value
+        )
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -89,7 +106,8 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                             Text(
                                 text = model.phrase?.spelling ?: "",
                                 fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = fontFamily
                             )
                             if (!model.phrase?.audio.isNullOrEmpty()) {
                                 Icon(
@@ -110,6 +128,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                             textStyle = TextStyle.Default.copy(
                                 fontSize = 16.sp,
                                 lineHeight = 32.sp,
+                                fontFamily = fontFamily,
                                 textAlign = TextAlign.Center
                             )
                         )
@@ -150,6 +169,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                                 reference = reference,
                                                 phrase = phrase.phrase,
                                                 text = text,
+                                                fontFamily = fontFamily,
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
                                                 component.onRefClick(ref)

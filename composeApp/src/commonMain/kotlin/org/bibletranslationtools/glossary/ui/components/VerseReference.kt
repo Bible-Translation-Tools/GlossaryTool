@@ -20,6 +20,7 @@ import androidx.compose.ui.text.PlaceholderVerticalAlign
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
@@ -34,10 +35,12 @@ fun VerseReference(
     reference: String,
     phrase: String,
     text: String,
+    fontFamily: FontFamily,
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null
 ) {
     val style = TextStyle.Default.copy(
+        fontFamily = fontFamily,
         lineHeight = 28.sp,
         fontSize = 16.sp
     )

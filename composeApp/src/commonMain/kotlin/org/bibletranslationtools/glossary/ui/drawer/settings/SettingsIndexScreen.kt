@@ -119,7 +119,7 @@ fun SettingsIndexScreen(component: SettingsIndexComponent) {
     val fontFamilies = listOf(
         FontFamilySetting.SERIF,
         FontFamilySetting.SANS_SERIF,
-        FontFamilySetting.CURSIVE
+        FontFamilySetting.MONOSPACE
     )
     var selectedFontFamily by remember {
         mutableStateOf(FontFamilySetting.of(savedFontFamily))

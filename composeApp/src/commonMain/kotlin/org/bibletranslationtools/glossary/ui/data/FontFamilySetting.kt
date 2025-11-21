@@ -13,14 +13,18 @@ class FontFamilySetting(
     }
 
     companion object {
-        val SERIF = FontFamilySetting("Serif", FontFamily.Serif)
-        val SANS_SERIF = FontFamilySetting("SansSerif", FontFamily.SansSerif)
-        val CURSIVE = FontFamilySetting("Cursive", FontFamily.Cursive)
+        private const val SERIF_NAME = "Serif"
+        private const val SANS_SERIF_NAME = "SansSerif"
+        private const val MONOSPACE_NAME = "Monospace"
+
+        val SERIF = FontFamilySetting(SERIF_NAME, FontFamily.Serif)
+        val SANS_SERIF = FontFamilySetting(SANS_SERIF_NAME, FontFamily.SansSerif)
+        val MONOSPACE = FontFamilySetting(MONOSPACE_NAME, FontFamily.Monospace)
 
         fun of(string: String): FontSetting<FontFamily> {
             return when (string) {
-                "Serif" -> SERIF
-                "Cursive" -> CURSIVE
+                SERIF_NAME -> SERIF
+                MONOSPACE_NAME -> MONOSPACE
                 else -> SANS_SERIF
             }
         }

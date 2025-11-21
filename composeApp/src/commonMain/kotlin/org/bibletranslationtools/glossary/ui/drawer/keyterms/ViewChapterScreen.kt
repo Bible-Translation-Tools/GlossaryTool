@@ -24,9 +24,14 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
+import dev.burnoo.compose.remembersetting.rememberStringSetting
 import kotlinx.coroutines.delay
+import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterVerse
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
+import org.bibletranslationtools.glossary.ui.data.FontFamilySetting
+import org.bibletranslationtools.glossary.ui.data.FontSizeSetting
+import org.bibletranslationtools.glossary.ui.data.LineHeightSetting
 
 @Composable
 fun ViewChapterScreen(component: ViewChapterComponent) {
@@ -36,6 +41,35 @@ fun ViewChapterScreen(component: ViewChapterComponent) {
     var viewHeight by remember { mutableStateOf(0.dp) }
 
     var focusOnVerse by remember { mutableStateOf(true) }
+
+    var savedFontFamily by rememberStringSetting(
+        Settings.FONT_FAMILY,
+        "SansSerif"
+    )
+    var savedFontSize by rememberStringSetting(
+        Settings.FONT_SIZE,
+        "medium"
+    )
+    var savedLineHeight by rememberStringSetting(
+        Settings.LINE_HEIGHT,
+        "default"
+    )
+
+    val fontFamily by remember(savedFontFamily) {
+        mutableStateOf(
+            FontFamilySetting.of(savedFontFamily).value
+        )
+    }
+    val fontSize by remember(savedFontSize) {
+        mutableStateOf(
+            FontSizeSetting.of(savedFontSize).value
+        )
+    }
+    val lineHeight by remember(savedLineHeight) {
+        mutableStateOf(
+            LineHeightSetting.of(savedLineHeight).value
+        )
+    }
 
     LaunchedEffect(model.ref, model.verses) {
         val index = model.verses.indexOfFirst { it.number == model.ref?.verse }
@@ -98,7 +132,15 @@ fun ViewChapterScreen(component: ViewChapterComponent) {
                                 items(model.verses) { verse ->
                                     model.phrase?.phrase?.let { phrase ->
                                         model.ref?.let { ref ->
-                                            ChapterVerse(verse, ref, phrase, focusOnVerse)
+                                            ChapterVerse(
+                                                verse = verse,
+                                                ref = ref,
+                                                phrase = phrase,
+                                                focusOnVerse = focusOnVerse,
+                                                fontFamily = fontFamily,
+                                                fontSize = fontSize,
+                                                lineHeight = lineHeight
+                                            )
                                         }
                                     }
                                 }

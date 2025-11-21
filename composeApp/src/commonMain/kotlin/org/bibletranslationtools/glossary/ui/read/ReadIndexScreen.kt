@@ -47,6 +47,9 @@ import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
 import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
 import org.bibletranslationtools.glossary.ui.components.SelectableText
+import org.bibletranslationtools.glossary.ui.data.FontFamilySetting
+import org.bibletranslationtools.glossary.ui.data.FontSizeSetting
+import org.bibletranslationtools.glossary.ui.data.LineHeightSetting
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
@@ -73,6 +76,34 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
         Settings.CHAPTER,
         1
     )
+    var savedFontFamily by rememberStringSetting(
+        Settings.FONT_FAMILY,
+        "SansSerif"
+    )
+    var savedFontSize by rememberStringSetting(
+        Settings.FONT_SIZE,
+        "medium"
+    )
+    var savedLineHeight by rememberStringSetting(
+        Settings.LINE_HEIGHT,
+        "default"
+    )
+
+    val fontFamily by remember(savedFontFamily) {
+        mutableStateOf(
+            FontFamilySetting.of(savedFontFamily).value
+        )
+    }
+    val fontSize by remember(savedFontSize) {
+        mutableStateOf(
+            FontSizeSetting.of(savedFontSize).value
+        )
+    }
+    val lineHeight by remember(savedLineHeight) {
+        mutableStateOf(
+            LineHeightSetting.of(savedLineHeight).value
+        )
+    }
 
     val title by remember(model.activeBook, model.activeChapter) {
         derivedStateOf {
@@ -205,9 +236,9 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
 
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily,
+                            fontSize = fontSize.times(2.25)
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -218,6 +249,9 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                                 phrases = model.chapterPhrases,
                                 selectedText = selectedText,
                                 currentVerse = model.currentRef?.verse,
+                                fontFamily = fontFamily,
+                                fontSize = fontSize,
+                                lineHeight = lineHeight,
                                 onSelectedTextChanged = { selectedText = it },
                                 onSaveSelection = { component.onPhraseSelected(it) },
                                 onPhraseClick = { phrase, verse ->
@@ -281,6 +315,7 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
             PhraseDetailsBar(
                 details = phraseDetails,
                 resource = resource,
+                fontFamily = fontFamily,
                 onNavPhrase = { component.navigatePhrase(it) },
                 onViewDetails = { phrase ->
                     component.onViewPhraseClick(phrase)
