@@ -12,7 +12,7 @@ fun SettingsScreen(component: SettingsComponent) {
         animation = stackAnimation(Utils.slideHorizontally())
     ) {
         when (val child = it.instance) {
-            is SettingsComponent.Child.Index -> SettingsIndexScreen(child.component)
+            is SettingsComponent.Child.Settings -> SettingsListScreen(child.component)
             is SettingsComponent.Child.CreateGlossary -> CreateGlossaryScreen(child.component)
             is SettingsComponent.Child.ViewGlossaries -> GlossaryListScreen(child.component)
             is SettingsComponent.Child.SelectLanguage -> SelectLanguageScreen(child.component)

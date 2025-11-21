@@ -47,7 +47,7 @@ sealed class KeyTermsFilter {
     class SourceText(override val label: String) : KeyTermsFilter()
 }
 
-interface KeyTermsIndexComponent : DrawerContext {
+interface KeyTermsListComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
@@ -73,7 +73,7 @@ interface KeyTermsIndexComponent : DrawerContext {
     fun clearSnackBarMessage()
 }
 
-class DefaultKeyTermsIndexComponent(
+class DefaultKeyTermsListComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
     private val onNavigateImportGlossary: () -> Unit,
@@ -82,7 +82,7 @@ class DefaultKeyTermsIndexComponent(
     private val onNavigateViewPhrase: (phraseId: String) -> Unit,
     private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
-) : DrawerComponent(componentContext, parentContext), KeyTermsIndexComponent, KoinComponent {
+) : DrawerComponent(componentContext, parentContext), KeyTermsListComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
     private val importGlossaryUseCase: ImportGlossary by inject()
@@ -94,8 +94,8 @@ class DefaultKeyTermsIndexComponent(
     private val userStateHolder = appState.userStateHolder
     private val glossaryStateHolder = appState.glossaryStateHolder
 
-    private val _model = MutableValue(KeyTermsIndexComponent.Model())
-    override val model: Value<KeyTermsIndexComponent.Model> = _model
+    private val _model = MutableValue(KeyTermsListComponent.Model())
+    override val model: Value<KeyTermsListComponent.Model> = _model
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -108,17 +108,19 @@ class DefaultKeyTermsIndexComponent(
 
     override fun initialize(glossary: Glossary, book: String, chapter: Int) {
         componentScope.launch {
-            _model.update { it.copy(isLoading = true) }
+            _model.update { it.copy(isLoading = true, glossary = glossary) }
 
-            val allPhrases = glossaryRepository.getPhrases(glossary.id)
-                .sortedBy { it.phrase.lowercase() }
-
-            val chapterPhrases = allPhrases.filter { phrase ->
-                val relevantRef = glossaryRepository.getRefs(phrase.id)
-                    .find { ref ->
-                        ref.book == book && ref.chapter == chapter.toString()
-                    }
-                relevantRef != null
+            val (allPhrases, chapterPhrases) = withContext(Dispatchers.Default) {
+                val all = glossaryRepository.getPhrases(glossary.id)
+                    .sortedBy { it.phrase.lowercase() }
+                val chapter = all.filter { phrase ->
+                    val relevantRef = glossaryRepository.getRefs(phrase.id)
+                        .find { ref ->
+                            ref.book == book && ref.chapter == chapter.toString()
+                        }
+                    relevantRef != null
+                }
+                all to chapter
             }
 
             val chapterLabel = "${book.uppercase()} $chapter"
@@ -130,7 +132,6 @@ class DefaultKeyTermsIndexComponent(
             _model.update {
                 it.copy(
                     isLoading = false,
-                    glossary = glossary,
                     allPhrases = allPhrases,
                     chapterPhrases = chapterPhrases,
                     filterOptions = options
@@ -274,9 +275,10 @@ class DefaultKeyTermsIndexComponent(
     private fun reloadGlossary() {
         componentScope.launch {
             _model.value.glossary?.let { glossary ->
-                glossaryRepository.getGlossary(glossary.code)?.let { dbGlossary ->
-                    _model.update { it.copy(glossary = dbGlossary) }
+                val dbGlossary = withContext(Dispatchers.Default) {
+                    glossaryRepository.getGlossary(glossary.code)
                 }
+                _model.update { it.copy(glossary = dbGlossary) }
             }
         }
     }

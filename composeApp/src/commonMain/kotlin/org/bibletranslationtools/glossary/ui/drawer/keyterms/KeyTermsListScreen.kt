@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -76,7 +77,7 @@ import org.koin.compose.koinInject
 private val BOTTOM_BAR_HEIGHT = 120.dp
 
 @Composable
-fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
+fun KeyTermsListScreen(component: KeyTermsListComponent) {
     val model by component.model.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
@@ -266,7 +267,8 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
                             colors = CustomTextFieldDefaults.colors(
                                 focusedContainerColor = MaterialTheme.colorScheme.surface,
                                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground
+                                    .copy(alpha = 0.1f),
                             ),
                             modifier = Modifier.fillMaxWidth()
                                 .height(48.dp)
@@ -274,25 +276,35 @@ fun KeyTermsIndexScreen(component: KeyTermsIndexComponent) {
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        if (filteredPhrases.isEmpty()) {
-                            Text(text = stringResource(Res.string.no_phrases_found))
-                        }
+                        if (model.isLoading) {
+                            Box(
+                                contentAlignment = Alignment.Center,
+                                modifier = Modifier.fillMaxWidth()
+                                    .weight(1f)
+                            ) {
+                                CircularProgressIndicator()
+                            }
+                        } else {
+                            if (filteredPhrases.isEmpty()) {
+                                Text(text = stringResource(Res.string.no_phrases_found))
+                            }
 
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            contentPadding = PaddingValues(
-                                top = 8.dp,
-                                bottom = BOTTOM_BAR_HEIGHT
-                            )
-                        ) {
-                            items(filteredPhrases) { phrase ->
-                                PhraseItem(
-                                    phrase = phrase,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    onClick = {
-                                        phrase.id?.let(component::navigateViewPhrase)
-                                    }
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(
+                                    top = 8.dp,
+                                    bottom = BOTTOM_BAR_HEIGHT
                                 )
+                            ) {
+                                items(filteredPhrases) { phrase ->
+                                    PhraseItem(
+                                        phrase = phrase,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onClick = {
+                                            phrase.id?.let(component::navigateViewPhrase)
+                                        }
+                                    )
+                                }
                             }
                         }
                     } ?: run {

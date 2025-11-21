@@ -30,7 +30,7 @@ import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-interface SettingsIndexComponent : DrawerContext {
+interface SettingsListComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
@@ -47,7 +47,7 @@ interface SettingsIndexComponent : DrawerContext {
     fun clearSnackBarMessage()
 }
 
-class DefaultSettingsIndexComponent(
+class DefaultSettingsListComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
     private val onCreateGlossary: () -> Unit,
@@ -55,14 +55,14 @@ class DefaultSettingsIndexComponent(
     private val onLogin: (User) -> Unit,
     private val onLogout: () -> Unit,
     private val onEditPermissions: () -> Unit
-) : DrawerComponent(componentContext, parentContext), SettingsIndexComponent, KoinComponent {
+) : DrawerComponent(componentContext, parentContext), SettingsListComponent, KoinComponent {
 
     private val glossaryApi: GlossaryApi by inject()
     private val glossaryRepository: GlossaryRepository by inject()
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    private val _model = MutableValue(SettingsIndexComponent.Model())
-    override val model: Value<SettingsIndexComponent.Model> = _model
+    private val _model = MutableValue(SettingsListComponent.Model())
+    override val model: Value<SettingsListComponent.Model> = _model
 
     init {
         doOnResume {

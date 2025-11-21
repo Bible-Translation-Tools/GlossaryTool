@@ -94,7 +94,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Composable
-fun SettingsIndexScreen(component: SettingsIndexComponent) {
+fun SettingsListScreen(component: SettingsListComponent) {
     val model by component.model.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()

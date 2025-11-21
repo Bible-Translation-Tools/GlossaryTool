@@ -21,7 +21,7 @@ interface KeyTermsComponent : DrawerContext {
     val childStack: Value<ChildStack<*, Child>>
 
     sealed interface Child {
-        data class Index(val component: KeyTermsIndexComponent) : Child
+        data class KeyTerms(val component: KeyTermsListComponent) : Child
         data class ViewPhrase(val component: ViewPhraseComponent) : Child
         data class EditPhrase(val component: EditPhraseComponent) : Child
         data class CreatePhrase(val component: CreatePhraseComponent) : Child
@@ -47,7 +47,7 @@ class DefaultKeyTermsComponent(
             source = navigation,
             serializer = Config.serializer(),
             initialConfiguration = when (intent) {
-                is KeyTermsIntent.Index -> Config.Index
+                is KeyTermsIntent.Index -> Config.KeyTerms
                 is KeyTermsIntent.ViewPhrase -> Config.ViewPhrase(intent.phraseId)
                 is KeyTermsIntent.EditPhrase -> Config.EditPhrase(intent.phrase)
             },
@@ -68,8 +68,8 @@ class DefaultKeyTermsComponent(
         context: ComponentContext
     ) : KeyTermsComponent.Child {
         return when (config) {
-            is Config.Index -> KeyTermsComponent.Child.Index(
-                DefaultKeyTermsIndexComponent(
+            is Config.KeyTerms -> KeyTermsComponent.Child.KeyTerms(
+                DefaultKeyTermsListComponent(
                     componentContext = context,
                     parentContext = this,
                     onNavigateImportGlossary = {
@@ -153,7 +153,7 @@ class DefaultKeyTermsComponent(
     @Serializable
     private sealed interface Config {
         @Serializable
-        data object Index : Config
+        data object KeyTerms : Config
         @Serializable
         data class ViewPhrase(val phraseId: String) : Config
         @Serializable

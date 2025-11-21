@@ -12,7 +12,7 @@ fun KeyTermsScreen(component: KeyTermsComponent) {
         animation = stackAnimation(Utils.slideHorizontally())
     ) {
         when (val child = it.instance) {
-            is KeyTermsComponent.Child.Index -> KeyTermsIndexScreen(child.component)
+            is KeyTermsComponent.Child.KeyTerms -> KeyTermsListScreen(child.component)
             is KeyTermsComponent.Child.ViewPhrase -> ViewPhraseScreen(child.component)
             is KeyTermsComponent.Child.EditPhrase -> EditPhraseScreen(child.component)
             is KeyTermsComponent.Child.CreatePhrase -> CreatePhraseScreen(child.component)

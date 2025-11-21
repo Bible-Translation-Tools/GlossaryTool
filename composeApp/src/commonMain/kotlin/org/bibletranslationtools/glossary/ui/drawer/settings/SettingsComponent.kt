@@ -22,7 +22,7 @@ interface SettingsComponent: DrawerContext {
     val childStack: Value<ChildStack<*, Child>>
 
     sealed interface Child {
-        data class Index(val component: SettingsIndexComponent) : Child
+        data class Settings(val component: SettingsListComponent) : Child
         data class CreateGlossary(val component: CreateGlossaryComponent) : Child
         data class SelectLanguage(val component: SelectLanguageComponent) : Child
         data class ViewGlossaries(val component: GlossaryListComponent) : Child
@@ -51,7 +51,7 @@ class DefaultSettingsComponent(
             source = navigation,
             serializer = Config.serializer(),
             initialConfiguration = when (intent) {
-                SettingsIntent.Index -> Config.Index
+                SettingsIntent.Index -> Config.Settings
                 SettingsIntent.ImportGlossary -> Config.ImportGlossary()
                 SettingsIntent.CreateGlossary -> Config.CreateGlossary
             },
@@ -73,8 +73,8 @@ class DefaultSettingsComponent(
         context: ComponentContext
     ) : SettingsComponent.Child {
         return when (config) {
-            is Config.Index -> SettingsComponent.Child.Index(
-                DefaultSettingsIndexComponent(
+            is Config.Settings -> SettingsComponent.Child.Settings(
+                DefaultSettingsListComponent(
                     componentContext = context,
                     parentContext = this,
                     onCreateGlossary = {
@@ -99,7 +99,7 @@ class DefaultSettingsComponent(
                     onGlossaryCreated = { resource, glossary ->
                         onSelectResource(resource)
                         onSelectGlossary(glossary, true)
-                        navigation.replaceAll(Config.Index)
+                        navigation.replaceAll(Config.Settings)
                     },
                     onSelectLanguage = { type ->
                         navigation.bringToFront(Config.SelectLanguage(type))
@@ -171,7 +171,7 @@ class DefaultSettingsComponent(
     @Serializable
     private sealed interface Config {
         @Serializable
-        data object Index : Config
+        data object Settings : Config
         @Serializable
         data object CreateGlossary : Config
         @Serializable
