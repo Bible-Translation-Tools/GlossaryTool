@@ -39,7 +39,9 @@ interface ReadIndexComponent : ParentContext {
         val activeChapter: Chapter? = null,
         val chapterPhrases: List<Phrase> = emptyList(),
         val phraseDetails: PhraseDetails? = null,
-        val currentRef: RefOption? = null
+        val currentRef: RefOption? = null,
+        val keyTermsDrawerOpen: Boolean = false,
+        val settingsDrawerOpen: Boolean = false
     )
 
     fun nextChapter()
@@ -86,6 +88,12 @@ class DefaultReadIndexComponent(
                 if (model.phraseUpdated) {
                     loadChapterPhrases()
                     sharedState.updatePhraseUpdated(false)
+                }
+                _model.update {
+                    it.copy(
+                        keyTermsDrawerOpen = model.keyTermsDrawerOpen,
+                        settingsDrawerOpen = model.settingsDrawerOpen
+                    )
                 }
             }
         }

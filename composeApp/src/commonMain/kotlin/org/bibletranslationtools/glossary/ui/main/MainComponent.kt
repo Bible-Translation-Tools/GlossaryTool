@@ -84,7 +84,9 @@ interface MainComponent: ParentContext {
         val activeGlossary: Glossary? = null,
         val activeResource: Resource? = null,
         val fullscreenDrawer: Boolean = false,
-        val phraseUpdated: Boolean = false
+        val phraseUpdated: Boolean = false,
+        val keyTermsDrawerOpen: Boolean = false,
+        val settingsDrawerOpen: Boolean = false
     )
 
     val childStack: Value<ChildStack<*, Child>>
@@ -179,14 +181,18 @@ class DefaultMainComponent(
     }
 
     private fun showSettingsDrawer(intent: SettingsIntent = SettingsIntent.Index) {
+        mainState.updateSettingsDrawerOpen(true)
         drawerNavigation.activate(DrawerConfig.Settings(intent))
     }
 
     private fun showKeyTermsDrawer(intent: KeyTermsIntent = KeyTermsIntent.Index) {
+        mainState.updateKeyTermsDrawerOpen(true)
         drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
     }
 
     override fun dismissDrawer() {
+        mainState.updateKeyTermsDrawerOpen(false)
+        mainState.updateSettingsDrawerOpen(false)
         drawerNavigation.dismiss()
     }
 

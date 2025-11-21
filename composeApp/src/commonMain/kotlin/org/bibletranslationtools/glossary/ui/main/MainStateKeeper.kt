@@ -13,6 +13,14 @@ class MainStateKeeper : InstanceKeeper.Instance {
         _model.update { it.copy(phraseUpdated = value) }
     }
 
+    fun updateKeyTermsDrawerOpen(value: Boolean) {
+        _model.update { it.copy(keyTermsDrawerOpen = value) }
+    }
+
+    fun updateSettingsDrawerOpen(value: Boolean) {
+        _model.update { it.copy(settingsDrawerOpen = value) }
+    }
+
     override fun onDestroy() {
         // Clean up if needed
     }
