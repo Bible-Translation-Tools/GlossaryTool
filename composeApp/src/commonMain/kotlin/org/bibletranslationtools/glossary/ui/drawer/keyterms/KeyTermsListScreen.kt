@@ -74,8 +74,6 @@ import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-private val BOTTOM_BAR_HEIGHT = 120.dp
-
 @Composable
 fun KeyTermsListScreen(component: KeyTermsListComponent) {
     val model by component.model.subscribeAsState()
@@ -291,10 +289,8 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
 
                             LazyColumn(
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
-                                contentPadding = PaddingValues(
-                                    top = 8.dp,
-                                    bottom = BOTTOM_BAR_HEIGHT
-                                )
+                                contentPadding = PaddingValues(vertical = 8.dp),
+                                modifier = Modifier.weight(1f)
                             ) {
                                 items(filteredPhrases) { phrase ->
                                     PhraseItem(
@@ -304,6 +300,52 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                             phrase.id?.let(component::navigateViewPhrase)
                                         }
                                     )
+                                }
+                            }
+
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surface)
+                                    .padding(bottom = 16.dp)
+                            ) {
+                                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+                                Column (
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth()
+                                        .padding(16.dp)
+                                ) {
+                                    Button(
+                                        onClick = component::navigateSearchPhrases,
+                                        shape = MaterialTheme.shapes.medium,
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Add,
+                                            contentDescription = "add new word",
+                                            tint = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(
+                                            text = stringResource(Res.string.create_new_phrase),
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onPrimary
+                                        )
+                                    }
+
+                                    if (isAdmin) {
+                                        ElevatedButton(
+                                            onClick = component::updateGlossary,
+                                            shape = MaterialTheme.shapes.medium,
+                                            colors = ButtonDefaults.elevatedButtonColors(
+                                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                                            ),
+                                            modifier = Modifier.fillMaxWidth()
+                                                .height(40.dp)
+                                        ) {
+                                            Text(stringResource(Res.string.update_glossary))
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -349,55 +391,6 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                     .height(48.dp)
                             ) {
                                 Text(stringResource(Res.string.create_glossary))
-                            }
-                        }
-                    }
-                }
-
-                if (glossaryState.glossary != null) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth()
-                            .background(MaterialTheme.colorScheme.surface)
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 16.dp)
-                    ) {
-                        HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                        Column (
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Button(
-                                onClick = component::navigateSearchPhrases,
-                                shape = MaterialTheme.shapes.medium,
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = "add new word",
-                                    tint = MaterialTheme.colorScheme.onPrimary
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = stringResource(Res.string.create_new_phrase),
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimary
-                                )
-                            }
-
-                            if (isAdmin) {
-                                ElevatedButton(
-                                    onClick = component::updateGlossary,
-                                    shape = MaterialTheme.shapes.medium,
-                                    colors = ButtonDefaults.elevatedButtonColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                        .height(40.dp)
-                                ) {
-                                    Text(stringResource(Res.string.update_glossary))
-                                }
                             }
                         }
                     }

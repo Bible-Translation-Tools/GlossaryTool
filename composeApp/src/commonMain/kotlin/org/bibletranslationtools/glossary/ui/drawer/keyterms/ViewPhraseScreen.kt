@@ -54,8 +54,6 @@ import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-private val BOTTOM_BAR_HEIGHT = 80.dp
-
 @Composable
 fun ViewPhraseScreen(component: ViewPhraseComponent) {
     val model by component.model.subscribeAsState()
@@ -138,101 +136,97 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                         Spacer(modifier = Modifier.height(64.dp))
                     }
 
-                    Box(
-                        modifier = Modifier.fillMaxWidth()
-                            .weight(1f)
-                    ) {
-                        if (model.isLoading) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.align(Alignment.Center)
-                            )
-                        } else {
-                            LazyColumn(
-                                verticalArrangement = Arrangement.spacedBy(16.dp),
-                                contentPadding = PaddingValues(
-                                    top = 8.dp,
-                                    bottom = BOTTOM_BAR_HEIGHT
-                                ),
-                                modifier = Modifier.fillMaxSize()
-                                    .background(
-                                        color = MaterialTheme.colorScheme.surface,
-                                        shape = MaterialTheme.shapes.medium
-                                    )
-                            ) {
-                                items(model.refs) { ref ->
-                                    resourceState.resource?.let { resource ->
-                                        val reference = "${ref.book.uppercase()} ${ref.chapter}:${ref.verse}"
-                                        val text = ref.getVerseText(resource)
+                    if (model.isLoading) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(16.dp),
+                            contentPadding = PaddingValues(vertical = 8.dp),
+                            modifier = Modifier.fillMaxSize()
+                                .weight(1f)
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = MaterialTheme.shapes.medium
+                                )
+                        ) {
+                            items(model.refs) { ref ->
+                                resourceState.resource?.let { resource ->
+                                    val reference = "${ref.book.uppercase()} ${ref.chapter}:${ref.verse}"
+                                    val text = ref.getVerseText(resource)
 
-                                        model.phrase?.let { phrase ->
-                                            VerseReference(
-                                                reference = reference,
-                                                phrase = phrase.phrase,
-                                                text = text,
-                                                fontFamily = fontFamily,
-                                                modifier = Modifier.fillMaxWidth()
-                                            ) {
-                                                component.onRefClick(ref)
-                                            }
+                                    model.phrase?.let { phrase ->
+                                        VerseReference(
+                                            reference = reference,
+                                            phrase = phrase.phrase,
+                                            text = text,
+                                            fontFamily = fontFamily,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            component.onRefClick(ref)
                                         }
                                     }
                                 }
                             }
                         }
-                    }
-                }
 
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                        .background(MaterialTheme.colorScheme.surface)
-                        .align(Alignment.BottomCenter)
-                ) {
-                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+                        Column(
+                            modifier = Modifier.fillMaxWidth()
+                                .background(MaterialTheme.colorScheme.surface)
+                        ) {
+                            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Button(
-                            onClick = {
-                                model.phrase?.let { phrase ->
-                                    component.onEditClick(phrase.phrase)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                                    .padding(16.dp)
+                            ) {
+                                Button(
+                                    onClick = {
+                                        model.phrase?.let { phrase ->
+                                            component.onEditClick(phrase.phrase)
+                                        }
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primary,
+                                        contentColor = MaterialTheme.colorScheme.onPrimary
+                                    ),
+                                    shape = MaterialTheme.shapes.medium,
+                                    modifier = Modifier.weight(0.48f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Edit,
+                                        contentDescription = "Edit",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(stringResource(Res.string.edit))
                                 }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ),
-                            shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.weight(0.48f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Edit,
-                                contentDescription = "Edit",
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(Res.string.edit))
-                        }
-                        Spacer(modifier = Modifier.weight(0.04f))
-                        Button(
-                            onClick = { /*TODO*/ },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                contentColor = MaterialTheme.colorScheme.primary
-                            ),
-                            shape = MaterialTheme.shapes.medium,
-                            enabled = false,
-                            modifier = Modifier.weight(0.48f)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Mic,
-                                contentDescription = "Add Audio",
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(stringResource(Res.string.add_audio))
+                                Spacer(modifier = Modifier.weight(0.04f))
+                                Button(
+                                    onClick = { /*TODO*/ },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        contentColor = MaterialTheme.colorScheme.primary
+                                    ),
+                                    shape = MaterialTheme.shapes.medium,
+                                    enabled = false,
+                                    modifier = Modifier.weight(0.48f)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Outlined.Mic,
+                                        contentDescription = "Add Audio",
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(stringResource(Res.string.add_audio))
+                                }
+                            }
                         }
                     }
                 }
