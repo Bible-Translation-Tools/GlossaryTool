@@ -10,6 +10,5 @@ data class ManifestPhrase(
     val description: String,
     val audio: String?,
     val createdAt: String,
-    val updatedAt: String,
-    val refs: List<ManifestRef>
+    val updatedAt: String
 )

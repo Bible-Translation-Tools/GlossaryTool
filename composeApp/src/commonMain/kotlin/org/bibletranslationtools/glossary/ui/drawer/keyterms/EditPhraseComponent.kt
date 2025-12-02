@@ -87,22 +87,13 @@ class DefaultEditPhraseComponent(
                         updatedAt = getCurrentTime(),
                         id = phrase.id
                     )
-                    val dbRefs = phrase.id?.let {
-                        glossaryRepository.getRefs(it)
-                    } ?: emptyList()
 
-                    val refs = (dbRefs + findRefs(phrase)).distinctBy {
+                    val refs = findRefs(phrase).distinctBy {
                         listOf(it.book, it.chapter, it.verse)
                     }
 
                     if (refs.isNotEmpty()) {
-                        glossaryRepository.addPhrase(phrase)?.let { phraseId ->
-                            glossaryRepository.batchAddRefs(
-                                refs.map {
-                                    it.copy(phraseId = phraseId)
-                                }
-                            )
-                        }
+                        glossaryRepository.addPhrase(phrase)
                         null
                     } else {
                         getString(Res.string.no_refs_found)
@@ -132,24 +123,28 @@ class DefaultEditPhraseComponent(
     }
 
     private fun findRefs(phrase: Phrase): List<Ref> {
+        val resource = resourceState.value.resource ?: return emptyList()
+
+        val regex = Regex(
+            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
+            option = RegexOption.IGNORE_CASE
+        )
         val refs = mutableListOf<Ref>()
-        resourceState.value.resource?.let { resource ->
-            resource.books.forEach { book ->
-                book.chapters.forEach { chapter ->
-                    chapter.verses.forEach { verse ->
-                        val regex = Regex(
-                            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
-                            option = RegexOption.IGNORE_CASE
-                        )
-                        val count = regex.findAll(verse.text).count()
-                        repeat(count) {
-                            val ref = Ref(
-                                book = book.slug,
-                                chapter = chapter.number.toString(),
-                                verse = verse.number,
-                                phraseId = phrase.id
+
+        for (book in resource.books) {
+            for (chapter in book.chapters) {
+                for (verse in chapter.verses) {
+                    val matchCount = regex.findAll(verse.text).count()
+                    if (matchCount > 0) {
+                        repeat(matchCount) {
+                            refs.add(
+                                Ref(
+                                    book = book.slug,
+                                    chapter = chapter.number.toString(),
+                                    verse = verse.number,
+                                    phraseId = phrase.id
+                                )
                             )
-                            refs.add(ref)
                         }
                     }
                 }

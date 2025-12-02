@@ -17,7 +17,6 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Language
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
-import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.ErrorDetails
 import org.bibletranslationtools.glossary.data.stet.Stet
@@ -254,23 +253,7 @@ class DefaultCreateGlossaryComponent(
                     description = item.description,
                     glossaryId = glossaryId
                 )
-                val phraseId = glossaryRepository.addPhrase(phrase)
-                if (item.references.isNotEmpty()) {
-                    item.references.map {
-                        try {
-                            val (book, chapter, verse) = it.split(":")
-                            val ref = Ref(
-                                book = book,
-                                chapter = chapter,
-                                verse = verse,
-                                phraseId = phraseId
-                            )
-                            glossaryRepository.addRef(ref)
-                        } catch (_: Exception) {
-                            println("Invalid reference: $it")
-                        }
-                    }
-                }
+                glossaryRepository.addPhrase(phrase)
             }
         }
     }

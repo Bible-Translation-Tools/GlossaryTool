@@ -219,11 +219,7 @@ class DefaultReadIndexComponent(
             val phrases = withContext(Dispatchers.Default) {
                 glossaryRepository.getPhrases(glossary.id)
                     .mapNotNull { phrase ->
-                        val relevantRef = glossaryRepository.getRefs(phrase.id)
-                            .find { ref ->
-                                ref.book == book.slug
-                                        && ref.chapter == chapter.number.toString()
-                            }
+                        val relevantRef = findRelevantRefs(phrase, book, chapter).firstOrNull()
                         relevantRef?.let { phrase to it }
                     }
                     .sortedBy { (_, ref) ->
@@ -234,6 +230,43 @@ class DefaultReadIndexComponent(
 
             _model.update { it.copy(chapterPhrases = phrases) }
         }
+    }
+
+    private fun findRelevantRefs(
+        phrase: Phrase,
+        book: Workbook,
+        chapter: Chapter
+    ): List<Ref> {
+        val resource = resourceState.value.resource ?: return emptyList()
+
+        val regex = Regex(
+            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
+            option = RegexOption.IGNORE_CASE
+        )
+        val refs = mutableListOf<Ref>()
+        val verses = resource.books.singleOrNull {
+            book.slug == it.slug
+        }
+            ?.chapters?.singleOrNull {
+                chapter.number == it.number
+            }?.verses ?: return emptyList()
+
+        for (verse in verses) {
+            val matchCount = regex.findAll(verse.text).count()
+            if (matchCount > 0) {
+                repeat(matchCount) {
+                    refs.add(
+                        Ref(
+                            book = book.slug,
+                            chapter = chapter.number.toString(),
+                            verse = verse.number,
+                            phraseId = phrase.id
+                        )
+                    )
+                }
+            }
+        }
+        return refs
     }
 
     private fun loadPhrase(
@@ -295,10 +328,8 @@ class DefaultReadIndexComponent(
         verse: String? = null,
     ): Ref? {
         return withContext(Dispatchers.Default) {
-            glossaryRepository.getRefs(phrase.id).firstOrNull {
-                it.book == book.slug
-                        && it.chapter == chapter.number.toString()
-                        && (verse == null || it.verse == verse)
+            findRelevantRefs(phrase, book, chapter).firstOrNull {
+                verse == null || it.verse == verse
             }
         }
     }

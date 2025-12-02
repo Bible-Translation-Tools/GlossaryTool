@@ -9,12 +9,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
-import org.bibletranslationtools.glossary.Utils
+import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -41,6 +42,9 @@ class DefaultViewPhraseComponent(
 
     private val glossaryRepository: GlossaryRepository by inject()
 
+    private val appStateStore: AppStateStore by inject()
+    private val resourceState = appStateStore.resourceStateHolder.state
+
     private val _model = MutableValue(ViewPhraseComponent.Model())
     override val model: Value<ViewPhraseComponent.Model> = _model
 
@@ -51,16 +55,11 @@ class DefaultViewPhraseComponent(
             componentScope.launch {
                 _model.update { it.copy(isLoading = true) }
 
-                val phrase = glossaryRepository.getPhrase(phraseId)
-                val refs = phrase?.id?.let { glossaryRepository.getRefs(it) }
-                    ?.sortedWith(
-                        compareBy<Ref> {
-                            Utils.bookOrderMap()[it.book] ?: Int.MAX_VALUE
-                        }
-                            .thenBy { it.chapter }
-                            .thenBy { it.verse }
-                    )
-                    ?: emptyList()
+                val (phrase, refs) = withContext(Dispatchers.Default) {
+                    val p = glossaryRepository.getPhrase(phraseId)
+                    val r = p?.let { findRefs(it) } ?: emptyList()
+                    p to r
+                }
 
                 _model.update {
                     it.copy(
@@ -79,5 +78,36 @@ class DefaultViewPhraseComponent(
 
     override fun onEditClick(phrase: String) {
         onNavigateEdit(phrase)
+    }
+
+    private fun findRefs(phrase: Phrase): List<Ref> {
+        val resource = resourceState.value.resource ?: return emptyList()
+
+        val regex = Regex(
+            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
+            option = RegexOption.IGNORE_CASE
+        )
+        val refs = mutableListOf<Ref>()
+
+        for (book in resource.books) {
+            for (chapter in book.chapters) {
+                for (verse in chapter.verses) {
+                    val matchCount = regex.findAll(verse.text).count()
+                    if (matchCount > 0) {
+                        repeat(matchCount) {
+                            refs.add(
+                                Ref(
+                                    book = book.slug,
+                                    chapter = chapter.number.toString(),
+                                    verse = verse.number,
+                                    phraseId = phrase.id
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        return refs
     }
 }
