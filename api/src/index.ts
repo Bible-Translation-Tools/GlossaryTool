@@ -274,27 +274,31 @@ app.post("/private/api/glossary", async (c) => {
         },
       });
 
+    const phraseValues = glossary!.phrases.map((phrase) => ({
+      id: phrase.id,
+      phrase: phrase.phrase,
+      spelling: phrase.spelling,
+      description: phrase.description,
+      audio: phrase.audio,
+      glossaryId: glossaryId,
+    }));
+
+    const CHUNK_SIZE = 1000;
+
     await dbHelper.getDb().transaction(async (tx) => {
-      for (const phrase of glossary!.phrases) {
-        const insertPhrase = await tx
+      for (let i = 0; i < phraseValues.length; i += CHUNK_SIZE) {
+        const chunk = phraseValues.slice(i, i + CHUNK_SIZE);
+        await tx
           .insert(phraseTable)
-          .values({
-            id: phrase.id,
-            phrase: phrase.phrase,
-            spelling: phrase.spelling,
-            description: phrase.description,
-            audio: phrase.audio,
-            glossaryId: glossaryId,
-          })
+          .values(chunk)
           .onConflictDoUpdate({
             target: [phraseTable.phrase, phraseTable.glossaryId],
             set: {
-              spelling: phrase.spelling,
-              description: phrase.description,
-              audio: phrase.audio,
+              spelling: sql.raw(`excluded.spelling`),
+              description: sql.raw(`excluded.description`),
+              audio: sql.raw(`excluded.audio`),
             },
-          })
-          .returning({ id: phraseTable.id });
+          });
       }
     });
 
@@ -494,7 +498,15 @@ app.get("/private/api/glossary/:code/users", async (c) => {
     });
 
     if (!glossary) {
-      throw new Error("Invalid glossary.");
+      // If glossary is not in database, return current user as owner
+      return c.json<GlossaryUser[]>([
+        {
+          username: auth.username,
+          emoji: auth.emoji,
+          role: "owner",
+          code: code,
+        },
+      ]);
     }
 
     const glossaryAdmins = glossary.users
