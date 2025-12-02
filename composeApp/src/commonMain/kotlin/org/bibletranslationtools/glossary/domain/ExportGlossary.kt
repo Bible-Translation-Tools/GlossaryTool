@@ -9,7 +9,6 @@ import org.bibletranslationtools.glossary.Utils.JsonLenient
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.api.ManifestGlossary
 import org.bibletranslationtools.glossary.data.api.ManifestPhrase
-import org.bibletranslationtools.glossary.data.api.ManifestRef
 import org.bibletranslationtools.glossary.data.api.ManifestResource
 import org.bibletranslationtools.glossary.platform.zipDirectory
 
@@ -36,7 +35,6 @@ class ExportGlossary(
                 version = resource.version
             ),
             phrases = phrases.map { phrase ->
-                val refs = glossaryRepository.getRefs(phrase.id)
                 ManifestPhrase(
                     id = phrase.id!!,
                     phrase = phrase.phrase,
@@ -44,15 +42,7 @@ class ExportGlossary(
                     description = phrase.description,
                     audio = phrase.audio,
                     createdAt = phrase.createdAt.toString(),
-                    updatedAt = phrase.updatedAt.toString(),
-                    refs = refs.map { ref ->
-                        ManifestRef(
-                            id = ref.id!!,
-                            book = ref.book,
-                            chapter = ref.chapter,
-                            verse = ref.verse
-                        )
-                    }
+                    updatedAt = phrase.updatedAt.toString()
                 )
             }
         )

@@ -295,17 +295,6 @@ app.post("/private/api/glossary", async (c) => {
             },
           })
           .returning({ id: phraseTable.id });
-
-        const phraseId = insertPhrase[0].id;
-
-        if (phrase.refs && phrase.refs.length > 0) {
-          await tx
-            .insert(refTable)
-            .values(phrase.refs.map((ref) => ({ ...ref, phraseId: phraseId })))
-            .onConflictDoNothing({
-              target: [refTable.id],
-            });
-        }
       }
     });
 
@@ -443,11 +432,7 @@ app.get("/public/api/glossary/:code", async (c) => {
         where: eq(glossaryTable.code, code),
         with: {
           resource: true,
-          phrases: {
-            with: {
-              refs: true,
-            },
-          },
+          phrases: true,
         },
       })) || null;
 

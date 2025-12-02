@@ -18,8 +18,6 @@ import org.bibletranslationtools.glossary.domain.LanguageDataSource
 import org.bibletranslationtools.glossary.domain.LanguageDataSourceImpl
 import org.bibletranslationtools.glossary.domain.PhraseDataSource
 import org.bibletranslationtools.glossary.domain.PhraseDataSourceImpl
-import org.bibletranslationtools.glossary.domain.RefDataSource
-import org.bibletranslationtools.glossary.domain.RefDataSourceImpl
 import org.bibletranslationtools.glossary.domain.ResourceDataSource
 import org.bibletranslationtools.glossary.domain.ResourceDataSourceImpl
 import org.bibletranslationtools.glossary.domain.SettingsDataSource
@@ -49,7 +47,6 @@ val sharedModule = module {
 
     singleOf(::GlossaryDataSourceImpl).bind<GlossaryDataSource>()
     singleOf(::PhraseDataSourceImpl).bind<PhraseDataSource>()
-    singleOf(::RefDataSourceImpl).bind<RefDataSource>()
     singleOf(::SettingsDataSourceImpl).bind<SettingsDataSource>()
     singleOf(::LanguageDataSourceImpl).bind<LanguageDataSource>()
     singleOf(::ResourceDataSourceImpl).bind<ResourceDataSource>()

@@ -8,11 +8,9 @@ import kotlinx.io.readString
 import org.bibletranslationtools.glossary.Utils.JsonLenient
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
-import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.ManifestGlossary
 import org.bibletranslationtools.glossary.data.api.ManifestPhrase
-import org.bibletranslationtools.glossary.data.api.ManifestRef
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.extractZip
 import org.bibletranslationtools.glossary.toLocalDateTime
@@ -68,19 +66,13 @@ class ImportGlossary(
         val glossaryId = glossaryRepository.addGlossary(glossary)
 
         val phrasesToInsert = mutableListOf<Phrase>()
-        val refsToInsert = mutableListOf<Ref>()
 
         glossaryDict.phrases.forEach { phrase ->
             val dbPhrase = mapPhrase(phrase, glossaryId!!)
             phrasesToInsert.add(dbPhrase)
-
-            phrase.refs.forEach { ref ->
-                val dbRef = mapRef(ref, dbPhrase.id!!)
-                refsToInsert.add(dbRef)
-            }
         }
 
-        glossaryRepository.batchAddPhrasesAndRefs(phrasesToInsert, refsToInsert)
+        glossaryRepository.batchAddPhrases(phrasesToInsert)
 
         return Result(
             glossary = glossary,
@@ -126,16 +118,6 @@ class ImportGlossary(
             createdAt = phrase.createdAt.toLocalDateTime(),
             updatedAt = phrase.updatedAt.toLocalDateTime(),
             glossaryId = glossaryId
-        )
-    }
-
-    private fun mapRef(ref: ManifestRef, phraseId: String): Ref {
-        return Ref(
-            id = ref.id,
-            book = ref.book,
-            chapter = ref.chapter,
-            verse = ref.verse,
-            phraseId = phraseId
         )
     }
 }

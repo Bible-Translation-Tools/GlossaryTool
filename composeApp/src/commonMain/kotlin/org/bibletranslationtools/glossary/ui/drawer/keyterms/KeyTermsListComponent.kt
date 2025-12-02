@@ -25,6 +25,7 @@ import kotlinx.io.files.SystemFileSystem
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
@@ -93,6 +94,7 @@ class DefaultKeyTermsListComponent(
     private val appState: AppStateStore by inject()
     private val userStateHolder = appState.userStateHolder
     private val glossaryStateHolder = appState.glossaryStateHolder
+    private val resourceState = appState.resourceStateHolder.state
 
     private val _model = MutableValue(KeyTermsListComponent.Model())
     override val model: Value<KeyTermsListComponent.Model> = _model
@@ -114,10 +116,7 @@ class DefaultKeyTermsListComponent(
                 val all = glossaryRepository.getPhrases(glossary.id)
                     .sortedBy { it.phrase.lowercase() }
                 val chapter = all.filter { phrase ->
-                    val relevantRef = glossaryRepository.getRefs(phrase.id)
-                        .find { ref ->
-                            ref.book == book && ref.chapter == chapter.toString()
-                        }
+                    val relevantRef = findRelevantRefs(phrase, book, chapter).firstOrNull()
                     relevantRef != null
                 }
                 all to chapter
@@ -257,7 +256,6 @@ class DefaultKeyTermsListComponent(
                         }
                     }
                 }
-                println(users)
                 glossaryStateHolder.setUsers(users)
                 _model.update { it.copy(progress = null) }
             }
@@ -281,5 +279,42 @@ class DefaultKeyTermsListComponent(
                 _model.update { it.copy(glossary = dbGlossary) }
             }
         }
+    }
+
+    private fun findRelevantRefs(
+        phrase: Phrase,
+        book: String,
+        chapter: Int
+    ): List<Ref> {
+        val resource = resourceState.value.resource ?: return emptyList()
+
+        val regex = Regex(
+            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
+            option = RegexOption.IGNORE_CASE
+        )
+        val refs = mutableListOf<Ref>()
+        val verses = resource.books.singleOrNull {
+            book == it.slug
+        }
+            ?.chapters?.singleOrNull {
+                chapter == it.number
+            }?.verses ?: return emptyList()
+
+        for (verse in verses) {
+            val matchCount = regex.findAll(verse.text).count()
+            if (matchCount > 0) {
+                repeat(matchCount) {
+                    refs.add(
+                        Ref(
+                            book = book,
+                            chapter = chapter.toString(),
+                            verse = verse.number,
+                            phraseId = phrase.id
+                        )
+                    )
+                }
+            }
+        }
+        return refs
     }
 }
