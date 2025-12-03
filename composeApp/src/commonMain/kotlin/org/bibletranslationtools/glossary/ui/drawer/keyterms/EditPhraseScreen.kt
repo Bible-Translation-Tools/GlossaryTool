@@ -156,7 +156,7 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                             enabled = spelling.isNotEmpty()
                                     && !model.isSaving,
                             onClick = {
-                                component.savePhrase(
+                                component.savePendingPhrase(
                                     spelling = spelling,
                                     description = description
                                 )

@@ -5,24 +5,25 @@ import org.bibletranslationtools.glossary.domain.CatalogApi
 import org.bibletranslationtools.glossary.domain.CatalogApiImpl
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
-import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.GlossaryApiImpl
-import org.bibletranslationtools.glossary.domain.GlossaryDataSource
-import org.bibletranslationtools.glossary.domain.GlossaryDataSourceImpl
-import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.domain.GlossaryRepositoryImpl
-import org.bibletranslationtools.glossary.domain.ImportGlossary
 import org.bibletranslationtools.glossary.domain.InitApp
-import org.bibletranslationtools.glossary.domain.LanguageDataSource
-import org.bibletranslationtools.glossary.domain.LanguageDataSourceImpl
-import org.bibletranslationtools.glossary.domain.PhraseDataSource
-import org.bibletranslationtools.glossary.domain.PhraseDataSourceImpl
-import org.bibletranslationtools.glossary.domain.ResourceDataSource
-import org.bibletranslationtools.glossary.domain.ResourceDataSourceImpl
-import org.bibletranslationtools.glossary.domain.SettingsDataSource
-import org.bibletranslationtools.glossary.domain.SettingsDataSourceImpl
 import org.bibletranslationtools.glossary.domain.createHttpClient
+import org.bibletranslationtools.glossary.domain.data.GlossaryDataSource
+import org.bibletranslationtools.glossary.domain.data.GlossaryDataSourceImpl
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepositoryImpl
+import org.bibletranslationtools.glossary.domain.data.LanguageDataSource
+import org.bibletranslationtools.glossary.domain.data.LanguageDataSourceImpl
+import org.bibletranslationtools.glossary.domain.data.PhraseDataSource
+import org.bibletranslationtools.glossary.domain.data.PhraseDataSourceImpl
+import org.bibletranslationtools.glossary.domain.data.ResourceDataSource
+import org.bibletranslationtools.glossary.domain.data.ResourceDataSourceImpl
+import org.bibletranslationtools.glossary.domain.data.SettingsDataSource
+import org.bibletranslationtools.glossary.domain.data.SettingsDataSourceImpl
+import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
+import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
+import org.bibletranslationtools.glossary.domain.usecases.MergePendingPhrases
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.platform.httpClientEngine
@@ -54,6 +55,7 @@ val sharedModule = module {
     singleOf(::GlossaryRepositoryImpl).bind<GlossaryRepository>()
     singleOf(::ExportGlossary)
     singleOf(::ImportGlossary)
+    singleOf(::MergePendingPhrases)
 
     factoryOf(::InitApp)
 

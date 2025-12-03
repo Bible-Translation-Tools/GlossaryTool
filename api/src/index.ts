@@ -5,6 +5,7 @@ import type { JwtVariables } from "hono/jwt";
 import {
   glossaryTable,
   glossaryUsers,
+  pendingPhraseTable,
   phraseTable,
   refTable,
   resourceTable,
@@ -12,24 +13,11 @@ import {
   RoleType,
   usersTable,
 } from "./db/schema";
-import {
-  and,
-  eq,
-  exists,
-  gt,
-  sql,
-  asc,
-  count,
-  inArray,
-  max,
-  min,
-  or,
-} from "drizzle-orm";
+import { and, eq, gt, sql, or } from "drizzle-orm";
 import { unzipSync, zipSync } from "fflate";
-import { load as parseYaml, dump as stringifyYaml } from "js-yaml";
-import { Glossary, GlossaryUpdate } from "./glossary.types";
+import { load as parseYaml } from "js-yaml";
+import { Glossary, GlossaryUpdate, Phrase } from "./glossary.types";
 import { Manifest } from "./resource.types";
-import { version } from "uuid";
 import { ErrorDetails, GlossaryUser, TokenRes, UserRes } from "./user.types";
 import { jwt, sign } from "hono/jwt";
 
@@ -480,6 +468,74 @@ app.get("/public/api/glossary/:code", async (c) => {
   }
 });
 
+app.post("/private/api/glossary/:code/pending_phrases", async (c) => {
+  const dbHelper = c.get("db");
+  const code = c.req.param("code");
+  const auth = c.get("jwtPayload");
+
+  const pendingPhrases = await c.req.json<Phrase[]>();
+
+  try {
+    const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.code, code),
+      with: {
+        users: {
+          with: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!glossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    const phraseValues = pendingPhrases.map((phrase) => ({
+      id: phrase.id,
+      phrase: phrase.phrase,
+      spelling: phrase.spelling,
+      description: phrase.description,
+      audio: phrase.audio,
+      userId: auth.id,
+      glossaryId: glossary.id,
+    }));
+
+    const CHUNK_SIZE = 1000;
+
+    await dbHelper.getDb().transaction(async (tx) => {
+      for (let i = 0; i < phraseValues.length; i += CHUNK_SIZE) {
+        const chunk = phraseValues.slice(i, i + CHUNK_SIZE);
+        await tx
+          .insert(pendingPhraseTable)
+          .values(chunk)
+          .onConflictDoUpdate({
+            target: [
+              pendingPhraseTable.phrase,
+              pendingPhraseTable.glossaryId,
+              pendingPhraseTable.userId,
+            ],
+            set: {
+              spelling: sql.raw(`excluded.spelling`),
+              description: sql.raw(`excluded.description`),
+              audio: sql.raw(`excluded.audio`),
+            },
+          });
+      }
+    });
+
+    return c.json(true);
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to upload pending phrases.",
+        details: error.message || "Unknown error.",
+      },
+      400
+    );
+  }
+});
+
 app.get("/private/api/glossary/:code/users", async (c) => {
   const dbHelper = c.get("db");
   const code = c.req.param("code");
@@ -498,7 +554,7 @@ app.get("/private/api/glossary/:code/users", async (c) => {
     });
 
     if (!glossary) {
-      // If glossary is not in database, return current user as owner
+      // If glossary is not in database, return authenticated user as owner
       return c.json<GlossaryUser[]>([
         {
           username: auth.username,
@@ -509,24 +565,16 @@ app.get("/private/api/glossary/:code/users", async (c) => {
       ]);
     }
 
-    const glossaryAdmins = glossary.users
-      .filter((user) => ["owner", "admin"].includes(user.role))
-      .map((user) => user.user.username);
-
-    if (glossaryAdmins.includes(auth.username)) {
-      return c.json<GlossaryUser[]>(
-        glossary.users.map((user) => {
-          return {
-            username: user.user.username,
-            emoji: user.user.emoji,
-            role: user.role,
-            code: glossary.code,
-          };
-        })
-      );
-    } else {
-      return c.json([]);
-    }
+    return c.json<GlossaryUser[]>(
+      glossary.users.map((user) => {
+        return {
+          username: user.user.username,
+          emoji: user.user.emoji,
+          role: user.role,
+          code: glossary.code,
+        };
+      })
+    );
   } catch (error: any) {
     return c.json<ErrorDetails>(
       {

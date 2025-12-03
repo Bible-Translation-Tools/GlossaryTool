@@ -1,5 +1,6 @@
 package org.bibletranslationtools.glossary.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
@@ -31,6 +32,9 @@ fun PhraseItem(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
+        border = if (phrase.pending) {
+            BorderStroke(1.dp, MaterialTheme.colorScheme.secondary)
+        } else null,
         modifier = modifier.heightIn(min = 48.dp),
         onClick = onClick
     ) {

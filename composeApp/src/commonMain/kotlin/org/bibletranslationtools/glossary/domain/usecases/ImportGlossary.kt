@@ -1,16 +1,18 @@
-package org.bibletranslationtools.glossary.domain
+package org.bibletranslationtools.glossary.domain.usecases
 
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readString
-import org.bibletranslationtools.glossary.Utils.JsonLenient
+import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.ManifestGlossary
 import org.bibletranslationtools.glossary.data.api.ManifestPhrase
+import org.bibletranslationtools.glossary.domain.DirectoryProvider
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.extractZip
 import org.bibletranslationtools.glossary.toLocalDateTime
@@ -40,7 +42,7 @@ class ImportGlossary(
             source.readString()
         }
 
-        val glossaryDict: ManifestGlossary = JsonLenient.decodeFromString(json)
+        val glossaryDict: ManifestGlossary = Utils.JsonLenient.decodeFromString(json)
 
         val resourceId = glossaryDict.resource.toString()
         val resourceFile = Path(tempDir, "$resourceId.zip")

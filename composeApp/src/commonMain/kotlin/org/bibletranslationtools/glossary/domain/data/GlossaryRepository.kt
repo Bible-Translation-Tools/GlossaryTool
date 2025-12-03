@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.domain
+package org.bibletranslationtools.glossary.domain.data
 
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Language
@@ -6,6 +6,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.toEntity
 import org.bibletranslationtools.glossary.data.toModel
+import org.bibletranslationtools.glossary.data.toPendingEntity
 
 interface GlossaryRepository {
     suspend fun getGlossary(code: String): Glossary?
@@ -14,9 +15,13 @@ interface GlossaryRepository {
     suspend fun setGlossaryVersion(version: Long, id: String): Long
     suspend fun setGlossaryHasUpdate(hasUpdate: Boolean, id: String): Long
     suspend fun getPhrase(id: String): Phrase?
+    suspend fun getPendingPhrase(id: String): Phrase?
     suspend fun getPhrase(phrase: String, glossaryId: String): Phrase?
+    suspend fun getPendingPhrase(phrase: String, glossaryId: String): Phrase?
     suspend fun getPhrases(glossaryId: String?): List<Phrase>
+    suspend fun getPendingPhrases(glossaryId: String?): List<Phrase>
     suspend fun addPhrase(phrase: Phrase): String?
+    suspend fun addPendingPhrase(phrase: Phrase): String?
     suspend fun getLanguage(slug: String): Language?
     suspend fun getAllLanguages(): List<Language>
     suspend fun getGatewayLanguages(): List<Language>
@@ -29,6 +34,8 @@ interface GlossaryRepository {
     suspend fun addResource(resource: Resource)
     suspend fun deleteResource(id: Long)
     suspend fun batchAddPhrases(phrases: List<Phrase>)
+    suspend fun deletePendingPhrase(id: String)
+    suspend fun deletePendingByGlossary(glossaryId: String)
 }
 
 class GlossaryRepositoryImpl(
@@ -83,8 +90,16 @@ class GlossaryRepositoryImpl(
         return phraseDataSource.getById(id)?.toModel()
     }
 
+    override suspend fun getPendingPhrase(id: String): Phrase? {
+        return phraseDataSource.getPendingById(id)?.toModel()
+    }
+
     override suspend fun getPhrase(phrase: String, glossaryId: String): Phrase? {
         return phraseDataSource.getByPhrase(phrase, glossaryId)?.toModel()
+    }
+
+    override suspend fun getPendingPhrase(phrase: String, glossaryId: String): Phrase? {
+        return phraseDataSource.getPendingByPhrase(phrase, glossaryId)?.toModel()
     }
 
     override suspend fun getPhrases(glossaryId: String?): List<Phrase> {
@@ -94,9 +109,21 @@ class GlossaryRepositoryImpl(
         } ?: emptyList()
     }
 
+    override suspend fun getPendingPhrases(glossaryId: String?): List<Phrase> {
+        return glossaryId?.let { id ->
+            phraseDataSource.getPendingByGlossary(id)
+                .map { it.toModel() }
+        } ?: emptyList()
+    }
+
     override suspend fun addPhrase(phrase: Phrase): String? {
         val entity = phrase.toEntity()
         return phraseDataSource.insert(entity)
+    }
+
+    override suspend fun addPendingPhrase(phrase: Phrase): String? {
+        val entity = phrase.toPendingEntity()
+        return phraseDataSource.insertPending(entity)
     }
 
     override suspend fun getLanguage(slug: String): Language? {
@@ -149,5 +176,13 @@ class GlossaryRepositoryImpl(
                 phraseDataSource.insertInTransaction(phrase.toEntity())
             }
         }
+    }
+
+    override suspend fun deletePendingPhrase(id: String) {
+        phraseDataSource.deletePending(id)
+    }
+
+    override suspend fun deletePendingByGlossary(glossaryId: String) {
+        phraseDataSource.deletePendingByGlossary(glossaryId)
     }
 }

@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
-import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -33,7 +33,7 @@ interface EditPhraseComponent : DrawerContext {
         val error: String? = null
     )
 
-    fun savePhrase(spelling: String, description: String)
+    fun savePendingPhrase(spelling: String, description: String)
 }
 
 class DefaultEditPhraseComponent(
@@ -62,7 +62,8 @@ class DefaultEditPhraseComponent(
         componentScope.launch {
             val glossary = glossaryState.value.glossary ?: return@launch
 
-            val phrase = glossaryRepository.getPhrase(phrase, glossary.id!!)
+            val phrase = glossaryRepository.getPendingPhrase(phrase, glossary.id!!)
+                ?: glossaryRepository.getPhrase(phrase, glossary.id)
                 ?: Phrase(
                     phrase = phrase,
                     glossaryId = glossary.id
@@ -72,7 +73,7 @@ class DefaultEditPhraseComponent(
         }
     }
 
-    override fun savePhrase(spelling: String, description: String) {
+    override fun savePendingPhrase(spelling: String, description: String) {
         componentScope.launch {
             _model.value = _model.value.copy(
                 isSaving = true,
@@ -93,7 +94,7 @@ class DefaultEditPhraseComponent(
                     }
 
                     if (refs.isNotEmpty()) {
-                        glossaryRepository.addPhrase(phrase)
+                        glossaryRepository.addPendingPhrase(phrase)
                         null
                     } else {
                         getString(Res.string.no_refs_found)

@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.domain
+package org.bibletranslationtools.glossary.domain.data
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList

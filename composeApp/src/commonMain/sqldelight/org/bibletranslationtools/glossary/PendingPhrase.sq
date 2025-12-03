@@ -1,0 +1,32 @@
+CREATE TABLE PendingPhraseEntity (
+    id TEXT PRIMARY KEY,
+    phrase TEXT NOT NULL,
+    spelling TEXT NOT NULL,
+    description TEXT NOT NULL,
+    audio TEXT NOT NULL,
+    glossaryId TEXT NOT NULL,
+    createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    FOREIGN KEY (glossaryId) REFERENCES GlossaryEntity (id) ON DELETE CASCADE,
+    CONSTRAINT unique_phrase UNIQUE (phrase, glossaryId)
+);
+
+getByGlossary:
+SELECT * FROM PendingPhraseEntity WHERE glossaryId = :glossaryId;
+
+getById:
+SELECT  * FROM PendingPhraseEntity WHERE id = :id;
+
+getByPhrase:
+SELECT * FROM PendingPhraseEntity WHERE LOWER(phrase) = LOWER(:phrase) AND glossaryId = :glossaryId;
+
+insert:
+INSERT OR REPLACE INTO
+PendingPhraseEntity(id, phrase, spelling, description, audio, glossaryId, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+delete:
+DELETE FROM PendingPhraseEntity WHERE id = :id;
+
+deleteByGlosary:
+DELETE FROM PendingPhraseEntity WHERE glossaryId = :glossaryId;

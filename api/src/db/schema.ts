@@ -91,6 +91,37 @@ export const phraseTable = pgTable(
   ]
 );
 
+export const pendingPhraseTable = pgTable(
+  "pending_phrases",
+  {
+    id: text("id").primaryKey(),
+    phrase: text("phrase").notNull(),
+    spelling: text("spelling").notNull(),
+    description: text("description").notNull(),
+    audio: text("audio").notNull(),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    glossaryId: text("glossary_id")
+      .notNull()
+      .references(() => glossaryTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: false })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: false })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    uniqueIndex("idx_unique_pending_phrase").on(
+      table.phrase,
+      table.glossaryId,
+      table.userId
+    ),
+  ]
+);
+
 export const refTable = pgTable("refs", {
   id: text("id").primaryKey(),
   book: text("book").notNull(),
@@ -133,6 +164,7 @@ export const glossaryEntityRelations = relations(
       references: [resourceTable.id],
     }),
     phrases: many(phraseTable),
+    pendingPhrases: many(pendingPhraseTable),
     users: many(glossaryUsers),
   })
 );
@@ -154,6 +186,21 @@ export const phraseEntityRelations = relations(
     glossary: one(glossaryTable, {
       fields: [phraseTable.glossaryId],
       references: [glossaryTable.id],
+    }),
+    refs: many(refTable),
+  })
+);
+
+export const pendingPhraseEntityRelations = relations(
+  pendingPhraseTable,
+  ({ one, many }) => ({
+    glossary: one(glossaryTable, {
+      fields: [pendingPhraseTable.glossaryId],
+      references: [glossaryTable.id],
+    }),
+    original: one(phraseTable, {
+      fields: [pendingPhraseTable.id],
+      references: [phraseTable.id],
     }),
     refs: many(refTable),
   })

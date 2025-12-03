@@ -2,6 +2,7 @@ package org.bibletranslationtools.glossary.data
 
 import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
+import org.bibletranslationtools.glossary.PendingPhraseEntity
 import org.bibletranslationtools.glossary.PhraseEntity
 import org.bibletranslationtools.glossary.Utils.generateUUID
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
@@ -14,6 +15,7 @@ data class Phrase(
     val spelling: String = "",
     val description: String = "",
     val audio: String? = null,
+    val pending: Boolean = false,
     val createdAt: LocalDateTime = getCurrentTime(),
     val updatedAt: LocalDateTime = getCurrentTime(),
     val glossaryId: String? = null,
@@ -26,6 +28,21 @@ fun PhraseEntity.toModel(): Phrase {
         spelling = spelling,
         description = description,
         audio = audio,
+        pending = false,
+        createdAt = createdAt.toLocalDateTime(),
+        updatedAt = updatedAt.toLocalDateTime(),
+        glossaryId = glossaryId,
+        id = id
+    )
+}
+
+fun PendingPhraseEntity.toModel(): Phrase {
+    return Phrase(
+        phrase = phrase,
+        spelling = spelling,
+        description = description,
+        audio = audio,
+        pending = true,
         createdAt = createdAt.toLocalDateTime(),
         updatedAt = updatedAt.toLocalDateTime(),
         glossaryId = glossaryId,
@@ -35,6 +52,19 @@ fun PhraseEntity.toModel(): Phrase {
 
 fun Phrase.toEntity(): PhraseEntity {
     return PhraseEntity(
+        phrase = phrase,
+        spelling = spelling,
+        description = description,
+        audio = audio ?: "",
+        createdAt = createdAt.toTimestamp(),
+        updatedAt = updatedAt.toTimestamp(),
+        glossaryId = glossaryId!!,
+        id = id ?: generateUUID()
+    )
+}
+
+fun Phrase.toPendingEntity(): PendingPhraseEntity {
+    return PendingPhraseEntity(
         phrase = phrase,
         spelling = spelling,
         description = description,

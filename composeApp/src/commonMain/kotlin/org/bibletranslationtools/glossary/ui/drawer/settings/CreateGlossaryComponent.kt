@@ -22,7 +22,7 @@ import org.bibletranslationtools.glossary.data.api.ErrorDetails
 import org.bibletranslationtools.glossary.data.stet.Stet
 import org.bibletranslationtools.glossary.domain.CatalogApi
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
-import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent

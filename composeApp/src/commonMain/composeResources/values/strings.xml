@@ -134,4 +134,6 @@
     <string name="style">Style</string>
     <string name="size">Size</string>
     <string name="line_height">Line Height</string>
+    <string name="upload_pending_success">Pending phrases has been successfully uploaded.</string>
+    <string name="upload_pending_fail">Failed to upload pending phrases.</string>
 </resources>

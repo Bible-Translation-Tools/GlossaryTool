@@ -12,6 +12,8 @@ import glossary.composeapp.generated.resources.join_glossary_progress
 import glossary.composeapp.generated.resources.join_glossary_success
 import glossary.composeapp.generated.resources.source_text
 import glossary.composeapp.generated.resources.unauthorized
+import glossary.composeapp.generated.resources.upload_pending_fail
+import glossary.composeapp.generated.resources.upload_pending_success
 import glossary.composeapp.generated.resources.uploading_glossary
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.exists
@@ -29,11 +31,12 @@ import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
-import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
-import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.domain.ImportGlossary
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
+import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
+import org.bibletranslationtools.glossary.domain.usecases.MergePendingPhrases
 import org.bibletranslationtools.glossary.ui.components.UpdateStatus
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
@@ -67,6 +70,7 @@ interface KeyTermsListComponent : DrawerContext {
     fun navigateCreateGlossary()
     fun navigateSearchPhrases()
     fun updateGlossary()
+    fun uploadPendingPhrases()
     fun navigateViewPhrase(phraseId: String)
     fun downloadGlossary()
     fun joinGlossary(user: User)
@@ -90,6 +94,7 @@ class DefaultKeyTermsListComponent(
     private val directoryProvider: DirectoryProvider by inject()
     private val glossaryApi: GlossaryApi by inject()
     private val exportGlossaryUseCase: ExportGlossary by inject()
+    private val mergePendingPhrasesUseCase: MergePendingPhrases by inject()
 
     private val appState: AppStateStore by inject()
     private val userStateHolder = appState.userStateHolder
@@ -155,8 +160,6 @@ class DefaultKeyTermsListComponent(
 
     override fun updateGlossary() {
         componentScope.launch {
-            val unauthorized = getString(Res.string.unauthorized)
-
             userStateHolder.state.value.user?.let { user ->
                 val glossary = _model.value.glossary ?: return@launch
 
@@ -191,6 +194,61 @@ class DefaultKeyTermsListComponent(
 
                 _model.update { it.copy(progress = null, snackBarMessage = message) }
             } ?: run {
+                val unauthorized = getString(Res.string.unauthorized)
+                _model.update {
+                    it.copy(snackBarMessage = unauthorized)
+                }
+            }
+        }
+    }
+
+    override fun uploadPendingPhrases() {
+        componentScope.launch {
+            userStateHolder.state.value.user?.let { user ->
+                val glossary = _model.value.glossary ?: return@launch
+
+                val progress = Progress(
+                    value = -1f,
+                    message = getString(Res.string.uploading_glossary)
+                )
+                _model.update { it.copy(progress = progress) }
+
+                val message = withContext(Dispatchers.Default) {
+                    val result = glossaryApi.uploadPendingPhrases(
+                        code = glossary.code,
+                        phrases = _model.value.allPhrases.filter { it.pending },
+                        token = user.token
+                    )
+                    if (result is NetworkResult.Success) {
+                        val message = mergePendingPhrasesUseCase(glossary.id!!)
+                        if (!message.success) {
+                            println("Error merging pending phrases: ${message.message}")
+                        }
+                        getString(Res.string.upload_pending_success)
+                    } else {
+                        println(result)
+                        getString(Res.string.upload_pending_fail)
+                    }
+                }
+
+                _model.update {
+                    it.copy(
+                        progress = null,
+                        snackBarMessage = message,
+                        allPhrases = _model.value.allPhrases.map { phrase ->
+                            if (phrase.pending) {
+                                phrase.copy(pending = false)
+                            } else phrase
+                        },
+                        chapterPhrases = _model.value.chapterPhrases.map { phrase ->
+                            if (phrase.pending) {
+                                phrase.copy(pending = false)
+                            } else phrase
+                        }
+                    )
+                }
+            } ?: run {
+                val unauthorized = getString(Res.string.unauthorized)
                 _model.update {
                     it.copy(snackBarMessage = unauthorized)
                 }

@@ -71,6 +71,20 @@
       "when": 1763552194693,
       "tag": "0009_silky_tombstone",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1764769834143,
+      "tag": "0010_icy_doctor_doom",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1764769882161,
+      "tag": "0011_petite_speed_demon",
+      "breakpoints": true
     }
   ]
 }

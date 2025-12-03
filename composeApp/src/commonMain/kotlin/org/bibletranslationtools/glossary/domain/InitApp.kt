@@ -10,6 +10,9 @@ import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Language
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.toEntity
+import org.bibletranslationtools.glossary.domain.data.LanguageDataSource
+import org.bibletranslationtools.glossary.domain.data.ResourceDataSource
+import org.bibletranslationtools.glossary.domain.data.SettingsDataSource
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.toLocalDateTime

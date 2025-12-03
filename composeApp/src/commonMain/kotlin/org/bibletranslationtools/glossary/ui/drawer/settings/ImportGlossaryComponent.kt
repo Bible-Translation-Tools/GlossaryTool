@@ -20,7 +20,7 @@ import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryApi
-import org.bibletranslationtools.glossary.domain.ImportGlossary
+import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.ui.components.OtpAction
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent

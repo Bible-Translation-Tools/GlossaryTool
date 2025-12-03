@@ -13,6 +13,7 @@ import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.utils.io.toByteArray
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
 import org.bibletranslationtools.glossary.data.api.GlossaryUser
 import org.bibletranslationtools.glossary.data.api.User
@@ -32,6 +33,11 @@ interface GlossaryApi {
         role: UserRole,
         token: String
     ): NetworkResult<List<GlossaryUser>>
+    suspend fun uploadPendingPhrases(
+        code: String,
+        phrases: List<Phrase>,
+        token: String
+    ): NetworkResult<Boolean>
 }
 
 class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
@@ -176,6 +182,30 @@ class GlossaryApiImpl(private val httpClient: HttpClient) : GlossaryApi {
                 throw ServerResponseException(
                     response,
                     "Error updating user role"
+                )
+            }
+        }
+    }
+
+    override suspend fun uploadPendingPhrases(
+        code: String,
+        phrases: List<Phrase>,
+        token: String
+    ): NetworkResult<Boolean> {
+        return ApiHelper.callApi {
+            val response = httpClient.post(
+                "$PRIVATE_API/glossary/$code/pending_phrases"
+            ) {
+                bearerAuth(token)
+                setBody(phrases)
+                contentType(ContentType.Application.Json)
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error uploading pending phrases"
                 )
             }
         }

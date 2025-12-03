@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -46,6 +47,7 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_audio
 import glossary.composeapp.generated.resources.edit
 import glossary.composeapp.generated.resources.key_terms
+import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.bibletranslationtools.glossary.ui.components.VerseReference
@@ -61,6 +63,10 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
     val appStateStore = koinInject<AppStateStore>()
     val resourceState by appStateStore.resourceStateHolder.state
         .collectAsStateWithLifecycle()
+    val glossaryState by appStateStore.glossaryStateHolder.state
+        .collectAsStateWithLifecycle()
+    val userState by appStateStore.userStateHolder.state
+        .collectAsStateWithLifecycle()
 
     var savedFontFamily by rememberStringSetting(
         Settings.FONT_FAMILY,
@@ -73,6 +79,17 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
         )
     }
 
+    var canEdit by remember { mutableStateOf(false) }
+
+    LaunchedEffect(glossaryState.users, userState.user) {
+        userState.user?.let { user ->
+            canEdit = glossaryState.users
+                .filter { it.role != UserRole.VIEWER }
+                .map { it.username }
+                .contains(user.username)
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
@@ -82,7 +99,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                 Column(
                     horizontalAlignment = Alignment.Start,
                     modifier = Modifier.fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 ) {
                     TopDrawerBar(
                         title = stringResource(Res.string.key_terms),
@@ -175,56 +192,58 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                             }
                         }
 
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                                .background(MaterialTheme.colorScheme.surface)
-                        ) {
-                            HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+                        if (canEdit) {
+                            Column(
                                 modifier = Modifier.fillMaxWidth()
-                                    .padding(16.dp)
+                                    .background(MaterialTheme.colorScheme.surface)
                             ) {
-                                Button(
-                                    onClick = {
-                                        model.phrase?.let { phrase ->
-                                            component.onEditClick(phrase.phrase)
-                                        }
-                                    },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primary,
-                                        contentColor = MaterialTheme.colorScheme.onPrimary
-                                    ),
-                                    shape = MaterialTheme.shapes.medium,
-                                    modifier = Modifier.weight(0.48f)
+                                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth()
+                                        .padding(16.dp)
                                 ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Edit,
-                                        contentDescription = "Edit",
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(Res.string.edit))
-                                }
-                                Spacer(modifier = Modifier.weight(0.04f))
-                                Button(
-                                    onClick = { /*TODO*/ },
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                        contentColor = MaterialTheme.colorScheme.primary
-                                    ),
-                                    shape = MaterialTheme.shapes.medium,
-                                    enabled = false,
-                                    modifier = Modifier.weight(0.48f)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Outlined.Mic,
-                                        contentDescription = "Add Audio",
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(stringResource(Res.string.add_audio))
+                                    Button(
+                                        onClick = {
+                                            model.phrase?.let { phrase ->
+                                                component.onEditClick(phrase.phrase)
+                                            }
+                                        },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primary,
+                                            contentColor = MaterialTheme.colorScheme.onPrimary
+                                        ),
+                                        shape = MaterialTheme.shapes.medium,
+                                        modifier = Modifier.weight(0.48f)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Edit,
+                                            contentDescription = "Edit",
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(Res.string.edit))
+                                    }
+                                    Spacer(modifier = Modifier.weight(0.04f))
+                                    Button(
+                                        onClick = { /*TODO*/ },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                            contentColor = MaterialTheme.colorScheme.primary
+                                        ),
+                                        shape = MaterialTheme.shapes.medium,
+                                        enabled = false,
+                                        modifier = Modifier.weight(0.48f)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Outlined.Mic,
+                                            contentDescription = "Add Audio",
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text(stringResource(Res.string.add_audio))
+                                    }
                                 }
                             }
                         }

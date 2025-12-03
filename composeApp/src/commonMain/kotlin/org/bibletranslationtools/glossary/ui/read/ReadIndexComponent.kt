@@ -14,7 +14,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
 import org.bibletranslationtools.glossary.platform.showNavigationBar
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext

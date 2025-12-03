@@ -114,22 +114,9 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
     val coroutineScope = rememberCoroutineScope()
     val snackBar = LocalSnackBarHostState.current
 
-    val isAdmin by remember(glossaryState.users) {
-        mutableStateOf(
-            glossaryState.users
-                .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
-                .map { it.username }
-                .contains(userState.user?.username)
-        )
-    }
-
-    val joined by remember(glossaryState.users) {
-        mutableStateOf(
-            glossaryState.users
-                .map { it.username }
-                .contains(userState.user?.username)
-        )
-    }
+    var joined by remember { mutableStateOf(false) }
+    var isAdmin by remember { mutableStateOf(false) }
+    var canEdit by remember { mutableStateOf(false) }
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let { glossary ->
@@ -141,6 +128,24 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
         }
     }
 
+    LaunchedEffect(glossaryState.users, userState.user) {
+        userState.user?.let { user ->
+            joined = glossaryState.users
+                .map { it.username }
+                .contains(user.username)
+
+            canEdit = glossaryState.users
+                .filter { it.role != UserRole.VIEWER }
+                .map { it.username }
+                .contains(user.username)
+
+            isAdmin = glossaryState.users
+                .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
+                .map { it.username }
+                .contains(user.username)
+        }
+    }
+
     LaunchedEffect(searchQuery, currentPhrases) {
         filteredPhrases = currentPhrases.filter { phrase ->
             phrase.phrase.contains(searchQuery, ignoreCase = true)
@@ -148,7 +153,12 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
         }
     }
 
-    LaunchedEffect(selectedOption, model.filterOptions) {
+    LaunchedEffect(
+        selectedOption,
+        model.filterOptions,
+        model.allPhrases,
+        model.chapterPhrases
+    ) {
         if (model.filterOptions.isNotEmpty()) {
             val option = model.filterOptions[selectedOption]
             currentPhrases = when (option) {
@@ -167,7 +177,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                 Column(
                     horizontalAlignment = Alignment.Start,
                     modifier = Modifier.fillMaxSize()
-                        .padding(horizontal = 16.dp)
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                 ) {
                     TopDrawerBar(
                         title = stringResource(Res.string.key_terms),
@@ -303,47 +313,48 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                 }
                             }
 
-                            Column(
-                                modifier = Modifier.fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.surface)
-                                    .padding(bottom = 16.dp)
-                            ) {
-                                HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
-
-                                Column (
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                            if (canEdit) {
+                                Column(
                                     modifier = Modifier.fillMaxWidth()
-                                        .padding(16.dp)
+                                        .background(MaterialTheme.colorScheme.surface)
                                 ) {
-                                    Button(
-                                        onClick = component::navigateSearchPhrases,
-                                        shape = MaterialTheme.shapes.medium,
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Icon(
-                                            imageVector = Icons.Default.Add,
-                                            contentDescription = "add new word",
-                                            tint = MaterialTheme.colorScheme.onPrimary
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                        Text(
-                                            text = stringResource(Res.string.create_new_phrase),
-                                            fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onPrimary
-                                        )
-                                    }
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
 
-                                    if (isAdmin) {
-                                        ElevatedButton(
-                                            onClick = component::updateGlossary,
+                                    Column (
+                                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(16.dp)
+                                    ) {
+                                        Button(
+                                            onClick = component::navigateSearchPhrases,
                                             shape = MaterialTheme.shapes.medium,
-                                            colors = ButtonDefaults.elevatedButtonColors(
-                                                containerColor = MaterialTheme.colorScheme.primaryContainer
-                                            ),
                                             modifier = Modifier.fillMaxWidth()
-                                                .height(40.dp)
                                         ) {
-                                            Text(stringResource(Res.string.update_glossary))
+                                            Icon(
+                                                imageVector = Icons.Default.Add,
+                                                contentDescription = "add new word",
+                                                tint = MaterialTheme.colorScheme.onPrimary
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = stringResource(Res.string.create_new_phrase),
+                                                fontWeight = FontWeight.Bold,
+                                                color = MaterialTheme.colorScheme.onPrimary
+                                            )
+                                        }
+
+                                        if (isAdmin) {
+                                            ElevatedButton(
+                                                onClick = component::uploadPendingPhrases,
+                                                shape = MaterialTheme.shapes.medium,
+                                                colors = ButtonDefaults.elevatedButtonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                                                ),
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .height(40.dp)
+                                            ) {
+                                                Text(stringResource(Res.string.update_glossary))
+                                            }
                                         }
                                     }
                                 }

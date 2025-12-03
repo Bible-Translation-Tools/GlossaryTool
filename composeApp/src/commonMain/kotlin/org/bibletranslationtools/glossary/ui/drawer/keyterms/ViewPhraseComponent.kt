@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
-import org.bibletranslationtools.glossary.domain.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -56,7 +56,8 @@ class DefaultViewPhraseComponent(
                 _model.update { it.copy(isLoading = true) }
 
                 val (phrase, refs) = withContext(Dispatchers.Default) {
-                    val p = glossaryRepository.getPhrase(phraseId)
+                    val p = glossaryRepository.getPendingPhrase(phraseId)
+                        ?: glossaryRepository.getPhrase(phraseId)
                     val r = p?.let { findRefs(it) } ?: emptyList()
                     p to r
                 }

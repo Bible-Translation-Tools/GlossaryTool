@@ -1,15 +1,17 @@
-package org.bibletranslationtools.glossary.domain
+package org.bibletranslationtools.glossary.domain.usecases
 
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.io.buffered
 import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.writeString
-import org.bibletranslationtools.glossary.Utils.JsonLenient
+import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.api.ManifestGlossary
 import org.bibletranslationtools.glossary.data.api.ManifestPhrase
 import org.bibletranslationtools.glossary.data.api.ManifestResource
+import org.bibletranslationtools.glossary.domain.DirectoryProvider
+import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
 import org.bibletranslationtools.glossary.platform.zipDirectory
 
 class ExportGlossary(
@@ -47,7 +49,7 @@ class ExportGlossary(
             }
         )
 
-        val json = JsonLenient.encodeToString(export)
+        val json = Utils.JsonLenient.encodeToString(export)
         val tempDir = directoryProvider.createTempDir("glossary")
 
         val glossaryFile = Path(tempDir, "glossary.json")
