@@ -15,7 +15,7 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
-import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore

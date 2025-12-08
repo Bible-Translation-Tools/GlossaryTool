@@ -13,6 +13,13 @@ import {
 export const roleEnum = pgEnum("role", ["owner", "admin", "editor", "viewer"]);
 export type RoleType = (typeof roleEnum.enumValues)[number];
 
+export const reviewStatusEnum = pgEnum("review_status", [
+  "pending",
+  "approved",
+  "rejected",
+]);
+export type ReviewStatusType = (typeof reviewStatusEnum.enumValues)[number];
+
 export const usersTable = pgTable(
   "users",
   {
@@ -148,6 +155,22 @@ export const glossaryUsers = pgTable(
   ]
 );
 
+export const phraseReviews = pgTable(
+  "phrase_reviews",
+  {
+    phraseId: text("phrase_id")
+      .notNull()
+      .references(() => pendingPhraseTable.id, { onDelete: "cascade" }),
+    userId: integer("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    status: reviewStatusEnum("status").notNull(),
+  },
+  (table) => [
+    uniqueIndex("idx_unique_phrase_review").on(table.phraseId, table.userId),
+  ]
+);
+
 export const userEntityRelations = relations(usersTable, ({ many }) => ({
   glossaries: many(glossaryUsers),
 }));
@@ -180,6 +203,17 @@ export const glossaryUsersRelations = relations(glossaryUsers, ({ one }) => ({
   }),
 }));
 
+export const phraseReviewsRelations = relations(phraseReviews, ({ one }) => ({
+  phrase: one(pendingPhraseTable, {
+    fields: [phraseReviews.phraseId],
+    references: [pendingPhraseTable.id],
+  }),
+  user: one(usersTable, {
+    fields: [phraseReviews.userId],
+    references: [usersTable.id],
+  }),
+}));
+
 export const phraseEntityRelations = relations(
   phraseTable,
   ({ one, many }) => ({
@@ -203,6 +237,7 @@ export const pendingPhraseEntityRelations = relations(
       references: [phraseTable.id],
     }),
     refs: many(refTable),
+    reviews: many(phraseReviews),
   })
 );
 

@@ -236,7 +236,7 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                                     contentDescription = "settings",
                                     tint = if (model.settingsDrawerOpen) {
                                         MaterialTheme.colorScheme.primary
-                                    } else Color.Unspecified
+                                    } else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                         }
@@ -304,7 +304,7 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                                     contentDescription = "glossary",
                                     tint = if (model.keyTermsDrawerOpen) {
                                         MaterialTheme.colorScheme.primary
-                                    } else Color.Unspecified
+                                    } else MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             if (glossaryState.glossary != null) {

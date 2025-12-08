@@ -6,9 +6,12 @@ import {
   glossaryTable,
   glossaryUsers,
   pendingPhraseTable,
+  phraseReviews,
   phraseTable,
   refTable,
   resourceTable,
+  reviewStatusEnum,
+  ReviewStatusType,
   roleEnum,
   RoleType,
   usersTable,
@@ -16,7 +19,12 @@ import {
 import { and, eq, gt, sql, or } from "drizzle-orm";
 import { unzipSync, zipSync } from "fflate";
 import { load as parseYaml } from "js-yaml";
-import { Glossary, GlossaryUpdate, Phrase } from "./glossary.types";
+import {
+  Glossary,
+  GlossaryUpdate,
+  Phrase,
+  PhraseReview,
+} from "./glossary.types";
 import { Manifest } from "./resource.types";
 import { ErrorDetails, GlossaryUser, TokenRes, UserRes } from "./user.types";
 import { jwt, sign } from "hono/jwt";
@@ -202,19 +210,29 @@ app.post("/private/api/glossary", async (c) => {
       });
     }
 
-    if (glossary == null && manifest == null) {
+    if (glossary == null || manifest == null) {
       throw new Error(
         "Could not find glossary.json or resource.zip/manifest.yml"
       );
+    }
+
+    const existentGlossary = await dbHelper
+      .getDb()
+      .query.glossaryTable.findFirst({
+        where: eq(glossaryTable.code, glossary.code),
+      });
+
+    if (existentGlossary) {
+      throw new Error("Glossary already exists.");
     }
 
     const insertResource = await dbHelper
       .getDb()
       .insert(resourceTable)
       .values({
-        language: manifest!.dublin_core.language.identifier,
-        type: manifest!.dublin_core.identifier,
-        version: manifest!.dublin_core.version,
+        language: manifest.dublin_core.language.identifier,
+        type: manifest.dublin_core.identifier,
+        version: manifest.dublin_core.version,
       })
       .onConflictDoUpdate({
         target: [resourceTable.language, resourceTable.type],
@@ -229,17 +247,17 @@ app.post("/private/api/glossary", async (c) => {
       .getDb()
       .insert(glossaryTable)
       .values({
-        id: glossary!.id,
-        code: glossary!.code,
-        sourceLanguage: glossary!.sourceLanguage,
-        targetLanguage: glossary!.targetLanguage,
+        id: glossary.id,
+        code: glossary.code,
+        sourceLanguage: glossary.sourceLanguage,
+        targetLanguage: glossary.targetLanguage,
         resourceId: resourceId,
       })
       .onConflictDoUpdate({
         target: [glossaryTable.id, glossaryTable.code],
         set: {
-          sourceLanguage: glossary!.sourceLanguage,
-          targetLanguage: glossary!.targetLanguage,
+          sourceLanguage: glossary.sourceLanguage,
+          targetLanguage: glossary.targetLanguage,
           resourceId: resourceId,
         },
       })
@@ -262,7 +280,7 @@ app.post("/private/api/glossary", async (c) => {
         },
       });
 
-    const phraseValues = glossary!.phrases.map((phrase) => ({
+    const phraseValues = glossary.phrases.map((phrase) => ({
       id: phrase.id,
       phrase: phrase.phrase,
       spelling: phrase.spelling,
@@ -536,6 +554,107 @@ app.post("/private/api/glossary/:code/pending_phrases", async (c) => {
   }
 });
 
+app.post("/private/api/glossary/:code/review_phrase", async (c) => {
+  const dbHelper = c.get("db");
+  const auth = c.get("jwtPayload");
+  const code = c.req.param("code");
+  const { phraseId, status } = await c.req.json<{
+    phraseId: string;
+    status: ReviewStatusType;
+  }>();
+
+  try {
+    const reviewStatus = status as ReviewStatusType;
+
+    if (!reviewStatusEnum.enumValues.includes(reviewStatus)) {
+      throw new Error("Invalid review status.");
+    }
+
+    const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.code, code),
+      with: {
+        users: {
+          with: {
+            user: true,
+          },
+        },
+      },
+    });
+
+    if (!glossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    const glossaryAdmins = glossary.users
+      .filter((user) => ["owner", "admin"].includes(user.role))
+      .map((user) => user.user.username);
+
+    if (!glossaryAdmins.includes(auth.username)) {
+      throw new Error(
+        "You don't have permissions to review phrases in this glossary."
+      );
+    }
+
+    const phrase = await dbHelper.getDb().query.pendingPhraseTable.findFirst({
+      where: eq(pendingPhraseTable.id, phraseId),
+    });
+
+    if (!phrase) {
+      throw new Error("Invalid pending phrase.");
+    }
+
+    await dbHelper
+      .getDb()
+      .insert(phraseReviews)
+      .values({
+        phraseId: phrase.id,
+        userId: auth.id,
+        status: reviewStatus,
+      })
+      .onConflictDoUpdate({
+        target: [phraseReviews.phraseId, phraseReviews.userId],
+        set: {
+          status: reviewStatus,
+        },
+      });
+
+    const updatedPhrase = await dbHelper
+      .getDb()
+      .query.pendingPhraseTable.findFirst({
+        where: eq(pendingPhraseTable.id, phraseId),
+        with: {
+          reviews: {
+            with: {
+              user: true,
+            },
+          },
+        },
+      });
+
+    if (!updatedPhrase) {
+      throw new Error("Invalid pending phrase.");
+    }
+
+    return c.json<PhraseReview[]>(
+      updatedPhrase.reviews.map((review) => {
+        return {
+          username: review.user.username,
+          status: review.status,
+          phraseId: review.status,
+        };
+      })
+    );
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to update pending phrase review status.",
+        details: error.message || "Unknown error.",
+      },
+      400
+    );
+  }
+});
+
 app.get("/private/api/glossary/:code/users", async (c) => {
   const dbHelper = c.get("db");
   const code = c.req.param("code");
@@ -561,6 +680,7 @@ app.get("/private/api/glossary/:code/users", async (c) => {
           emoji: auth.emoji,
           role: "owner",
           code: code,
+          published: false,
         },
       ]);
     }
@@ -572,6 +692,7 @@ app.get("/private/api/glossary/:code/users", async (c) => {
           emoji: user.user.emoji,
           role: user.role,
           code: glossary.code,
+          published: true,
         };
       })
     );
@@ -903,4 +1024,23 @@ app.post("/api/glossary", async (c) => {
   }
 });
 
-export default app;
+export default {
+  fetch: app.fetch,
+  async scheduled(
+    controller: ScheduledController,
+    env: CloudflareBindings,
+    ctx: ExecutionContext
+  ) {
+    try {
+      // This is just to keep supabase from pausing the database automatically due to inactivity.
+      const dbHelper = new DbHelper(env);
+      const glossaryCount = await dbHelper
+        .getDb()
+        .select({ count: sql<number>`count(*)` })
+        .from(glossaryTable);
+      console.log(`Glossary count: ${glossaryCount[0].count}`);
+    } catch (error) {
+      console.error(error);
+    }
+  },
+};

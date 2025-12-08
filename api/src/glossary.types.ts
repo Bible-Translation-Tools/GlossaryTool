@@ -1,3 +1,5 @@
+import { ReviewStatusType } from "./db/schema";
+
 export interface Reference {
   id: string;
   book: string;
@@ -39,4 +41,10 @@ export interface GlossaryUpdate {
   version: number;
   createdAt: number;
   updatedAt: number;
+}
+
+export interface PhraseReview {
+  username: string;
+  status: ReviewStatusType;
+  phraseId: string;
 }

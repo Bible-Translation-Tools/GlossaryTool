@@ -58,7 +58,8 @@ import glossary.composeapp.generated.resources.key_terms
 import glossary.composeapp.generated.resources.key_terms_unavailable
 import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.search
-import glossary.composeapp.generated.resources.update_glossary
+import glossary.composeapp.generated.resources.upload_glossary
+import glossary.composeapp.generated.resources.upload_phrases
 import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
@@ -117,6 +118,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
     var joined by remember { mutableStateOf(false) }
     var isAdmin by remember { mutableStateOf(false) }
     var canEdit by remember { mutableStateOf(false) }
+    var isGlossaryPublished by remember { mutableStateOf(false) }
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let { glossary ->
@@ -143,6 +145,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                 .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
                 .map { it.username }
                 .contains(user.username)
+            isGlossaryPublished = glossaryState.users.firstOrNull()?.published ?: false
         }
     }
 
@@ -318,7 +321,9 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                     modifier = Modifier.fillMaxWidth()
                                         .background(MaterialTheme.colorScheme.surface)
                                 ) {
-                                    HorizontalDivider(color = MaterialTheme.colorScheme.surfaceVariant)
+                                    HorizontalDivider(
+                                        color = MaterialTheme.colorScheme.surfaceVariant
+                                    )
 
                                     Column (
                                         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -337,23 +342,53 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                             )
                                             Spacer(modifier = Modifier.width(8.dp))
                                             Text(
-                                                text = stringResource(Res.string.create_new_phrase),
+                                                text = stringResource(
+                                                    Res.string.create_new_phrase
+                                                ),
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onPrimary
                                             )
                                         }
 
-                                        if (isAdmin) {
-                                            ElevatedButton(
-                                                onClick = component::uploadPendingPhrases,
-                                                shape = MaterialTheme.shapes.medium,
-                                                colors = ButtonDefaults.elevatedButtonColors(
-                                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                                ),
-                                                modifier = Modifier.fillMaxWidth()
-                                                    .height(40.dp)
-                                            ) {
-                                                Text(stringResource(Res.string.update_glossary))
+                                        when {
+                                            isAdmin && !isGlossaryPublished -> {
+                                                // Upload glossary
+                                                ElevatedButton(
+                                                    onClick = component::updateGlossary,
+                                                    shape = MaterialTheme.shapes.medium,
+                                                    colors = ButtonDefaults.elevatedButtonColors(
+                                                        containerColor =
+                                                            MaterialTheme.colorScheme.primaryContainer
+                                                    ),
+                                                    modifier = Modifier.fillMaxWidth()
+                                                        .height(40.dp)
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(
+                                                            Res.string.upload_glossary
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                            canEdit && isGlossaryPublished
+                                                    && model.allPhrases.any { it.pending } -> {
+                                                // Upload pending phrases
+                                                ElevatedButton(
+                                                    onClick = component::uploadPendingPhrases,
+                                                    shape = MaterialTheme.shapes.medium,
+                                                    colors = ButtonDefaults.elevatedButtonColors(
+                                                        containerColor =
+                                                            MaterialTheme.colorScheme.primaryContainer
+                                                    ),
+                                                    modifier = Modifier.fillMaxWidth()
+                                                        .height(40.dp)
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(
+                                                            Res.string.upload_phrases
+                                                        )
+                                                    )
+                                                }
                                             }
                                         }
                                     }

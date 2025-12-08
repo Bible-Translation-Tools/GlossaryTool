@@ -66,6 +66,7 @@
     <string name="export_glossary">Export Glossary</string>
     <string name="glossary_exported_successfully">Glossary exported successfully</string>
     <string name="upload_glossary">Upload Glossary</string>
+    <string name="upload_phrases">Upload Pending Phrases</string>
     <string name="exporting_glossary">Exporting Glossary...</string>
     <string name="uploading_glossary">Uploading Glossary...</string>
     <string name="glossary_uploaded_successfully">Glossary uploaded successfully</string>
@@ -91,7 +92,6 @@
     <string name="source_text">Source Text</string>
     <string name="glossary_code_not_recognized">Your code was not recognized.</string>
     <string name="checking_for_updates">Checking for updates...</string>
-    <string name="update_glossary">Update Glossary</string>
     <string name="no_updates_found">No updates found</string>
     <string name="updates_found">Glossaries with updates: %1$s</string>
     <string name="update_available">An Update is Available</string>
@@ -135,5 +135,5 @@
     <string name="size">Size</string>
     <string name="line_height">Line Height</string>
     <string name="upload_pending_success">Pending phrases has been successfully uploaded.</string>
-    <string name="upload_pending_fail">Failed to upload pending phrases.</string>
+    <string name="upload_pending_failed">Failed to upload pending phrases.</string>
 </resources>

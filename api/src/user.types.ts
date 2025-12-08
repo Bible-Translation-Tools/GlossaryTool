@@ -25,4 +25,5 @@ export interface GlossaryUser {
   emoji: string;
   role: RoleType;
   code: string;
+  published: boolean;
 }

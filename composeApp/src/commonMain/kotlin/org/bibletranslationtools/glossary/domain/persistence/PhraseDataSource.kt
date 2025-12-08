@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.domain.data
+package org.bibletranslationtools.glossary.domain.persistence
 
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.PendingPhraseEntity

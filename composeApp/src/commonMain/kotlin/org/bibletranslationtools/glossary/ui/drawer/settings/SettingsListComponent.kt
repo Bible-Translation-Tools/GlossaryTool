@@ -21,7 +21,7 @@ import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
 import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.GlossaryApi
-import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.toTimestamp
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent

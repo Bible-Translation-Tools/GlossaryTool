@@ -1,6 +1,6 @@
 package org.bibletranslationtools.glossary.domain.usecases
 
-import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 
 class MergePendingPhrases(
     private val glossaryRepository: GlossaryRepository

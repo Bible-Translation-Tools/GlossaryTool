@@ -18,7 +18,7 @@ import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
-import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext

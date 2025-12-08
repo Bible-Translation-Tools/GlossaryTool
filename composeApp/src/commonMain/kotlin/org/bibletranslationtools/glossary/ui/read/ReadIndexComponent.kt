@@ -14,7 +14,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
-import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.platform.showNavigationBar
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
@@ -217,7 +217,9 @@ class DefaultReadIndexComponent(
             val chapter = _model.value.activeChapter ?: return@launch
 
             val phrases = withContext(Dispatchers.Default) {
-                glossaryRepository.getPhrases(glossary.id)
+                val saved = glossaryRepository.getPhrases(glossary.id)
+                val pending = glossaryRepository.getPendingPhrases(glossary.id)
+                (saved + pending).associateBy { it.id }.values.toList()
                     .mapNotNull { phrase ->
                         val relevantRef = findRelevantRefs(phrase, book, chapter).firstOrNull()
                         relevantRef?.let { phrase to it }

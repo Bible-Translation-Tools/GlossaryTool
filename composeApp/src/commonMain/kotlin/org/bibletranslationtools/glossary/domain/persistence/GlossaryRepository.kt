@@ -1,4 +1,4 @@
-package org.bibletranslationtools.glossary.domain.data
+package org.bibletranslationtools.glossary.domain.persistence
 
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Language

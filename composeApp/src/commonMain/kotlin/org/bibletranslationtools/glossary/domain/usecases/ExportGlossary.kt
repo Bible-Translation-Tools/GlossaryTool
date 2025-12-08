@@ -11,7 +11,7 @@ import org.bibletranslationtools.glossary.data.api.ManifestGlossary
 import org.bibletranslationtools.glossary.data.api.ManifestPhrase
 import org.bibletranslationtools.glossary.data.api.ManifestResource
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
-import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.platform.zipDirectory
 
 class ExportGlossary(

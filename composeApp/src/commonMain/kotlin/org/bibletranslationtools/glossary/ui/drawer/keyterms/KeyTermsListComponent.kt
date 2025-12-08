@@ -12,7 +12,7 @@ import glossary.composeapp.generated.resources.join_glossary_progress
 import glossary.composeapp.generated.resources.join_glossary_success
 import glossary.composeapp.generated.resources.source_text
 import glossary.composeapp.generated.resources.unauthorized
-import glossary.composeapp.generated.resources.upload_pending_fail
+import glossary.composeapp.generated.resources.upload_pending_failed
 import glossary.composeapp.generated.resources.upload_pending_success
 import glossary.composeapp.generated.resources.uploading_glossary
 import io.github.vinceglb.filekit.PlatformFile
@@ -33,7 +33,7 @@ import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
-import org.bibletranslationtools.glossary.domain.data.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
 import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
 import org.bibletranslationtools.glossary.domain.usecases.MergePendingPhrases
@@ -118,8 +118,13 @@ class DefaultKeyTermsListComponent(
             _model.update { it.copy(isLoading = true, glossary = glossary) }
 
             val (allPhrases, chapterPhrases) = withContext(Dispatchers.Default) {
-                val all = glossaryRepository.getPhrases(glossary.id)
+                val saved = glossaryRepository.getPhrases(glossary.id)
+                val pending = glossaryRepository.getPendingPhrases(glossary.id)
+                val all = (saved + pending).associateBy { it.id }
+                    .values
+                    .toList()
                     .sortedBy { it.phrase.lowercase() }
+
                 val chapter = all.filter { phrase ->
                     val relevantRef = findRelevantRefs(phrase, book, chapter).firstOrNull()
                     relevantRef != null
@@ -227,7 +232,7 @@ class DefaultKeyTermsListComponent(
                         getString(Res.string.upload_pending_success)
                     } else {
                         println(result)
-                        getString(Res.string.upload_pending_fail)
+                        getString(Res.string.upload_pending_failed)
                     }
                 }
 

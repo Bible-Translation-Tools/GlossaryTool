@@ -17,6 +17,11 @@
 	"observability": {
 		"enabled": true
 	},
+	"triggers": {
+		"crons": [
+			"0 0 * * *", // run cron job every day
+		]
+	},
 	"r2_buckets": [
 		{
 			"binding": "R2_BUCKET",
