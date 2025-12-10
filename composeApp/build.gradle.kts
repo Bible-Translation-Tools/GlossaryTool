@@ -89,6 +89,8 @@ kotlin {
 
             implementation(libs.filekit.dialogs.core)
             implementation(libs.filekit.dialogs.compose)
+
+            implementation(libs.kotlin.multiplatform.diff)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

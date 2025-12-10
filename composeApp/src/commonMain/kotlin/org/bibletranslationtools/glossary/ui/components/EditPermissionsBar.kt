@@ -42,11 +42,11 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun EditPermissionsBar(
-    user: GlossaryUser,
+    glossaryUser: GlossaryUser,
     onSave: (UserRole) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedRole by remember { mutableStateOf(user.role) }
+    var selectedRole by remember { mutableStateOf(glossaryUser.role) }
 
     Box(
         contentAlignment = Alignment.BottomCenter,
@@ -81,14 +81,14 @@ fun EditPermissionsBar(
                     .fillMaxWidth()
             ) {
                 Text(
-                    text = user.emoji,
+                    text = glossaryUser.user.emoji,
                     fontSize = 39.sp,
                     textAlign = TextAlign.Center
                 )
                 Text(
                     text = stringResource(
                         Res.string.edit_user_permission,
-                        user.username
+                        glossaryUser.user.username
                     ),
                     fontSize = 18.sp,
                     textAlign = TextAlign.Center,

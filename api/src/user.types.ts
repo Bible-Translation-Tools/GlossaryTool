@@ -20,10 +20,7 @@ export interface ErrorDetails {
   details: string;
 }
 
-export interface GlossaryUser {
+export interface User {
   username: string;
   emoji: string;
-  role: RoleType;
-  code: string;
-  published: boolean;
 }

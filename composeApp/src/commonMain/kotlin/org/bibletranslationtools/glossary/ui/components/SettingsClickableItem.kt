@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -24,9 +25,10 @@ import androidx.compose.ui.unit.sp
 fun SettingsClickableItem(
     icon: Painter,
     text: String,
-    actionText: String? = null,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    actionText: String? = null,
+    inProgress: Boolean = false
 ) {
     Surface(onClick = onClick) {
         Row(
@@ -52,6 +54,11 @@ fun SettingsClickableItem(
                         text = it,
                         fontSize = 13.sp,
                         color = MaterialTheme.colorScheme.outline
+                    )
+                }
+                if (inProgress) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp)
                     )
                 }
                 Icon(

@@ -131,20 +131,20 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
     }
 
     LaunchedEffect(glossaryState.users, userState.user) {
-        userState.user?.let { user ->
+        userState.user?.let { glossaryUser ->
             joined = glossaryState.users
-                .map { it.username }
-                .contains(user.username)
+                .map { it.user.username }
+                .contains(glossaryUser.username)
 
             canEdit = glossaryState.users
                 .filter { it.role != UserRole.VIEWER }
-                .map { it.username }
-                .contains(user.username)
+                .map { it.user.username }
+                .contains(glossaryUser.username)
 
             isAdmin = glossaryState.users
                 .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
-                .map { it.username }
-                .contains(user.username)
+                .map { it.user.username }
+                .contains(glossaryUser.username)
             isGlossaryPublished = glossaryState.users.firstOrNull()?.published ?: false
         }
     }
@@ -201,9 +201,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                             color = MaterialTheme.colorScheme.primary,
                             fontSize = 16.sp,
                             modifier = Modifier.clickable {
-                                userState.user?.let { user ->
-                                    component.joinGlossary(user)
-                                }
+                                component.joinGlossary()
                             }
                         )
                     }

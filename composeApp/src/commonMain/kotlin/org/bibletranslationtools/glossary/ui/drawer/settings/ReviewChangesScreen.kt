@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,12 +24,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.active_users
-import glossary.composeapp.generated.resources.edit_permissions
+import glossary.composeapp.generated.resources.pending_phrases
+import glossary.composeapp.generated.resources.review_changes
 import kotlinx.coroutines.launch
-import org.bibletranslationtools.glossary.data.api.GlossaryUser
-import org.bibletranslationtools.glossary.ui.components.EditPermissionsBar
-import org.bibletranslationtools.glossary.ui.components.GlossaryUser
+import org.bibletranslationtools.glossary.data.api.PendingPhrase
+import org.bibletranslationtools.glossary.data.api.UserRole
+import org.bibletranslationtools.glossary.ui.components.PendingPhrase
+import org.bibletranslationtools.glossary.ui.components.ReviewPendingPhraseBar
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
@@ -38,7 +40,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @Composable
-fun EditPermissionsScreen(component: EditPermissionsComponent) {
+fun ReviewChangesScreen(component: ReviewChangesComponent) {
     val model by component.model.subscribeAsState()
 
     val appStateStore = koinInject<AppStateStore>()
@@ -47,9 +49,15 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
     val glossaryState by appStateStore.glossaryStateHolder.state
         .collectAsStateWithLifecycle()
 
-    var selectedUser by remember { mutableStateOf<GlossaryUser?>(null) }
+    var selectedPhrase by remember { mutableStateOf<PendingPhrase?>(null) }
     val snackBar = LocalSnackBarHostState.current
     val scope = rememberCoroutineScope()
+
+    LaunchedEffect(glossaryState.glossary, userState.user) {
+        glossaryState.glossary?.let { glossary ->
+            component.loadPendingPhrases(glossary)
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -62,7 +70,7 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
                         .padding(horizontal = 16.dp)
                 ) {
                     TopDrawerBar(
-                        title = stringResource(Res.string.edit_permissions),
+                        title = stringResource(Res.string.review_changes),
                         onBackClick = component::navigateBack,
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -70,7 +78,7 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     SettingsSection(
-                        title = stringResource(Res.string.active_users)
+                        title = stringResource(Res.string.pending_phrases)
                     ) {
                         LazyColumn(
                             modifier = Modifier.fillMaxWidth()
@@ -79,17 +87,17 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
                                     shape = MaterialTheme.shapes.medium
                                 )
                         ) {
-                            itemsIndexed(glossaryState.users) { index, glossaryUser ->
-                                GlossaryUser(
-                                    glossaryUser = glossaryUser,
-                                    isMe = glossaryUser.user.username == userState.user?.username,
-                                    onEdit = {
-                                        selectedUser = glossaryUser
+                            itemsIndexed(model.pendingPhrases) { index, pendingPhrase ->
+                                PendingPhrase(
+                                    pendingPhrase = pendingPhrase,
+                                    adminsCount = glossaryState.users.count {
+                                        it.role == UserRole.OWNER || it.role == UserRole.ADMIN
                                     },
+                                    onView = { selectedPhrase = pendingPhrase },
                                     modifier = Modifier.fillMaxWidth()
                                 )
 
-                                if (index < glossaryState.users.lastIndex) {
+                                if (index < model.pendingPhrases.lastIndex) {
                                     HorizontalDivider()
                                 }
                             }
@@ -100,20 +108,19 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
         }
     }
 
-    selectedUser?.let { user ->
-        EditPermissionsBar(
-            user,
-            onSave = { role ->
-                if (user.role != role) {
-                    glossaryState.glossary?.let { glossary ->
-                        component.updateUserRole(glossary, user, role)
-                    }
+    selectedPhrase?.let { pendingPhrase ->
+        userState.user?.let { user ->
+            ReviewPendingPhraseBar(
+                pendingPhrase,
+                me = user,
+                onSave = {
+                    component.saveReviewStatus(pendingPhrase, it)
+                },
+                onDismiss = {
+                    selectedPhrase = null
                 }
-            },
-            onDismiss = {
-                selectedUser = null
-            }
-        )
+            )
+        }
     }
 
     model.progress?.let { progress ->

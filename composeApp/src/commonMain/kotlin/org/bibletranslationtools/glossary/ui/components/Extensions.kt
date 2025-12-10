@@ -2,6 +2,8 @@ package org.bibletranslationtools.glossary.ui.components
 
 import androidx.compose.runtime.Composable
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.review_status_approve
+import glossary.composeapp.generated.resources.review_status_reject
 import glossary.composeapp.generated.resources.user_role_admin
 import glossary.composeapp.generated.resources.user_role_admin_desc
 import glossary.composeapp.generated.resources.user_role_editor
@@ -9,6 +11,7 @@ import glossary.composeapp.generated.resources.user_role_editor_desc
 import glossary.composeapp.generated.resources.user_role_owner
 import glossary.composeapp.generated.resources.user_role_viewer
 import glossary.composeapp.generated.resources.user_role_viewer_desc
+import org.bibletranslationtools.glossary.data.api.ReviewStatus
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.jetbrains.compose.resources.stringResource
 
@@ -29,5 +32,13 @@ fun UserRole.localizedDescription(): String {
         UserRole.ADMIN -> stringResource(Res.string.user_role_admin_desc)
         UserRole.EDITOR -> stringResource(Res.string.user_role_editor_desc)
         UserRole.VIEWER -> stringResource(Res.string.user_role_viewer_desc)
+    }
+}
+
+@Composable
+fun ReviewStatus.localizedName(): String {
+    return when (this) {
+        ReviewStatus.APPROVED -> stringResource(Res.string.review_status_approve)
+        ReviewStatus.REJECTED -> stringResource(Res.string.review_status_reject)
     }
 }

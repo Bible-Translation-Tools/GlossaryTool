@@ -1,0 +1,134 @@
+package org.bibletranslationtools.glossary.ui.drawer.settings
+
+import com.arkivanov.decompose.ComponentContext
+import com.arkivanov.decompose.value.MutableValue
+import com.arkivanov.decompose.value.Value
+import com.arkivanov.decompose.value.update
+import com.arkivanov.essenty.lifecycle.doOnResume
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.loading_wait
+import glossary.composeapp.generated.resources.sending_review
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.bibletranslationtools.glossary.data.Glossary
+import org.bibletranslationtools.glossary.data.Progress
+import org.bibletranslationtools.glossary.data.api.PendingPhrase
+import org.bibletranslationtools.glossary.data.api.PhraseReview
+import org.bibletranslationtools.glossary.data.api.ReviewStatus
+import org.bibletranslationtools.glossary.data.api.User
+import org.bibletranslationtools.glossary.domain.GlossaryApi
+import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
+import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
+import org.jetbrains.compose.resources.getString
+import org.koin.core.component.KoinComponent
+import org.koin.core.component.inject
+
+interface ReviewChangesComponent : DrawerContext {
+    val model: Value<Model>
+
+    data class Model(
+        val pendingPhrases: List<PendingPhrase> = emptyList(),
+        val progress: Progress? = null,
+        val snackBarMessage: String? = null
+    )
+
+    fun loadPendingPhrases(glossary: Glossary)
+    fun saveReviewStatus(phrase: PendingPhrase, status: ReviewStatus)
+    fun clearSnackBarMessage()
+}
+
+class DefaultReviewChangesComponent(
+    componentContext: ComponentContext,
+    parentContext: DrawerContext,
+) : DrawerComponent(componentContext, parentContext), ReviewChangesComponent, KoinComponent {
+
+    private val glossaryApi: GlossaryApi by inject()
+    private val appStateStore: AppStateStore by inject()
+    private val glossaryStateHolder = appStateStore.glossaryStateHolder
+
+    private val _model = MutableValue(ReviewChangesComponent.Model())
+    override val model: Value<ReviewChangesComponent.Model> = _model
+
+    private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+
+    init {
+        doOnResume {
+            setFullscreen(true)
+        }
+    }
+
+    override fun loadPendingPhrases(glossary: Glossary) {
+        componentScope.launch {
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.loading_wait)
+            )
+            _model.update { it.copy(progress = progress) }
+            val result = withContext(Dispatchers.Default) {
+                glossaryApi.getPendingPhrases(glossary.code)
+            }
+            when (result) {
+                is NetworkResult.Success -> {
+                    _model.update {
+                        it.copy(pendingPhrases = result.data)
+                    }
+                }
+                is NetworkResult.Error -> {
+                    println(result)
+                }
+            }
+            _model.update { it.copy(progress = null) }
+        }
+    }
+
+    override fun saveReviewStatus(phrase: PendingPhrase, status: ReviewStatus) {
+        componentScope.launch {
+            glossaryStateHolder.state.value.glossary?.let { glossary ->
+                val progress = Progress(
+                    value = -1f,
+                    message = getString(Res.string.sending_review)
+                )
+                _model.update { it.copy(progress = progress) }
+
+                val result = withContext(Dispatchers.Default) {
+                    val phraseReview = PhraseReview(
+                        phraseId = phrase.phrase.id!!,
+                        status = status,
+                        user = User("", "")
+                    )
+                    glossaryApi.reviewPendingPhrase(glossary.code, phraseReview)
+                }
+                when (result) {
+                    is NetworkResult.Success -> {
+                        _model.update {
+                            it.copy(
+                                pendingPhrases = it.pendingPhrases.mapNotNull { pendingPhrase ->
+                                    if (pendingPhrase.phrase.id == phrase.phrase.id) {
+                                        if (result.data.isNotEmpty()) {
+                                            pendingPhrase.copy(reviews = result.data)
+                                        } else null
+                                    } else pendingPhrase
+                                }
+                            )
+                        }
+                    }
+                    is NetworkResult.Error -> {
+                        _model.update { it.copy(snackBarMessage = result.message.error) }
+                        println(result)
+                    }
+                }
+
+                _model.update { it.copy(progress = null) }
+            }
+        }
+    }
+
+    override fun clearSnackBarMessage() {
+        _model.update { it.copy(snackBarMessage = null) }
+    }
+}

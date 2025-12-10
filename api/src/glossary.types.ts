@@ -1,4 +1,5 @@
-import { ReviewStatusType } from "./db/schema";
+import { ReviewStatusType, RoleType } from "./db/schema";
+import { User } from "./user.types";
 
 export interface Reference {
   id: string;
@@ -44,7 +45,21 @@ export interface GlossaryUpdate {
 }
 
 export interface PhraseReview {
-  username: string;
-  status: ReviewStatusType;
   phraseId: string;
+  status: ReviewStatusType;
+  user: User;
+}
+
+export interface GlossaryUser {
+  code: string;
+  published: boolean;
+  user: User;
+  role: RoleType;
+}
+
+export interface PendingPhrase {
+  phrase: Phrase;
+  user: User;
+  original: Phrase | null;
+  reviews: PhraseReview[];
 }

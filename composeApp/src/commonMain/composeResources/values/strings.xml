@@ -136,4 +136,14 @@
     <string name="line_height">Line Height</string>
     <string name="upload_pending_success">Pending phrases has been successfully uploaded.</string>
     <string name="upload_pending_failed">Failed to upload pending phrases.</string>
+    <string name="pending_phrases">Pending Phrases</string>
+    <string name="loading_wait">Loading... Please wait.</string>
+    <string name="review_status_approve">Approve</string>
+    <string name="review_status_reject">Reject</string>
+    <string name="review">Review</string>
+    <string name="new">New</string>
+    <string name="edited">Edited</string>
+    <string name="sending_review">Sending review...</string>
+    <string name="phrase_was_merged">Phrase has been merged into glossary</string>
+    <string name="phrase_was_rejected">Phrase has not been merged into glossary</string>
 </resources>

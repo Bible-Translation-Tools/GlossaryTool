@@ -6,20 +6,47 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.Orientation
 import com.arkivanov.decompose.extensions.compose.stack.animation.StackAnimator
 import com.arkivanov.decompose.extensions.compose.stack.animation.slide
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
 import kotlin.random.Random
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
+import org.bibletranslationtools.glossary.toLocalDateTime as toLocalDateTimeExt
+
+object CustomLocalDateTimeSerializer : KSerializer<LocalDateTime> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("CustomLocalDateTime", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: LocalDateTime) {
+        encoder.encodeString(value.toString())
+    }
+
+    override fun deserialize(decoder: Decoder): LocalDateTime {
+        val string = decoder.decodeString()
+        return string.toLocalDateTimeExt()
+    }
+}
 
 object Utils {
     val JsonLenient = Json {
         isLenient = true
         ignoreUnknownKeys = true
         coerceInputValues = true
+
+        serializersModule = SerializersModule {
+            contextual(LocalDateTime::class, CustomLocalDateTimeSerializer)
+        }
     }
 
     fun randomString(length: Int): String {

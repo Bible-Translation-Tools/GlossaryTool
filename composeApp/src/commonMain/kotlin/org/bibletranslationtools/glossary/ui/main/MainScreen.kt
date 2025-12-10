@@ -122,10 +122,8 @@ fun MainScreen(component: MainComponent) {
     }
 
     LaunchedEffect(userState.user, glossaryState.glossary) {
-        userState.user?.let { user ->
-            glossaryState.glossary?.let { glossary ->
-                component.getGlossaryUsers(glossary, user)
-            }
+        glossaryState.glossary?.let { glossary ->
+            component.getGlossaryUsers(glossary)
         }
     }
 

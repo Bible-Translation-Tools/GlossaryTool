@@ -82,11 +82,11 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
     var canEdit by remember { mutableStateOf(false) }
 
     LaunchedEffect(glossaryState.users, userState.user) {
-        userState.user?.let { user ->
+        userState.user?.let { glossaryUser ->
             canEdit = glossaryState.users
                 .filter { it.role != UserRole.VIEWER }
-                .map { it.username }
-                .contains(user.username)
+                .map { it.user.username }
+                .contains(glossaryUser.username)
         }
     }
 

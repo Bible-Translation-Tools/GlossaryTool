@@ -21,14 +21,14 @@ import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun GlossaryUser(
-    user: GlossaryUser,
+    glossaryUser: GlossaryUser,
     isMe: Boolean,
     onEdit: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val name = if (isMe) {
-        stringResource(Res.string.user_you, user.username)
-    } else user.username
+        stringResource(Res.string.user_you, glossaryUser.user.username)
+    } else glossaryUser.user.username
 
     Row(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -37,7 +37,7 @@ fun GlossaryUser(
             .padding(16.dp)
     ) {
         Text(
-            text = user.emoji,
+            text = glossaryUser.user.emoji,
             fontSize = 25.sp
         )
 
@@ -49,11 +49,11 @@ fun GlossaryUser(
                 fontWeight = FontWeight.W600
             )
             Text(
-                text = user.role.localizedName()
+                text = glossaryUser.role.localizedName()
             )
         }
 
-        if (!isMe && user.role != UserRole.OWNER) {
+        if (!isMe && glossaryUser.role != UserRole.OWNER) {
             TextButton(
                 onClick = onEdit
             ) {

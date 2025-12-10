@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 data class User(
     val username: String,
     val emoji: String,
-    val token: String
+    val token: String? = null
 )

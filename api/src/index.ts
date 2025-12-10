@@ -24,9 +24,11 @@ import {
   GlossaryUpdate,
   Phrase,
   PhraseReview,
+  GlossaryUser,
+  PendingPhrase,
 } from "./glossary.types";
 import { Manifest } from "./resource.types";
-import { ErrorDetails, GlossaryUser, TokenRes, UserRes } from "./user.types";
+import { ErrorDetails, TokenRes, User, UserRes } from "./user.types";
 import { jwt, sign } from "hono/jwt";
 
 interface AppVariables extends JwtVariables {
@@ -412,10 +414,13 @@ app.post("/private/api/glossary/:code/role", async (c) => {
     return c.json<GlossaryUser[]>(
       updatedGlossary.users.map((user) => {
         return {
-          username: user.user.username,
-          emoji: user.user.emoji,
-          role: user.role,
           code: glossary.code,
+          published: true,
+          user: {
+            username: user.user.username,
+            emoji: user.user.emoji,
+          },
+          role: user.role,
         };
       })
     );
@@ -486,6 +491,104 @@ app.get("/public/api/glossary/:code", async (c) => {
   }
 });
 
+app.get("/private/api/glossary/:code/pending_phrases", async (c) => {
+  const dbHelper = c.get("db");
+  const code = c.req.param("code");
+  const auth = c.get("jwtPayload");
+
+  try {
+    const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.code, code),
+      with: {
+        users: {
+          with: {
+            user: true,
+          },
+        },
+        pendingPhrases: {
+          with: {
+            user: true,
+            original: true,
+            reviews: {
+              with: {
+                user: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!glossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    const glossaryAdmins = glossary.users
+      .filter((user) => ["owner", "admin"].includes(user.role))
+      .map((user) => user.user.username);
+
+    if (!glossaryAdmins.includes(auth.username)) {
+      throw new Error(
+        "You don't have permissions to review phrases in this glossary."
+      );
+    }
+
+    return c.json<PendingPhrase[]>(
+      glossary.pendingPhrases.map((phrase) => {
+        const pendingPhrase: Phrase = {
+          id: phrase.id,
+          phrase: phrase.phrase,
+          spelling: phrase.spelling,
+          description: phrase.description,
+          audio: phrase.audio,
+          createdAt: phrase.createdAt.toISOString(),
+          updatedAt: phrase.updatedAt.toISOString(),
+          refs: [],
+        };
+        const originalPhrase: Phrase | null = phrase.original
+          ? {
+              id: phrase.original.id,
+              phrase: phrase.original.phrase,
+              spelling: phrase.original.spelling,
+              description: phrase.original.description,
+              audio: phrase.original.audio,
+              createdAt: phrase.original.createdAt.toISOString(),
+              updatedAt: phrase.original.updatedAt.toISOString(),
+              refs: [],
+            }
+          : null;
+
+        return {
+          phrase: pendingPhrase,
+          user: {
+            username: phrase.user.username,
+            emoji: phrase.user.emoji,
+          } satisfies User,
+          original: originalPhrase,
+          reviews: phrase.reviews.map((review) => {
+            return {
+              phraseId: phrase.id,
+              status: review.status,
+              user: {
+                username: review.user.username,
+                emoji: review.user.emoji,
+              } satisfies User,
+            };
+          }),
+        };
+      })
+    );
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to get glossary users.",
+        details: error.message || "Unknown error.",
+      },
+      400
+    );
+  }
+});
+
 app.post("/private/api/glossary/:code/pending_phrases", async (c) => {
   const dbHelper = c.get("db");
   const code = c.req.param("code");
@@ -507,6 +610,16 @@ app.post("/private/api/glossary/:code/pending_phrases", async (c) => {
 
     if (!glossary) {
       throw new Error("Invalid glossary.");
+    }
+
+    const glossaryEditors = glossary.users
+      .filter((user) => ["owner", "admin", "editor"].includes(user.role))
+      .map((user) => user.user.username);
+
+    if (!glossaryEditors.includes(auth.username)) {
+      throw new Error(
+        "You don't have permissions to upload pending phrases in this glossary."
+      );
     }
 
     const phraseValues = pendingPhrases.map((phrase) => ({
@@ -596,11 +709,14 @@ app.post("/private/api/glossary/:code/review_phrase", async (c) => {
     }
 
     const phrase = await dbHelper.getDb().query.pendingPhraseTable.findFirst({
-      where: eq(pendingPhraseTable.id, phraseId),
+      where: and(
+        eq(pendingPhraseTable.id, phraseId),
+        eq(pendingPhraseTable.glossaryId, glossary.id)
+      ),
     });
 
     if (!phrase) {
-      throw new Error("Invalid pending phrase.");
+      return c.json([]);
     }
 
     await dbHelper
@@ -632,15 +748,65 @@ app.post("/private/api/glossary/:code/review_phrase", async (c) => {
       });
 
     if (!updatedPhrase) {
-      throw new Error("Invalid pending phrase.");
+      return c.json([]);
     }
+
+    const adminsCount = glossaryAdmins.length;
+    const approvedReviews = updatedPhrase.reviews.filter(
+      (review) => review.status === "approved"
+    ).length;
+    const rejectedReviews = updatedPhrase.reviews.filter(
+      (review) => review.status === "rejected"
+    ).length;
+
+    // If more or equal 51% of admins approved, move to main phrases
+    if (approvedReviews / adminsCount >= 0.51) {
+      await dbHelper
+        .getDb()
+        .insert(phraseTable)
+        .values({
+          id: updatedPhrase.id,
+          phrase: updatedPhrase.phrase,
+          spelling: updatedPhrase.spelling,
+          description: updatedPhrase.description,
+          audio: updatedPhrase.audio,
+          glossaryId: glossary.id,
+        })
+        .onConflictDoUpdate({
+          target: [phraseTable.phrase, phraseTable.glossaryId],
+          set: {
+            spelling: sql.raw(`excluded.spelling`),
+            description: sql.raw(`excluded.description`),
+            audio: sql.raw(`excluded.audio`),
+          },
+        });
+
+      // Remove from pending phrases
+      await dbHelper
+        .getDb()
+        .delete(pendingPhraseTable)
+        .where(eq(pendingPhraseTable.id, updatedPhrase.id));
+
+      return c.json([]);
+    } else if (rejectedReviews / adminsCount >= 0.51) {
+      // If more than 51% of admins rejected, just remove from pending phrases
+      await dbHelper
+        .getDb()
+        .delete(pendingPhraseTable)
+        .where(eq(pendingPhraseTable.id, updatedPhrase.id));
+
+      return c.json([]);
+    } // Otherwise, keep pending phrase for more reviews
 
     return c.json<PhraseReview[]>(
       updatedPhrase.reviews.map((review) => {
         return {
-          username: review.user.username,
+          phraseId: updatedPhrase.id,
           status: review.status,
-          phraseId: review.status,
+          user: {
+            username: review.user.username,
+            emoji: review.user.emoji,
+          } satisfies User,
         };
       })
     );
@@ -676,11 +842,13 @@ app.get("/private/api/glossary/:code/users", async (c) => {
       // If glossary is not in database, return authenticated user as owner
       return c.json<GlossaryUser[]>([
         {
-          username: auth.username,
-          emoji: auth.emoji,
-          role: "owner",
           code: code,
           published: false,
+          role: "owner",
+          user: {
+            username: auth.username,
+            emoji: auth.emoji,
+          },
         },
       ]);
     }
@@ -688,11 +856,13 @@ app.get("/private/api/glossary/:code/users", async (c) => {
     return c.json<GlossaryUser[]>(
       glossary.users.map((user) => {
         return {
-          username: user.user.username,
-          emoji: user.user.emoji,
-          role: user.role,
           code: glossary.code,
           published: true,
+          role: user.role,
+          user: {
+            username: user.user.username,
+            emoji: user.user.emoji,
+          },
         };
       })
     );
@@ -767,10 +937,13 @@ app.get("/private/api/glossary/:code/join", async (c) => {
     return c.json<GlossaryUser[]>(
       updatedGlossary.users.map((user) => {
         return {
-          username: user.user.username,
-          emoji: user.user.emoji,
-          role: user.role,
           code: glossary.code,
+          published: true,
+          role: user.role,
+          user: {
+            username: user.user.username,
+            emoji: user.user.emoji,
+          },
         };
       })
     );

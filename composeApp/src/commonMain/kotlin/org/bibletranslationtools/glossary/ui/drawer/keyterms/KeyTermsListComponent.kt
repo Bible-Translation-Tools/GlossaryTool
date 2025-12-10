@@ -29,7 +29,6 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
-import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
@@ -73,7 +72,7 @@ interface KeyTermsListComponent : DrawerContext {
     fun uploadPendingPhrases()
     fun navigateViewPhrase(phraseId: String)
     fun downloadGlossary()
-    fun joinGlossary(user: User)
+    fun joinGlossary()
     fun clearHasUpdate()
     fun clearSnackBarMessage()
 }
@@ -165,98 +164,83 @@ class DefaultKeyTermsListComponent(
 
     override fun updateGlossary() {
         componentScope.launch {
-            userStateHolder.state.value.user?.let { user ->
-                val glossary = _model.value.glossary ?: return@launch
+            val glossary = _model.value.glossary ?: return@launch
 
-                val progress = Progress(
-                    value = -1f,
-                    message = getString(Res.string.uploading_glossary)
-                )
-                _model.update { it.copy(progress = progress) }
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.uploading_glossary)
+            )
+            _model.update { it.copy(progress = progress) }
 
-                val message = withContext(Dispatchers.Default) {
-                    val uploadPath = directoryProvider.createTempFile("upload", ".zip")
-                    val uploadFile = PlatformFile(uploadPath)
+            val message = withContext(Dispatchers.Default) {
+                val uploadPath = directoryProvider.createTempFile("upload", ".zip")
+                val uploadFile = PlatformFile(uploadPath)
 
-                    exportGlossaryUseCase(glossary, uploadFile)
+                exportGlossaryUseCase(glossary, uploadFile)
 
-                    if (uploadFile.exists() && uploadFile.size() > 0) {
-                        val result = glossaryApi.uploadGlossary(uploadFile, user.token)
-                        if (result is NetworkResult.Success) {
-                            glossaryRepository.setGlossaryVersion(
-                                result.data.toLong(),
-                                glossary.id!!
-                            )
-                            getString(Res.string.glossary_uploaded_successfully)
-                        } else {
-                            println(result)
-                            getString(Res.string.glossary_upload_failed)
-                        }
+                if (uploadFile.exists() && uploadFile.size() > 0) {
+                    val result = glossaryApi.uploadGlossary(uploadFile)
+                    if (result is NetworkResult.Success) {
+                        glossaryRepository.setGlossaryVersion(
+                            result.data.toLong(),
+                            glossary.id!!
+                        )
+                        getString(Res.string.glossary_uploaded_successfully)
                     } else {
+                        println(result)
                         getString(Res.string.glossary_upload_failed)
                     }
-                }
-
-                _model.update { it.copy(progress = null, snackBarMessage = message) }
-            } ?: run {
-                val unauthorized = getString(Res.string.unauthorized)
-                _model.update {
-                    it.copy(snackBarMessage = unauthorized)
+                } else {
+                    getString(Res.string.glossary_upload_failed)
                 }
             }
+
+            _model.update { it.copy(progress = null, snackBarMessage = message) }
         }
     }
 
     override fun uploadPendingPhrases() {
         componentScope.launch {
-            userStateHolder.state.value.user?.let { user ->
-                val glossary = _model.value.glossary ?: return@launch
+            val glossary = _model.value.glossary ?: return@launch
 
-                val progress = Progress(
-                    value = -1f,
-                    message = getString(Res.string.uploading_glossary)
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.uploading_glossary)
+            )
+            _model.update { it.copy(progress = progress) }
+
+            val message = withContext(Dispatchers.Default) {
+                val result = glossaryApi.uploadPendingPhrases(
+                    code = glossary.code,
+                    phrases = _model.value.allPhrases.filter { it.pending }
                 )
-                _model.update { it.copy(progress = progress) }
-
-                val message = withContext(Dispatchers.Default) {
-                    val result = glossaryApi.uploadPendingPhrases(
-                        code = glossary.code,
-                        phrases = _model.value.allPhrases.filter { it.pending },
-                        token = user.token
-                    )
-                    if (result is NetworkResult.Success) {
-                        val message = mergePendingPhrasesUseCase(glossary.id!!)
-                        if (!message.success) {
-                            println("Error merging pending phrases: ${message.message}")
-                        }
-                        getString(Res.string.upload_pending_success)
-                    } else {
-                        println(result)
-                        getString(Res.string.upload_pending_failed)
+                if (result is NetworkResult.Success) {
+                    val message = mergePendingPhrasesUseCase(glossary.id!!)
+                    if (!message.success) {
+                        println("Error merging pending phrases: ${message.message}")
                     }
+                    getString(Res.string.upload_pending_success)
+                } else {
+                    println(result)
+                    getString(Res.string.upload_pending_failed)
                 }
+            }
 
-                _model.update {
-                    it.copy(
-                        progress = null,
-                        snackBarMessage = message,
-                        allPhrases = _model.value.allPhrases.map { phrase ->
-                            if (phrase.pending) {
-                                phrase.copy(pending = false)
-                            } else phrase
-                        },
-                        chapterPhrases = _model.value.chapterPhrases.map { phrase ->
-                            if (phrase.pending) {
-                                phrase.copy(pending = false)
-                            } else phrase
-                        }
-                    )
-                }
-            } ?: run {
-                val unauthorized = getString(Res.string.unauthorized)
-                _model.update {
-                    it.copy(snackBarMessage = unauthorized)
-                }
+            _model.update {
+                it.copy(
+                    progress = null,
+                    snackBarMessage = message,
+                    allPhrases = _model.value.allPhrases.map { phrase ->
+                        if (phrase.pending) {
+                            phrase.copy(pending = false)
+                        } else phrase
+                    },
+                    chapterPhrases = _model.value.chapterPhrases.map { phrase ->
+                        if (phrase.pending) {
+                            phrase.copy(pending = false)
+                        } else phrase
+                    }
+                )
             }
         }
     }
@@ -297,7 +281,7 @@ class DefaultKeyTermsListComponent(
         }
     }
 
-    override fun joinGlossary(user: User) {
+    override fun joinGlossary() {
         _model.value.glossary?.let { glossary ->
             componentScope.launch {
                 val successMessage = getString(Res.string.join_glossary_success)
@@ -306,7 +290,7 @@ class DefaultKeyTermsListComponent(
                 _model.update { it.copy(progress = Progress(-1f, progressMessage)) }
 
                 val users = withContext(Dispatchers.Default) {
-                    glossaryApi.joinGlossary(glossary.code, user.token).let { result ->
+                    glossaryApi.joinGlossary(glossary.code).let { result ->
                         when (result) {
                             is NetworkResult.Success -> {
                                 _model.update { it.copy(snackBarMessage = successMessage) }

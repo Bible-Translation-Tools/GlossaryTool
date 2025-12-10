@@ -34,7 +34,7 @@ interface EditPermissionsComponent : DrawerContext {
         val snackBarMessage: String? = null
     )
 
-    fun updateUserRole(glossary: Glossary, user: GlossaryUser, role: UserRole)
+    fun updateUserRole(glossary: Glossary, glossaryUser: GlossaryUser, role: UserRole)
     fun clearSnackBarMessage()
 }
 
@@ -45,7 +45,6 @@ class DefaultEditPermissionsComponent(
 
     private val glossaryApi: GlossaryApi by inject()
     private val appStateStore: AppStateStore by inject()
-    private val userState = appStateStore.userStateHolder.state
     private val glossaryStateHolder = appStateStore.glossaryStateHolder
 
     private val _model = MutableValue(EditPermissionsComponent.Model())
@@ -59,40 +58,37 @@ class DefaultEditPermissionsComponent(
         }
     }
 
-    override fun updateUserRole(glossary: Glossary, user: GlossaryUser, role: UserRole) {
-        userState.value.user?.let { authUser ->
-            componentScope.launch {
-                val progress = Progress(
-                    value = -1f,
-                    message = getString(Res.string.updating_role)
-                )
-                _model.update { it.copy(progress = progress) }
-                val successMessage = getString(Res.string.update_role_success)
+    override fun updateUserRole(glossary: Glossary, glossaryUser: GlossaryUser, role: UserRole) {
+        componentScope.launch {
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.updating_role)
+            )
+            _model.update { it.copy(progress = progress) }
+            val successMessage = getString(Res.string.update_role_success)
 
-                val users = withContext(Dispatchers.Default) {
-                    glossaryApi.updateUserRole(
-                        glossary.code,
-                        user.username,
-                        role,
-                        authUser.token
-                    ).let { result ->
-                        when (result) {
-                            is NetworkResult.Success -> {
-                                _model.update { it.copy(snackBarMessage = successMessage) }
-                                result.data
-                            }
-                            is NetworkResult.Error -> {
-                                println(result.message.details)
-                                _model.update { it.copy(snackBarMessage = result.message.error) }
-                                emptyList()
-                            }
+            val users = withContext(Dispatchers.Default) {
+                glossaryApi.updateUserRole(
+                    glossary.code,
+                    glossaryUser.user.username,
+                    role
+                ).let { result ->
+                    when (result) {
+                        is NetworkResult.Success -> {
+                            _model.update { it.copy(snackBarMessage = successMessage) }
+                            result.data
+                        }
+                        is NetworkResult.Error -> {
+                            println(result.message.details)
+                            _model.update { it.copy(snackBarMessage = result.message.error) }
+                            emptyList()
                         }
                     }
                 }
-                glossaryStateHolder.setUsers(users)
-
-                _model.update { it.copy(progress = null) }
             }
+            glossaryStateHolder.setUsers(users)
+
+            _model.update { it.copy(progress = null) }
         }
     }
 

@@ -44,7 +44,12 @@ val sharedModule = module {
     single { GlossaryDatabase(createSqlDriver()) }
     single { ResourceContainerAccessor(get()) }
     single { CatalogApiImpl(createHttpClient(httpClientEngine)) }.bind<CatalogApi>()
-    single { GlossaryApiImpl(createHttpClient(httpClientEngine)) }.bind<GlossaryApi>()
+    single {
+        GlossaryApiImpl(
+            httpClient = createHttpClient(httpClientEngine),
+            userStateHolder = get()
+        )
+    }.bind<GlossaryApi>()
 
     singleOf(::GlossaryDataSourceImpl).bind<GlossaryDataSource>()
     singleOf(::PhraseDataSourceImpl).bind<PhraseDataSource>()

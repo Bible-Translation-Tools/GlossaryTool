@@ -14,7 +14,6 @@ export const roleEnum = pgEnum("role", ["owner", "admin", "editor", "viewer"]);
 export type RoleType = (typeof roleEnum.enumValues)[number];
 
 export const reviewStatusEnum = pgEnum("review_status", [
-  "pending",
   "approved",
   "rejected",
 ]);
@@ -236,7 +235,10 @@ export const pendingPhraseEntityRelations = relations(
       fields: [pendingPhraseTable.id],
       references: [phraseTable.id],
     }),
-    refs: many(refTable),
+    user: one(usersTable, {
+      fields: [pendingPhraseTable.userId],
+      references: [usersTable.id],
+    }),
     reviews: many(phraseReviews),
   })
 );

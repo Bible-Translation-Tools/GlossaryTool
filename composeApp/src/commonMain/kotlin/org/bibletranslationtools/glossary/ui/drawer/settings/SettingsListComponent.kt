@@ -17,12 +17,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
+import org.bibletranslationtools.glossary.data.api.PendingPhrase
 import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.GlossaryApi
-import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.toTimestamp
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
@@ -35,7 +37,9 @@ interface SettingsListComponent : DrawerContext {
 
     data class Model(
         val progress: Progress? = null,
-        val snackBarMessage: String? = null
+        val snackBarMessage: String? = null,
+        val pendingPhrases: List<PendingPhrase> = emptyList(),
+        val pendingPhrasesLoading: Boolean = false
     )
 
     fun login(username: String, password: String)
@@ -45,6 +49,8 @@ interface SettingsListComponent : DrawerContext {
     fun checkUpdates()
     fun editPermissions()
     fun clearSnackBarMessage()
+    fun loadPendingPhrases(glossary: Glossary)
+    fun reviewChanges()
 }
 
 class DefaultSettingsListComponent(
@@ -54,7 +60,8 @@ class DefaultSettingsListComponent(
     private val onViewGlossaries: () -> Unit,
     private val onLogin: (User) -> Unit,
     private val onLogout: () -> Unit,
-    private val onEditPermissions: () -> Unit
+    private val onEditPermissions: () -> Unit,
+    private val onReviewChanges: () -> Unit
 ) : DrawerComponent(componentContext, parentContext), SettingsListComponent, KoinComponent {
 
     private val glossaryApi: GlossaryApi by inject()
@@ -161,7 +168,31 @@ class DefaultSettingsListComponent(
         onEditPermissions()
     }
 
+    override fun loadPendingPhrases(glossary: Glossary) {
+        componentScope.launch {
+            _model.update { it.copy(pendingPhrasesLoading = true) }
+            val result = withContext(Dispatchers.Default) {
+                glossaryApi.getPendingPhrases(glossary.code)
+            }
+            when (result) {
+                is NetworkResult.Success -> {
+                    _model.update {
+                        it.copy(pendingPhrases = result.data)
+                    }
+                }
+                is NetworkResult.Error -> {
+                    println(result)
+                }
+            }
+            _model.update { it.copy(pendingPhrasesLoading = false) }
+        }
+    }
+
     override fun clearSnackBarMessage() {
         _model.update { it.copy(snackBarMessage = null) }
+    }
+
+    override fun reviewChanges() {
+        onReviewChanges()
     }
 }

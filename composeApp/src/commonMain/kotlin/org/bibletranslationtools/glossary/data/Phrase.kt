@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.data
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.PendingPhraseEntity
 import org.bibletranslationtools.glossary.PhraseEntity
@@ -16,8 +17,8 @@ data class Phrase(
     val description: String = "",
     val audio: String? = null,
     val pending: Boolean = false,
-    val createdAt: LocalDateTime = getCurrentTime(),
-    val updatedAt: LocalDateTime = getCurrentTime(),
+    @Contextual val createdAt: LocalDateTime = getCurrentTime(),
+    @Contextual val updatedAt: LocalDateTime = getCurrentTime(),
     val glossaryId: String? = null,
     val id: String? = null
 )

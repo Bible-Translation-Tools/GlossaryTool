@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.data
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Contextual
 import org.bibletranslationtools.glossary.ResourceEntity
 import org.bibletranslationtools.glossary.toLocalDateTime
 import org.bibletranslationtools.glossary.toTimestamp
@@ -12,8 +13,8 @@ data class Resource(
     val format: String,
     val url: String,
     val filename: String,
-    val createdAt: LocalDateTime,
-    val modifiedAt: LocalDateTime,
+    @Contextual val createdAt: LocalDateTime,
+    @Contextual val modifiedAt: LocalDateTime,
     val books: List<Workbook> = emptyList(),
     val id: Long = 0
 ) {

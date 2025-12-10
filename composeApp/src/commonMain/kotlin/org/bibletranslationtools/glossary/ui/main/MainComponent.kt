@@ -94,7 +94,7 @@ interface MainComponent: ParentContext {
 
     fun setFullscreenDrawer(fullscreen: Boolean)
     fun verifyLogin(token: String?)
-    fun getGlossaryUsers(glossary: Glossary, user: User)
+    fun getGlossaryUsers(glossary: Glossary)
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
@@ -222,10 +222,10 @@ class DefaultMainComponent(
         }
     }
 
-    override fun getGlossaryUsers(glossary: Glossary, user: User) {
+    override fun getGlossaryUsers(glossary: Glossary) {
         componentScope.launch {
             val users = withContext(Dispatchers.Default) {
-                glossaryApi.getGlossaryUsers(glossary.code, user.token).let { result ->
+                glossaryApi.getGlossaryUsers(glossary.code).let { result ->
                     when (result) {
                         is NetworkResult.Success -> result.data
                         is NetworkResult.Error -> {

@@ -3,9 +3,8 @@ package org.bibletranslationtools.glossary.data.api
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class GlossaryUser(
-    val code: String,
-    val published: Boolean = false,
-    val role: UserRole = UserRole.VIEWER,
+data class PhraseReview(
+    val phraseId: String,
+    val status: ReviewStatus,
     val user: User
 )

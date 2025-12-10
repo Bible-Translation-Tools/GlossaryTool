@@ -162,7 +162,7 @@ fun SettingsListScreen(component: SettingsListComponent) {
         mutableStateOf(
             glossaryState.users
                 .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
-                .map { it.username }
+                .map { it.user.username }
                 .contains(userState.user?.username)
         )
     }
@@ -172,6 +172,12 @@ fun SettingsListScreen(component: SettingsListComponent) {
             Theme.DARK
         } else {
             Theme.LIGHT
+        }
+    }
+
+    LaunchedEffect(glossaryState.glossary) {
+        glossaryState.glossary?.let { glossary ->
+            component.loadPendingPhrases(glossary)
         }
     }
 
@@ -421,12 +427,17 @@ fun SettingsListScreen(component: SettingsListComponent) {
                                 text = stringResource(Res.string.view_glossaries),
                                 onClick = component::viewGlossaries
                             )
-                            SettingsClickableItem(
-                                icon = painterResource(Res.drawable.search_check),
-                                text = stringResource(Res.string.review_changes),
-                                actionText = "(31)",
-                                onClick = {}
-                            )
+                            if (isAdmin) {
+                                SettingsClickableItem(
+                                    icon = painterResource(Res.drawable.search_check),
+                                    text = stringResource(Res.string.review_changes),
+                                    actionText = if (model.pendingPhrases.isNotEmpty()) {
+                                        "(${model.pendingPhrases.size})"
+                                    } else "",
+                                    inProgress = model.pendingPhrasesLoading,
+                                    onClick = component::reviewChanges
+                                )
+                            }
                         }
 
                         HorizontalDivider(

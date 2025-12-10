@@ -1,6 +1,7 @@
 package org.bibletranslationtools.glossary.data
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.GlossaryEntity
 import org.bibletranslationtools.glossary.Utils.generateUUID
@@ -16,8 +17,8 @@ data class Glossary(
     val version: Int,
     val hasUpdate: Boolean,
     val resourceId: Long? = null,
-    val createdAt: LocalDateTime = getCurrentTime(),
-    val updatedAt: LocalDateTime = getCurrentTime(),
+    @Contextual val createdAt: LocalDateTime = getCurrentTime(),
+    @Contextual val updatedAt: LocalDateTime = getCurrentTime(),
     val id: String? = null
 )
 
