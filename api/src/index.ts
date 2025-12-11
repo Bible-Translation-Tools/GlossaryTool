@@ -30,6 +30,7 @@ import {
 import { Manifest } from "./resource.types";
 import { ErrorDetails, TokenRes, User, UserRes } from "./user.types";
 import { jwt, sign } from "hono/jwt";
+import validateEmoji from "./utils";
 
 interface AppVariables extends JwtVariables {
   db: DbHelper;
@@ -55,7 +56,7 @@ app.use("/private/api/*", async (c, next) => {
   return jwtMiddleware(c, next);
 });
 
-app.post("/public/api/login", async (c) => {
+app.post("/public/api/user/login", async (c) => {
   const dbHelper = c.get("db");
   const { username, password } = await c.req.json<{
     username: string;
@@ -153,8 +154,51 @@ app.post("/public/api/login", async (c) => {
   }
 });
 
+app.post("/private/api/user/emoji", async (c) => {
+  const dbHelper = c.get("db");
+  const auth = c.get("jwtPayload");
+  const { emoji } = await c.req.json<{
+    emoji: string;
+  }>();
+
+  try {
+    if (!validateEmoji(emoji)) {
+      throw new Error("Invalid emoji.");
+    }
+
+    await dbHelper
+      .getDb()
+      .update(usersTable)
+      .set({ emoji: emoji })
+      .where(eq(usersTable.id, auth.id));
+
+    // generate a new token with updated emoji
+    const jwtPayload = {
+      id: auth.id,
+      username: auth.username,
+      emoji: emoji,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // expires in 1 day
+    };
+    const jwtToken = await sign(jwtPayload, c.env.JWT_SECRET_KEY);
+
+    return c.json({
+      username: auth.username,
+      emoji: emoji,
+      token: jwtToken,
+    });
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to update emoji.",
+        details: error.message || "Unknown error.",
+      },
+      400
+    );
+  }
+});
+
 // Just to verify if token is not expired
-app.get("/private/api/verify", async (c) => {
+app.get("/private/api/user/verify", async (c) => {
   const auth = c.get("jwtPayload");
   return c.json({
     username: auth.username,

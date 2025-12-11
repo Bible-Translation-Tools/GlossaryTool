@@ -146,4 +146,12 @@
     <string name="sending_review">Sending review...</string>
     <string name="phrase_was_merged">Phrase has been merged into glossary</string>
     <string name="phrase_was_rejected">Phrase has not been merged into glossary</string>
+    <string name="emoji_smileys">Smileys</string>
+    <string name="emoji_gestures">Gestures</string>
+    <string name="emoji_nature">Nature</string>
+    <string name="emoji_food">Food</string>
+    <string name="emoji_activity">Activity</string>
+    <string name="emoji_travel">Travel</string>
+    <string name="emoji_objects">Objects</string>
+    <string name="updating_emoji">Updating emoji...</string>
 </resources>

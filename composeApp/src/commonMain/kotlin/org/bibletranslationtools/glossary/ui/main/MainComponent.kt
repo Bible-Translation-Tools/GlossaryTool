@@ -239,7 +239,7 @@ class DefaultMainComponent(
         }
     }
 
-    private fun login(user: User) {
+    private fun updateUser(user: User) {
         userStateHolder.setUser(user)
     }
 
@@ -308,7 +308,7 @@ class DefaultMainComponent(
                         showKeyTermsDrawer()
                     }
                 },
-                onLogin = ::login,
+                onUserUpdated = ::updateUser,
                 onLogout = ::logout
             )
             is DrawerConfig.KeyTerms -> DefaultKeyTermsComponent(

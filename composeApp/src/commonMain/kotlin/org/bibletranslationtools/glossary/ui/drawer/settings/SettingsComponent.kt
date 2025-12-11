@@ -40,7 +40,7 @@ class DefaultSettingsComponent(
     private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onFullscreen: (Boolean) -> Unit,
     private val onImportFinished: () -> Unit,
-    private val onLogin: (User) -> Unit,
+    private val onUserUpdated: (User) -> Unit,
     private val onLogout: () -> Unit
 ) : SettingsComponent, ComponentContext by componentContext {
 
@@ -84,7 +84,7 @@ class DefaultSettingsComponent(
                     onViewGlossaries = {
                         navigation.bringToFront(Config.ViewGlossaries)
                     },
-                    onLogin = onLogin,
+                    onUserUpdated = onUserUpdated,
                     onLogout = onLogout,
                     onEditPermissions = {
                         navigation.bringToFront(Config.EditPermissions)

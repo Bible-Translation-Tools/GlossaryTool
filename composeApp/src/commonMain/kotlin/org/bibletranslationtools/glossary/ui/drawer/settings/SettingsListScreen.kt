@@ -77,6 +77,7 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.domain.Theme
+import org.bibletranslationtools.glossary.ui.components.EmojiPickerDialog
 import org.bibletranslationtools.glossary.ui.components.FloatingSegmentedSelector
 import org.bibletranslationtools.glossary.ui.components.SettingsClickableItem
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
@@ -156,6 +157,7 @@ fun SettingsListScreen(component: SettingsListComponent) {
     val scope = rememberCoroutineScope()
 
     var showLoginDialog by rememberSaveable { mutableStateOf(false) }
+    var showEmojiDialog by rememberSaveable { mutableStateOf(false) }
     var emoji by remember { mutableStateOf(userState.user?.emoji) }
 
     val isAdmin by remember(glossaryState.users) {
@@ -211,7 +213,9 @@ fun SettingsListScreen(component: SettingsListComponent) {
                             ) {
                                 Text(
                                     text = user.emoji,
-                                    fontSize = 40.sp
+                                    fontSize = 40.sp,
+                                    modifier = Modifier
+                                        .clickable { showEmojiDialog = true }
                                 )
                                 Text(
                                     text = user.username,
@@ -484,6 +488,13 @@ fun SettingsListScreen(component: SettingsListComponent) {
         LoginDialog(
             onDismiss = { showLoginDialog = false },
             onLogin = component::login
+        )
+    }
+
+    if (showEmojiDialog) {
+        EmojiPickerDialog(
+            onEmojiSelected = component::updateEmoji,
+            onDismiss = { showEmojiDialog = false }
         )
     }
 

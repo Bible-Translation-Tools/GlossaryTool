@@ -12,6 +12,7 @@ import glossary.composeapp.generated.resources.login_progress
 import glossary.composeapp.generated.resources.login_success
 import glossary.composeapp.generated.resources.no_updates_found
 import glossary.composeapp.generated.resources.updates_found
+import glossary.composeapp.generated.resources.updating_emoji
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -51,6 +52,7 @@ interface SettingsListComponent : DrawerContext {
     fun clearSnackBarMessage()
     fun loadPendingPhrases(glossary: Glossary)
     fun reviewChanges()
+    fun updateEmoji(emoji: String)
 }
 
 class DefaultSettingsListComponent(
@@ -58,7 +60,7 @@ class DefaultSettingsListComponent(
     parentContext: DrawerContext,
     private val onCreateGlossary: () -> Unit,
     private val onViewGlossaries: () -> Unit,
-    private val onLogin: (User) -> Unit,
+    private val onUserUpdated: (User) -> Unit,
     private val onLogout: () -> Unit,
     private val onEditPermissions: () -> Unit,
     private val onReviewChanges: () -> Unit
@@ -92,7 +94,7 @@ class DefaultSettingsListComponent(
                 glossaryApi.login(username, password).let { result ->
                     when (result) {
                         is NetworkResult.Success -> {
-                            onLogin(result.data)
+                            onUserUpdated(result.data)
                             _model.update {
                                 it.copy(snackBarMessage = success)
                             }
@@ -194,5 +196,30 @@ class DefaultSettingsListComponent(
 
     override fun reviewChanges() {
         onReviewChanges()
+    }
+
+    override fun updateEmoji(emoji: String) {
+        componentScope.launch {
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.updating_emoji)
+            )
+            _model.update { it.copy(progress = progress) }
+
+            val result = withContext(Dispatchers.Default) {
+                glossaryApi.updateEmoji(emoji)
+            }
+            when (result) {
+                is NetworkResult.Success -> {
+                    onUserUpdated(result.data)
+                }
+                is NetworkResult.Error -> {
+                    println(result.message)
+                    _model.update { it.copy(snackBarMessage = result.message.error) }
+                }
+            }
+
+            _model.update { it.copy(progress = null) }
+        }
     }
 }

@@ -26,6 +26,7 @@ interface GlossaryApi {
 
     suspend fun verifyLogin(token: String): NetworkResult<User>
     suspend fun login(username: String, password: String): NetworkResult<User>
+    suspend fun updateEmoji(emoji: String): NetworkResult<User>
     suspend fun downloadGlossary(code: String): NetworkResult<ByteArray>
     suspend fun uploadGlossary(file: PlatformFile): NetworkResult<Int>
     suspend fun checkUpdates(glossaries: List<GlossaryUpdate>): NetworkResult<List<GlossaryUpdate>>
@@ -63,7 +64,7 @@ class GlossaryApiImpl(
 
     override suspend fun verifyLogin(token: String): NetworkResult<User> {
         return ApiHelper.callApi {
-            val response = httpClient.get("$PRIVATE_API/verify") {
+            val response = httpClient.get("$PRIVATE_API/user/verify") {
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -79,7 +80,7 @@ class GlossaryApiImpl(
 
     override suspend fun login(username: String, password: String): NetworkResult<User> {
         return ApiHelper.callApi {
-            val response = httpClient.post("$PUBLIC_API/login") {
+            val response = httpClient.post("$PUBLIC_API/user/login") {
                 setBody(mapOf("username" to username, "password" to password))
                 contentType(ContentType.Application.Json)
             }
@@ -89,6 +90,24 @@ class GlossaryApiImpl(
                 throw ServerResponseException(
                     response,
                     "Authentication error"
+                )
+            }
+        }
+    }
+
+    override suspend fun updateEmoji(emoji: String): NetworkResult<User> {
+        return ApiHelper.callApi {
+            val response = httpClient.post("$PRIVATE_API/user/emoji") {
+                bearerAuth(token)
+                setBody(mapOf("emoji" to emoji))
+                contentType(ContentType.Application.Json)
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Failed to update emoji"
                 )
             }
         }
