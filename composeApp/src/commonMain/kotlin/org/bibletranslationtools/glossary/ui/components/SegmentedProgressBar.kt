@@ -16,54 +16,46 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun SegmentedProgressBar(
-    segment1: Int,
-    segment2: Int,
-    total: Int,
-    modifier: Modifier = Modifier
+    progress1: Float,
+    progress2: Float,
+    modifier: Modifier = Modifier,
+    color1: Color = MaterialTheme.colorScheme.tertiary,
+    color2: Color = MaterialTheme.colorScheme.error,
+    trackColor: Color = MaterialTheme.colorScheme.outlineVariant
 ) {
-    val rest = (total - segment1 - segment2).coerceAtLeast(0)
+    val totalProgress = (progress1 + progress2).coerceIn(0f, 1f)
 
-    if (total == 0) {
-        Box(
-            modifier = modifier
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.outlineVariant)
-                .height(6.dp)
-                .fillMaxWidth()
-        )
-        return
-    }
-
-    Row(
+    Box(
         modifier = modifier
             .clip(CircleShape)
+            .background(trackColor)
             .height(6.dp)
+            .fillMaxWidth()
     ) {
-        if (segment1 > 0) {
-            Box(
+        if (totalProgress > 0f) {
+            Row(
                 modifier = Modifier
-                    .weight(segment1.toFloat())
+                    .fillMaxWidth(totalProgress)
                     .fillMaxHeight()
-                    .background(Color(0xFF4CAF50))
-            )
-        }
+            ) {
+                if (progress1 > 0f) {
+                    Box(
+                        modifier = Modifier
+                            .weight(progress1)
+                            .fillMaxHeight()
+                            .background(color1)
+                    )
+                }
 
-        if (segment2 > 0) {
-            Box(
-                modifier = Modifier
-                    .weight(segment2.toFloat())
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.error)
-            )
-        }
-
-        if (rest > 0) {
-            Box(
-                modifier = Modifier
-                    .weight(rest.toFloat())
-                    .fillMaxHeight()
-                    .background(MaterialTheme.colorScheme.outlineVariant)
-            )
+                if (progress2 > 0f) {
+                    Box(
+                        modifier = Modifier
+                            .weight(progress2)
+                            .fillMaxHeight()
+                            .background(color2)
+                    )
+                }
+            }
         }
     }
 }

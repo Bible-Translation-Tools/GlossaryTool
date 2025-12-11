@@ -19,10 +19,10 @@ val LightColorScheme = lightColorScheme(
     secondaryContainer = Color(0xFFECEFF1),
     onSecondaryContainer = Color(0xFF263238),
 
-    tertiary = Color(0xFF7B1FA2),
+    tertiary = Color(0xFF4CAF50),
     onTertiary = Color(0xFFFFFFFF),
-    tertiaryContainer = Color(0xFFF3E5F5),
-    onTertiaryContainer = Color(0xFF4A148C),
+    tertiaryContainer = Color(0xFFE8F5E9),
+    onTertiaryContainer = Color(0xFF1B5E20),
 
     error = Color(0xFFD32F2F),
     onError = Color(0xFFFFFFFF),
@@ -60,10 +60,10 @@ val DarkColorScheme = darkColorScheme(
     secondaryContainer = Color(0xFF37474F),
     onSecondaryContainer = Color(0xFFECEFF1),
 
-    tertiary = Color(0xFFCE93D8),
-    onTertiary = Color(0xFF4A148C),
-    tertiaryContainer = Color(0xFF6A1B9A),
-    onTertiaryContainer = Color(0xFFF3E5F5),
+    tertiary = Color(0xFF81C784),
+    onTertiary = Color(0xFF1B5E20),
+    tertiaryContainer = Color(0xFF2E7D32),
+    onTertiaryContainer = Color(0xFFC8E6C9),
 
     error = Color(0xFFFF5252),
     onError = Color(0xFFB71C1C),
