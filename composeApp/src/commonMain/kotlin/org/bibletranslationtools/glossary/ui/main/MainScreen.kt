@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.MaterialTheme
@@ -40,7 +42,6 @@ import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsComponent
 import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsScreen
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
-import org.bibletranslationtools.glossary.ui.resources.ResourcesScreen
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.compose.koinInject
 
@@ -84,6 +85,7 @@ fun MainScreen(component: MainComponent) {
             if (model.fullscreenDrawer) flatShape else roundedShape
         )
     }
+    val drawerHasContent = drawerSlot.child?.instance != null
 
     val snackBarHostState = remember { SnackbarHostState() }
     var initialized by remember { mutableStateOf(false) }
@@ -146,10 +148,11 @@ fun MainScreen(component: MainComponent) {
     CompositionLocalProvider(LocalSnackBarHostState provides snackBarHostState) {
         Box(
             modifier = Modifier.fillMaxSize()
+                .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
             ModalNavigationDrawer(
                 drawerState = drawerState,
-                gesturesEnabled = false,
+                gesturesEnabled = drawerHasContent,
                 drawerContent = {
                     ModalDrawerSheet(
                         drawerContainerColor = MaterialTheme.colorScheme.surface,
@@ -163,7 +166,6 @@ fun MainScreen(component: MainComponent) {
                             }
                         )
                     ) {
-                        val drawerSlot by component.drawerSlot.subscribeAsState()
                         drawerSlot.child?.instance?.let { component ->
                             when (component) {
                                 is SettingsComponent -> {
@@ -184,7 +186,6 @@ fun MainScreen(component: MainComponent) {
                 ) {
                     when (val child = it.instance) {
                         is MainComponent.Child.Read -> ReadScreen(child.component)
-                        is MainComponent.Child.Resources -> ResourcesScreen(child.component)
                     }
                 }
             }

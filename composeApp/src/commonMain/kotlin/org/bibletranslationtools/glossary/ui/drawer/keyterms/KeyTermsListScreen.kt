@@ -180,7 +180,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                 Column(
                     horizontalAlignment = Alignment.Start,
                     modifier = Modifier.fillMaxSize()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
                     TopDrawerBar(
                         title = stringResource(Res.string.key_terms),

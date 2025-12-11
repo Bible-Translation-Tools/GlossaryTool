@@ -35,8 +35,6 @@ import org.bibletranslationtools.glossary.ui.drawer.keyterms.DefaultKeyTermsComp
 import org.bibletranslationtools.glossary.ui.drawer.settings.DefaultSettingsComponent
 import org.bibletranslationtools.glossary.ui.read.DefaultReadComponent
 import org.bibletranslationtools.glossary.ui.read.ReadComponent
-import org.bibletranslationtools.glossary.ui.resources.DefaultResourcesComponent
-import org.bibletranslationtools.glossary.ui.resources.ResourcesComponent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -98,7 +96,6 @@ interface MainComponent: ParentContext {
 
     sealed class Child {
         class Read(val component: ReadComponent) : Child()
-        class Resources(val component: ResourcesComponent) : Child()
     }
 }
 
@@ -158,12 +155,6 @@ class DefaultMainComponent(
                     sharedState = mainState,
                     onNavigateViewPhrase = ::onNavigateViewPhrase,
                     onNavigateEditPhrase = ::onNavigateEditPhrase
-                )
-            )
-            is Config.Resources -> MainComponent.Child.Resources(
-                DefaultResourcesComponent(
-                    componentContext = context,
-                    parentContext = this
                 )
             )
         }
@@ -341,7 +332,5 @@ class DefaultMainComponent(
     private sealed interface Config {
         @Serializable
         data class Read(val intent: ReadIntent = ReadIntent.Index) : Config
-        @Serializable
-        data object Resources : Config
     }
 }

@@ -60,6 +60,7 @@ import glossary.composeapp.generated.resources.interface_settings
 import glossary.composeapp.generated.resources.language
 import glossary.composeapp.generated.resources.line_height
 import glossary.composeapp.generated.resources.login_wacs
+import glossary.composeapp.generated.resources.logout
 import glossary.composeapp.generated.resources.new_glossary
 import glossary.composeapp.generated.resources.other_settings
 import glossary.composeapp.generated.resources.person_edit
@@ -191,7 +192,7 @@ fun SettingsListScreen(component: SettingsListComponent) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier.fillMaxSize()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                        .padding(horizontal = 16.dp)
                 ) {
                     TopDrawerBar(
                         title = stringResource(Res.string.settings),
@@ -220,11 +221,11 @@ fun SettingsListScreen(component: SettingsListComponent) {
                                 Text(
                                     text = user.username,
                                     fontSize = 24.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.clickable {
-                                        component.logout()
-                                    }
+                                    fontWeight = FontWeight.Bold
                                 )
+                                TextButton(onClick = component::logout) {
+                                    Text(text = stringResource(Res.string.logout))
+                                }
                             }
                         } ?: run {
                             Column(

@@ -36,8 +36,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -193,28 +191,13 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
 
     Column(
         modifier = Modifier.fillMaxSize()
-            .padding(top = 36.dp, bottom = 18.dp)
+            .padding(top = 36.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 8.dp
-                    )
-                    .pointerInput(Unit) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                val event = awaitPointerEvent()
-                                if (event.type == PointerEventType.Press
-                                    && model.currentRef != null) {
-                                    component.clearRef()
-                                }
-                            }
-                        }
-                    }
+                    .padding(horizontal = 16.dp)
             ) {
                 Column {
                     Column(
@@ -286,12 +269,8 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                                     }
                                 }
                             },
-                            onPrevClick = {
-                                component.prevChapter()
-                            },
-                            onNextClick = {
-                                component.nextChapter()
-                            },
+                            onPrevClick = component::prevChapter,
+                            onNextClick = component::nextChapter,
                             modifier = Modifier.weight(1f)
                         )
 

@@ -110,6 +110,7 @@
     <string name="login_wacs_info">Log in using your WACS credentials</string>
     <string name="login_success">Logged in successfully</string>
     <string name="login_progress">Authenticating... Please wait.</string>
+    <string name="logout">Logout</string>
     <string name="unauthorized">You need to be authorized to execute this action</string>
     <string name="join_glossary">Join</string>
     <string name="join_glossary_progress">Joining glossary...</string>
