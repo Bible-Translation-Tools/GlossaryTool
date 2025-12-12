@@ -11,7 +11,6 @@ import glossary.composeapp.generated.resources.glossary_uploaded_successfully
 import glossary.composeapp.generated.resources.join_glossary_progress
 import glossary.composeapp.generated.resources.join_glossary_success
 import glossary.composeapp.generated.resources.source_text
-import glossary.composeapp.generated.resources.unauthorized
 import glossary.composeapp.generated.resources.upload_pending_failed
 import glossary.composeapp.generated.resources.upload_pending_success
 import glossary.composeapp.generated.resources.uploading_glossary
@@ -86,6 +85,7 @@ class DefaultKeyTermsListComponent(
     private val onNavigateViewPhrase: (phraseId: String) -> Unit,
     private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
+    private val onTriggerUpdate: () -> Unit
 ) : DrawerComponent(componentContext, parentContext), KeyTermsListComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
@@ -96,7 +96,6 @@ class DefaultKeyTermsListComponent(
     private val mergePendingPhrasesUseCase: MergePendingPhrases by inject()
 
     private val appState: AppStateStore by inject()
-    private val userStateHolder = appState.userStateHolder
     private val glossaryStateHolder = appState.glossaryStateHolder
     private val resourceState = appState.resourceStateHolder.state
 
@@ -272,6 +271,7 @@ class DefaultKeyTermsListComponent(
                 result?.let { (glossary, resource) ->
                     onSelectResource(resource)
                     onSelectGlossary(glossary, false)
+                    onTriggerUpdate()
 
                     _model.update { it.copy(updateStatus = UpdateStatus.DOWNLOADED) }
                 } ?: run {

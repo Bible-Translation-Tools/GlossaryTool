@@ -141,6 +141,7 @@ export const refTable = pgTable("refs", {
 export const glossaryUsers = pgTable(
   "glossary_users",
   {
+    pk: integer("pk").primaryKey().generatedAlwaysAsIdentity(),
     glossaryId: text("glossary_id")
       .notNull()
       .references(() => glossaryTable.id, { onDelete: "cascade" }),
@@ -157,6 +158,7 @@ export const glossaryUsers = pgTable(
 export const phraseReviews = pgTable(
   "phrase_reviews",
   {
+    pk: integer("pk").primaryKey().generatedAlwaysAsIdentity(),
     phraseId: text("phrase_id")
       .notNull()
       .references(() => pendingPhraseTable.id, { onDelete: "cascade" }),

@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -55,7 +56,7 @@ fun ReviewChangesScreen(component: ReviewChangesComponent) {
 
     LaunchedEffect(glossaryState.glossary, userState.user) {
         glossaryState.glossary?.let { glossary ->
-            component.loadPendingPhrases(glossary)
+            component.loadPendingPhrases(glossary, false)
         }
     }
 
@@ -77,28 +78,37 @@ fun ReviewChangesScreen(component: ReviewChangesComponent) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SettingsSection(
-                        title = stringResource(Res.string.pending_phrases)
+                    PullToRefreshBox(
+                        isRefreshing = model.isRefreshing,
+                        onRefresh = {
+                            glossaryState.glossary?.let { glossary ->
+                                component.loadPendingPhrases(glossary, true)
+                            }
+                        }
                     ) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth()
-                                .background(
-                                    color = MaterialTheme.colorScheme.surface,
-                                    shape = MaterialTheme.shapes.medium
-                                )
+                        SettingsSection(
+                            title = stringResource(Res.string.pending_phrases)
                         ) {
-                            itemsIndexed(model.pendingPhrases) { index, pendingPhrase ->
-                                PendingPhrase(
-                                    pendingPhrase = pendingPhrase,
-                                    adminsCount = glossaryState.users.count {
-                                        it.role == UserRole.OWNER || it.role == UserRole.ADMIN
-                                    },
-                                    onView = { selectedPhrase = pendingPhrase },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth()
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                            ) {
+                                itemsIndexed(model.pendingPhrases) { index, pendingPhrase ->
+                                    PendingPhrase(
+                                        pendingPhrase = pendingPhrase,
+                                        adminsCount = glossaryState.users.count {
+                                            it.role == UserRole.OWNER || it.role == UserRole.ADMIN
+                                        },
+                                        onView = { selectedPhrase = pendingPhrase },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
 
-                                if (index < model.pendingPhrases.lastIndex) {
-                                    HorizontalDivider()
+                                    if (index < model.pendingPhrases.lastIndex) {
+                                        HorizontalDivider()
+                                    }
                                 }
                             }
                         }

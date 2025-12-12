@@ -33,11 +33,12 @@ interface ReviewChangesComponent : DrawerContext {
 
     data class Model(
         val pendingPhrases: List<PendingPhrase> = emptyList(),
+        val isRefreshing: Boolean = false,
         val progress: Progress? = null,
         val snackBarMessage: String? = null
     )
 
-    fun loadPendingPhrases(glossary: Glossary)
+    fun loadPendingPhrases(glossary: Glossary, isRefreshing: Boolean)
     fun saveReviewStatus(phrase: PendingPhrase, status: ReviewStatus)
     fun clearSnackBarMessage()
 }
@@ -62,13 +63,17 @@ class DefaultReviewChangesComponent(
         }
     }
 
-    override fun loadPendingPhrases(glossary: Glossary) {
+    override fun loadPendingPhrases(glossary: Glossary, isRefreshing: Boolean) {
         componentScope.launch {
-            val progress = Progress(
-                value = -1f,
-                message = getString(Res.string.loading_wait)
-            )
-            _model.update { it.copy(progress = progress) }
+            if (isRefreshing) {
+                _model.update { it.copy(isRefreshing = true) }
+            } else {
+                val progress = Progress(
+                    value = -1f,
+                    message = getString(Res.string.loading_wait)
+                )
+                _model.update { it.copy(progress = progress) }
+            }
             val result = withContext(Dispatchers.Default) {
                 glossaryApi.getPendingPhrases(glossary.code)
             }
@@ -82,7 +87,7 @@ class DefaultReviewChangesComponent(
                     println(result)
                 }
             }
-            _model.update { it.copy(progress = null) }
+            _model.update { it.copy(isRefreshing = false, progress = null) }
         }
     }
 

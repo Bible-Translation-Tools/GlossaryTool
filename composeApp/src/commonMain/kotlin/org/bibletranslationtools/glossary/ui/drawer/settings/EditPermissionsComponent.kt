@@ -30,11 +30,13 @@ interface EditPermissionsComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
+        val isRefreshing: Boolean = false,
         val progress: Progress? = null,
         val snackBarMessage: String? = null
     )
 
     fun updateUserRole(glossary: Glossary, glossaryUser: GlossaryUser, role: UserRole)
+    fun loadGlossaryUsers(glossary: Glossary)
     fun clearSnackBarMessage()
 }
 
@@ -89,6 +91,24 @@ class DefaultEditPermissionsComponent(
             glossaryStateHolder.setUsers(users)
 
             _model.update { it.copy(progress = null) }
+        }
+    }
+
+    override fun loadGlossaryUsers(glossary: Glossary) {
+        componentScope.launch {
+            _model.update { it.copy(isRefreshing = true) }
+            val result = withContext(Dispatchers.Default) {
+                glossaryApi.getGlossaryUsers(glossary.code)
+            }
+            when (result) {
+                is NetworkResult.Success -> {
+                    glossaryStateHolder.setUsers(result.data)
+                }
+                is NetworkResult.Error -> {
+                    println(result.message)
+                }
+            }
+            _model.update { it.copy(isRefreshing = false) }
         }
     }
 

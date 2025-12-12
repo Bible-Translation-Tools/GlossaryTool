@@ -12,6 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,28 +70,37 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    SettingsSection(
-                        title = stringResource(Res.string.active_users)
+                    PullToRefreshBox(
+                        isRefreshing = model.isRefreshing,
+                        onRefresh = {
+                            glossaryState.glossary?.let { glossary ->
+                                component.loadGlossaryUsers(glossary)
+                            }
+                        }
                     ) {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxWidth()
-                                .background(
-                                    color = MaterialTheme.colorScheme.surface,
-                                    shape = MaterialTheme.shapes.medium
-                                )
+                        SettingsSection(
+                            title = stringResource(Res.string.active_users)
                         ) {
-                            itemsIndexed(glossaryState.users) { index, glossaryUser ->
-                                GlossaryUser(
-                                    glossaryUser = glossaryUser,
-                                    isMe = glossaryUser.user.username == userState.user?.username,
-                                    onEdit = {
-                                        selectedUser = glossaryUser
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                )
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth()
+                                    .background(
+                                        color = MaterialTheme.colorScheme.surface,
+                                        shape = MaterialTheme.shapes.medium
+                                    )
+                            ) {
+                                itemsIndexed(glossaryState.users) { index, glossaryUser ->
+                                    GlossaryUser(
+                                        glossaryUser = glossaryUser,
+                                        isMe = glossaryUser.user.username == userState.user?.username,
+                                        onEdit = {
+                                            selectedUser = glossaryUser
+                                        },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
 
-                                if (index < glossaryState.users.lastIndex) {
-                                    HorizontalDivider()
+                                    if (index < glossaryState.users.lastIndex) {
+                                        HorizontalDivider()
+                                    }
                                 }
                             }
                         }

@@ -85,9 +85,9 @@ class DefaultReadIndexComponent(
             _model.update { it.copy(currentRef = ref) }
 
             sharedState.model.subscribe { model ->
-                if (model.phraseUpdated) {
+                if (model.triggerUpdate) {
                     loadChapterPhrases()
-                    sharedState.updatePhraseUpdated(false)
+                    sharedState.setTriggerUpdate(false)
                 }
                 _model.update {
                     it.copy(

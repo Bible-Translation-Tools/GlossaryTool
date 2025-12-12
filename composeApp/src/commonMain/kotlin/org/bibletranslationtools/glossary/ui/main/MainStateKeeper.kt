@@ -9,15 +9,15 @@ class MainStateKeeper : InstanceKeeper.Instance {
     private val _model = MutableValue(MainComponent.Model())
     val model: Value<MainComponent.Model> = _model
 
-    fun updatePhraseUpdated(value: Boolean) {
-        _model.update { it.copy(phraseUpdated = value) }
+    fun setTriggerUpdate(value: Boolean) {
+        _model.update { it.copy(triggerUpdate = value) }
     }
 
-    fun updateKeyTermsDrawerOpen(value: Boolean) {
+    fun setKeyTermsDrawerOpen(value: Boolean) {
         _model.update { it.copy(keyTermsDrawerOpen = value) }
     }
 
-    fun updateSettingsDrawerOpen(value: Boolean) {
+    fun setSettingsDrawerOpen(value: Boolean) {
         _model.update { it.copy(settingsDrawerOpen = value) }
     }
 
