@@ -6,11 +6,15 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.checking_for_updates
+import glossary.composeapp.generated.resources.error_checking_updates
 import glossary.composeapp.generated.resources.glossary_upload_failed
 import glossary.composeapp.generated.resources.glossary_uploaded_successfully
 import glossary.composeapp.generated.resources.join_glossary_progress
 import glossary.composeapp.generated.resources.join_glossary_success
+import glossary.composeapp.generated.resources.no_updates_found
 import glossary.composeapp.generated.resources.source_text
+import glossary.composeapp.generated.resources.updates_found
 import glossary.composeapp.generated.resources.upload_pending_failed
 import glossary.composeapp.generated.resources.upload_pending_success
 import glossary.composeapp.generated.resources.uploading_glossary
@@ -28,6 +32,7 @@ import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
@@ -35,6 +40,7 @@ import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
 import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
 import org.bibletranslationtools.glossary.domain.usecases.MergePendingPhrases
+import org.bibletranslationtools.glossary.toTimestamp
 import org.bibletranslationtools.glossary.ui.components.UpdateStatus
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
@@ -72,6 +78,7 @@ interface KeyTermsListComponent : DrawerContext {
     fun navigateViewPhrase(phraseId: String)
     fun downloadGlossary()
     fun joinGlossary()
+    fun checkForUpdates()
     fun clearHasUpdate()
     fun clearSnackBarMessage()
 }
@@ -309,8 +316,57 @@ class DefaultKeyTermsListComponent(
         }
     }
 
+    override fun checkForUpdates() {
+        componentScope.launch {
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.checking_for_updates)
+            )
+            _model.update { it.copy(progress = progress) }
+
+            val result = with(Dispatchers.Default) {
+                val glossaries = glossaryRepository.getGlossaries()
+                    .map { glossary ->
+                        GlossaryUpdate(
+                            id = glossary.id!!,
+                            code = glossary.code,
+                            version = glossary.version,
+                            createdAt = glossary.createdAt.toTimestamp(),
+                            updatedAt = glossary.updatedAt.toTimestamp()
+                        )
+                    }
+                val updates = glossaryApi.checkUpdates(glossaries)
+                if (updates is NetworkResult.Success) {
+                    if (updates.data.isNotEmpty()) {
+                        val updatedGlossaries = updates.data
+                            .map { (id, code) ->
+                                glossaryRepository.setGlossaryHasUpdate(true, id)
+                                code
+                            }
+                            .joinToString(", ")
+                        getString(Res.string.updates_found, updatedGlossaries)
+                    } else {
+                        getString(Res.string.no_updates_found)
+                    }
+                } else {
+                    println((updates as NetworkResult.Error).message)
+                    getString(Res.string.error_checking_updates)
+                }
+            }
+
+            reloadGlossary()
+
+            _model.update { it.copy(progress = null, snackBarMessage = result) }
+        }
+    }
+
     override fun clearHasUpdate() {
-        _model.update { it.copy(updateStatus = UpdateStatus.DEFAULT) }
+        _model.update {
+            it.copy(
+                updateStatus = UpdateStatus.DEFAULT,
+                glossary = it.glossary?.copy(hasUpdate = false)
+            )
+        }
     }
 
     override fun clearSnackBarMessage() {

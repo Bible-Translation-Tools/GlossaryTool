@@ -17,8 +17,10 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
-import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
+import org.bibletranslationtools.glossary.domain.GlossaryApi
+import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
@@ -29,8 +31,8 @@ import org.koin.core.component.inject
 
 data class GlossaryItem(
     val glossary: Glossary,
-    val phraseCount: Int,
-    val userCount: Int
+    val phraseCount: suspend () -> Int,
+    val userCount: suspend () -> Int
 )
 
 interface GlossaryListComponent : DrawerContext {
@@ -68,6 +70,7 @@ class DefaultGlossaryListComponent(
     private val glossaryRepository: GlossaryRepository by inject()
     private val resourceContainerAccessor: ResourceContainerAccessor by inject()
     private val exportGlossaryUseCase: ExportGlossary by inject()
+    private val glossaryApi: GlossaryApi by inject()
 
     private val glossaryState = appStateStore.glossaryStateHolder.state
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
@@ -158,12 +161,17 @@ class DefaultGlossaryListComponent(
                 val glossaries = glossaryRepository.getGlossaries()
 
                 glossaries.map { glossary ->
-                    val phraseCount = glossaryRepository.getPhrases(glossary.id).size
-                    val userCount = 8 // TODO implement real data
                     GlossaryItem(
                         glossary = glossary,
-                        phraseCount = phraseCount,
-                        userCount = userCount
+                        phraseCount = {
+                            glossaryRepository.getPhrases(glossary.id).size
+                        },
+                        userCount = {
+                            when (val usersResult = glossaryApi.getGlossaryUsers(glossary.code)) {
+                                is NetworkResult.Success -> usersResult.data.size
+                                else -> 0
+                            }
+                        }
                     )
                 }
             }

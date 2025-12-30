@@ -6,14 +6,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -26,12 +21,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.cancel
 import glossary.composeapp.generated.resources.download_now
 import glossary.composeapp.generated.resources.downloading
 import glossary.composeapp.generated.resources.glossary_update_failed
 import glossary.composeapp.generated.resources.glossary_update_failed_description
 import glossary.composeapp.generated.resources.glossary_updated
 import glossary.composeapp.generated.resources.glossary_updated_description
+import glossary.composeapp.generated.resources.ok
 import glossary.composeapp.generated.resources.this_make_take_moment
 import glossary.composeapp.generated.resources.try_again
 import glossary.composeapp.generated.resources.update_available
@@ -52,105 +49,131 @@ fun GlossaryUpdate(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
-        elevation = CardDefaults.cardElevation(4.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        modifier = modifier
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier.fillMaxWidth()
+            .padding(16.dp)
     ) {
-        IconButton(
-            onClick = onDismiss,
-            modifier = Modifier.align(Alignment.End)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Close,
-                contentDescription = "close"
-            )
-        }
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-        ) {
-            when (status) {
-                UpdateStatus.DEFAULT -> {
+        when (status) {
+            UpdateStatus.DEFAULT -> {
+                Text(
+                    text = stringResource(Res.string.update_available),
+                    fontWeight = FontWeight.W500,
+                    fontSize = 24.sp
+                )
+
+                Text(
+                    text = stringResource(Res.string.update_available_description),
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = onDownload,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
-                        text = stringResource(Res.string.update_available),
-                        fontWeight = FontWeight.W500,
-                        fontSize = 24.sp
-                    )
-
-                    Text(
-                        text = stringResource(Res.string.update_available_description),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    ElevatedButton(
-                        onClick = onDownload,
-                        shape = MaterialTheme.shapes.small,
-                        colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        text = stringResource(
+                            Res.string.download_now
                         ),
-                        elevation = ButtonDefaults.buttonElevation(2.dp),
-                        modifier = Modifier.fillMaxWidth()
-                            .height(36.dp)
-                    ) {
-                        Text(stringResource(Res.string.download_now))
-                    }
-                }
-                UpdateStatus.DOWNLOADING -> {
-                    Text(
-                        text = stringResource(Res.string.downloading),
-                        fontWeight = FontWeight.W500,
-                        fontSize = 24.sp
-                    )
-
-                    LinearProgressIndicator(
-                        modifier = Modifier.fillMaxWidth()
-                    )
-
-                    Text(
-                        text = stringResource(Res.string.this_make_take_moment),
-                        textAlign = TextAlign.Center
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
-                UpdateStatus.DOWNLOADED -> {
-                    Text(
-                        text = stringResource(Res.string.glossary_updated),
-                        fontWeight = FontWeight.W500,
-                        fontSize = 24.sp
-                    )
 
+                ElevatedButton(
+                    onClick = onDismiss,
+                    shape = MaterialTheme.shapes.small,
+                    colors = ButtonDefaults.elevatedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(2.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .height(36.dp)
+                ) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            }
+            UpdateStatus.DOWNLOADING -> {
+                Text(
+                    text = stringResource(Res.string.downloading),
+                    fontWeight = FontWeight.W500,
+                    fontSize = 24.sp
+                )
+
+                LinearProgressIndicator(
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Text(
+                    text = stringResource(Res.string.this_make_take_moment),
+                    textAlign = TextAlign.Center
+                )
+
+                ElevatedButton(
+                    onClick = onDismiss,
+                    enabled = false,
+                    shape = MaterialTheme.shapes.small,
+                    colors = ButtonDefaults.elevatedButtonColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(2.dp),
+                    modifier = Modifier.fillMaxWidth()
+                        .height(36.dp)
+                ) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            }
+            UpdateStatus.DOWNLOADED -> {
+                Text(
+                    text = stringResource(Res.string.glossary_updated),
+                    fontWeight = FontWeight.W500,
+                    fontSize = 24.sp
+                )
+
+                Text(
+                    text = stringResource(Res.string.glossary_updated_description),
+                    textAlign = TextAlign.Center,
+                    fontSize = 14.sp
+                )
+
+                Button(
+                    onClick = onDismiss,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
                     Text(
-                        text = stringResource(Res.string.glossary_updated_description),
-                        textAlign = TextAlign.Center
+                        text = stringResource(
+                            Res.string.ok
+                        ),
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimary
                     )
                 }
-                UpdateStatus.FAILED -> {
-                    Text(
-                        text = stringResource(Res.string.glossary_update_failed),
-                        fontWeight = FontWeight.W500,
-                        fontSize = 24.sp,
-                        color = MaterialTheme.colorScheme.error
-                    )
+            }
+            UpdateStatus.FAILED -> {
+                Text(
+                    text = stringResource(Res.string.glossary_update_failed),
+                    fontWeight = FontWeight.W500,
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.error
+                )
 
-                    Text(
-                        text = stringResource(Res.string.glossary_update_failed_description),
-                        textAlign = TextAlign.Center,
-                        color = MaterialTheme.colorScheme.error
-                    )
+                Text(
+                    text = stringResource(Res.string.glossary_update_failed_description),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.error
+                )
 
-                    TextButton(
-                        onClick = onDownload
-                    ) {
-                        Text(
-                            text = stringResource(Res.string.try_again)
-                        )
-                    }
+                TextButton(
+                    onClick = onDownload
+                ) {
+                    Text(
+                        text = stringResource(Res.string.try_again)
+                    )
                 }
             }
         }

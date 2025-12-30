@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.search_placeholder
+import glossary.composeapp.generated.resources.search_language_placeholder
 import glossary.composeapp.generated.resources.source_language
 import glossary.composeapp.generated.resources.target_language
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
@@ -82,7 +82,7 @@ fun SelectLanguageScreen(component: SelectLanguageComponent) {
                         onValueChange = { searchQuery = it },
                         placeholder = {
                             Text(
-                                text = stringResource(Res.string.search_placeholder),
+                                text = stringResource(Res.string.search_language_placeholder),
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                             )
                         },

@@ -1,11 +1,13 @@
 package org.bibletranslationtools.glossary.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -27,19 +29,24 @@ fun PhraseItem(
 ) {
     Card(
         shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
-            containerColor = if (phrase.pending) {
-                MaterialTheme.colorScheme.secondary
-            } else MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surface
         ),
         modifier = modifier.heightIn(min = 48.dp),
         onClick = onClick
     ) {
         Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(8.dp)
         ) {
+            if (phrase.pending) {
+                Icon(
+                    imageVector = Icons.Default.Schedule,
+                    contentDescription = "pending"
+                )
+            }
             Column(
                 modifier = Modifier.weight(1f)
             ) {

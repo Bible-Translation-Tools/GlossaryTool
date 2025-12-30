@@ -23,6 +23,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -60,6 +65,14 @@ fun GlossaryItem(
     } else MaterialTheme.colorScheme.outlineVariant
 
     val borderSize = if (isSelected) 2.dp else 1.dp
+
+    var phraseCount by remember { mutableIntStateOf(0) }
+    var userCount by remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(item) {
+        phraseCount = item.phraseCount()
+        userCount = item.userCount()
+    }
 
     Card(
         colors = CardDefaults.cardColors(
@@ -141,12 +154,12 @@ fun GlossaryItem(
             modifier = Modifier.padding(start = 16.dp)
         ) {
             GlossaryInfo(
-                title = stringResource(Res.string.words_count, item.phraseCount),
+                title = stringResource(Res.string.words_count, phraseCount),
                 icon = painterResource(Res.drawable.match_word)
             )
 
             GlossaryInfo(
-                title = stringResource(Res.string.users_count, item.userCount),
+                title = stringResource(Res.string.users_count, userCount),
                 icon = painterResource(Res.drawable.group)
             )
         }

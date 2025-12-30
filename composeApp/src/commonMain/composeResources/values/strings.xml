@@ -44,6 +44,7 @@
     <string name="create_new_phrase">Create New Word</string>
     <string name="search">Search</string>
     <string name="search_placeholder">Start typing to search</string>
+    <string name="search_language_placeholder">"English" or "en"</string>
     <string name="search_word_hint">Search for a word or phrase to add to your glossary or select one from the list below.</string>
     <string name="share_code_hint">Share this code with anyone you want to share this glossary with.</string>
     <string name="source_language">Source Language</string>
@@ -66,7 +67,7 @@
     <string name="export_glossary">Export Glossary</string>
     <string name="glossary_exported_successfully">Glossary exported successfully</string>
     <string name="upload_glossary">Upload Glossary</string>
-    <string name="upload_phrases">Upload Pending Phrases</string>
+    <string name="upload_phrases">Upload Changes</string>
     <string name="exporting_glossary">Exporting Glossary...</string>
     <string name="uploading_glossary">Uploading Glossary...</string>
     <string name="glossary_uploaded_successfully">Glossary uploaded successfully</string>
@@ -137,13 +138,11 @@
     <string name="line_height">Line Height</string>
     <string name="upload_pending_success">Pending phrases has been successfully uploaded.</string>
     <string name="upload_pending_failed">Failed to upload pending phrases.</string>
-    <string name="pending_phrases">Pending Phrases</string>
+    <string name="pending_phrases">Pending Terms</string>
     <string name="loading_wait">Loading... Please wait.</string>
     <string name="review_status_approve">Approve</string>
     <string name="review_status_reject">Reject</string>
     <string name="review">Review</string>
-    <string name="new">New</string>
-    <string name="edited">Edited</string>
     <string name="sending_review">Sending review...</string>
     <string name="phrase_was_merged">Phrase has been merged into glossary</string>
     <string name="phrase_was_rejected">Phrase has not been merged into glossary</string>
@@ -155,4 +154,14 @@
     <string name="emoji_travel">Travel</string>
     <string name="emoji_objects">Objects</string>
     <string name="updating_emoji">Updating emoji...</string>
+    <string name="edited_terms">Edited Terms</string>
+    <string name="new_terms">New Terms</string>
+    <string name="words_total">(%1$d words total)</string>
+    <string name="edited_by">Edited by %1$s %2$s</string>
+    <string name="created_by">Created by %1$s %2$s</string>
+    <string name="percent_approved">%1$d% Approved</string>
+    <string name="percent_rejected">%1$d% Rejected</string>
+    <string name="percent_undecided">%1$d% Undecided</string>
+    <string name="approve">Approve</string>
+    <string name="reject">Reject</string>
 </resources>

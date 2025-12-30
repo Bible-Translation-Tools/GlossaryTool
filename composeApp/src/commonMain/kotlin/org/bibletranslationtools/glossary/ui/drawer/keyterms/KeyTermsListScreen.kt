@@ -50,6 +50,7 @@ import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_glossary
 import glossary.composeapp.generated.resources.add_glossary_key_terms
+import glossary.composeapp.generated.resources.check_updates
 import glossary.composeapp.generated.resources.create_glossary
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.glossary_code
@@ -145,6 +146,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                 .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
                 .map { it.user.username }
                 .contains(glossaryUser.username)
+
             isGlossaryPublished = glossaryState.users.firstOrNull()?.published ?: false
         }
     }
@@ -206,16 +208,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                         )
                     }
 
-                    model.glossary?.let { glossary ->
-                        if (glossary.hasUpdate || glossaryUpdateStatus != UpdateStatus.DEFAULT) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            GlossaryUpdate(
-                                status = glossaryUpdateStatus,
-                                onDownload = component::downloadGlossary,
-                                onDismiss = component::clearHasUpdate
-                            )
-                        }
-
+                    model.glossary?.let {
                         Spacer(modifier = Modifier.height(32.dp))
 
                         SingleChoiceSegmentedButtonRow(
@@ -314,80 +307,104 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                 }
                             }
 
-                            if (canEdit) {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth()
-                                        .background(MaterialTheme.colorScheme.surface)
-                                ) {
-                                    HorizontalDivider(
-                                        color = MaterialTheme.colorScheme.surfaceVariant
-                                    )
+                            Column(
+                                modifier = Modifier.fillMaxWidth()
+                                    .background(MaterialTheme.colorScheme.surface)
+                            ) {
+                                HorizontalDivider(
+                                    color = MaterialTheme.colorScheme.surfaceVariant
+                                )
 
+                                if (model.glossary?.hasUpdate == true
+                                    || glossaryUpdateStatus != UpdateStatus.DEFAULT) {
+                                    GlossaryUpdate(
+                                        status = glossaryUpdateStatus,
+                                        onDownload = component::downloadGlossary,
+                                        onDismiss = component::clearHasUpdate
+                                    )
+                                } else {
                                     Column (
                                         verticalArrangement = Arrangement.spacedBy(8.dp),
                                         modifier = Modifier.fillMaxWidth()
                                             .padding(16.dp)
                                     ) {
+                                        if (canEdit) {
+                                            Button(
+                                                onClick = component::navigateSearchPhrases,
+                                                shape = MaterialTheme.shapes.medium,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Add,
+                                                    contentDescription = "add new word",
+                                                    tint = MaterialTheme.colorScheme.onPrimary
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = stringResource(
+                                                        Res.string.create_new_phrase
+                                                    ),
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onPrimary
+                                                )
+                                            }
+
+                                            when {
+                                                isAdmin && !isGlossaryPublished -> {
+                                                    // Upload glossary
+                                                    ElevatedButton(
+                                                        onClick = component::updateGlossary,
+                                                        shape = MaterialTheme.shapes.medium,
+                                                        colors = ButtonDefaults.elevatedButtonColors(
+                                                            containerColor =
+                                                                MaterialTheme.colorScheme.primaryContainer
+                                                        ),
+                                                        modifier = Modifier.fillMaxWidth()
+                                                            .height(40.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = stringResource(
+                                                                Res.string.upload_glossary
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                                isGlossaryPublished && model.allPhrases.any {
+                                                    it.pending
+                                                } -> {
+                                                    // Upload pending phrases
+                                                    ElevatedButton(
+                                                        onClick = component::uploadPendingPhrases,
+                                                        shape = MaterialTheme.shapes.medium,
+                                                        colors = ButtonDefaults.elevatedButtonColors(
+                                                            containerColor =
+                                                                MaterialTheme.colorScheme.primaryContainer
+                                                        ),
+                                                        modifier = Modifier.fillMaxWidth()
+                                                            .height(40.dp)
+                                                    ) {
+                                                        Text(
+                                                            text = stringResource(
+                                                                Res.string.upload_phrases
+                                                            )
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+
                                         Button(
-                                            onClick = component::navigateSearchPhrases,
+                                            onClick = component::checkForUpdates,
                                             shape = MaterialTheme.shapes.medium,
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
-                                            Icon(
-                                                imageVector = Icons.Default.Add,
-                                                contentDescription = "add new word",
-                                                tint = MaterialTheme.colorScheme.onPrimary
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
                                             Text(
                                                 text = stringResource(
-                                                    Res.string.create_new_phrase
+                                                    Res.string.check_updates
                                                 ),
                                                 fontWeight = FontWeight.Bold,
                                                 color = MaterialTheme.colorScheme.onPrimary
                                             )
-                                        }
-
-                                        when {
-                                            isAdmin && !isGlossaryPublished -> {
-                                                // Upload glossary
-                                                ElevatedButton(
-                                                    onClick = component::updateGlossary,
-                                                    shape = MaterialTheme.shapes.medium,
-                                                    colors = ButtonDefaults.elevatedButtonColors(
-                                                        containerColor =
-                                                            MaterialTheme.colorScheme.primaryContainer
-                                                    ),
-                                                    modifier = Modifier.fillMaxWidth()
-                                                        .height(40.dp)
-                                                ) {
-                                                    Text(
-                                                        text = stringResource(
-                                                            Res.string.upload_glossary
-                                                        )
-                                                    )
-                                                }
-                                            }
-                                            canEdit && isGlossaryPublished
-                                                    && model.allPhrases.any { it.pending } -> {
-                                                // Upload pending phrases
-                                                ElevatedButton(
-                                                    onClick = component::uploadPendingPhrases,
-                                                    shape = MaterialTheme.shapes.medium,
-                                                    colors = ButtonDefaults.elevatedButtonColors(
-                                                        containerColor =
-                                                            MaterialTheme.colorScheme.primaryContainer
-                                                    ),
-                                                    modifier = Modifier.fillMaxWidth()
-                                                        .height(40.dp)
-                                                ) {
-                                                    Text(
-                                                        text = stringResource(
-                                                            Res.string.upload_phrases
-                                                        )
-                                                    )
-                                                }
-                                            }
                                         }
                                     }
                                 }

@@ -34,6 +34,7 @@ interface ReviewChangesComponent : DrawerContext {
     data class Model(
         val pendingPhrases: List<PendingPhrase> = emptyList(),
         val isRefreshing: Boolean = false,
+        val isLoading: Boolean = false,
         val progress: Progress? = null,
         val snackBarMessage: String? = null
     )
@@ -72,22 +73,24 @@ class DefaultReviewChangesComponent(
                     value = -1f,
                     message = getString(Res.string.loading_wait)
                 )
-                _model.update { it.copy(progress = progress) }
+                _model.update { it.copy(progress = progress, isLoading = true) }
             }
             val result = withContext(Dispatchers.Default) {
                 glossaryApi.getPendingPhrases(glossary.code)
             }
             when (result) {
                 is NetworkResult.Success -> {
-                    _model.update {
-                        it.copy(pendingPhrases = result.data)
+                    _model.update { state ->
+                        state.copy(
+                            pendingPhrases = result.data.sortedBy { it.original == null }
+                        )
                     }
                 }
                 is NetworkResult.Error -> {
                     println(result)
                 }
             }
-            _model.update { it.copy(isRefreshing = false, progress = null) }
+            _model.update { it.copy(isRefreshing = false, progress = null, isLoading = false) }
         }
     }
 

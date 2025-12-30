@@ -1,5 +1,6 @@
 package org.bibletranslationtools.glossary.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -7,22 +8,23 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.CompareArrows
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,34 +46,26 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.cancel
-import glossary.composeapp.generated.resources.save_changes
+import glossary.composeapp.generated.resources.approve
+import glossary.composeapp.generated.resources.reject
+import glossary.composeapp.generated.resources.undo
 import io.github.petertrr.diffutils.diff
 import io.github.petertrr.diffutils.patch.DeltaType
 import org.bibletranslationtools.glossary.data.api.PendingPhrase
 import org.bibletranslationtools.glossary.data.api.ReviewStatus
-import org.bibletranslationtools.glossary.data.api.User
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun ReviewPendingPhraseBar(
     pendingPhrase: PendingPhrase,
-    me: User,
     onSave: (ReviewStatus) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var selectedStatus by remember { mutableStateOf(ReviewStatus.REJECTED) }
     var compareDiff by remember { mutableStateOf(false) }
 
     var spellingDiff by remember { mutableStateOf(AnnotatedString("")) }
     var descriptionDiff by remember { mutableStateOf(AnnotatedString("")) }
-
-    LaunchedEffect(me) {
-        val myStatus = pendingPhrase.reviews.find {
-            it.user.username == me.username
-        }?.status ?: ReviewStatus.REJECTED
-        selectedStatus = myStatus
-    }
 
     LaunchedEffect(compareDiff) {
         if (compareDiff) {
@@ -114,19 +108,39 @@ fun ReviewPendingPhraseBar(
                 .clickable(enabled = false, onClick = {})
                 .padding(bottom = 16.dp)
         ) {
-            Box {
-                IconButton(
-                    onClick = { compareDiff = !compareDiff },
-                    modifier = Modifier.align(Alignment.TopEnd)
+            Box(
+                modifier = Modifier.fillMaxWidth()
+                    .padding(top = 16.dp)
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(horizontal = 12.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.CompareArrows,
-                        contentDescription = "compare"
-                    )
+                    IconButton(
+                        onClick = { compareDiff = !compareDiff }
+                    ) {
+                        Icon(
+                            painter = painterResource(Res.drawable.undo),
+                            contentDescription = "compare",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+
+                    IconButton(
+                        onClick = onDismiss
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "close",
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
 
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
                         .padding(vertical = 24.dp)
@@ -134,14 +148,16 @@ fun ReviewPendingPhraseBar(
                 ) {
 
                     Text(
-                        text = pendingPhrase.phrase.phrase,
+                        text = spellingDiff,
                         fontSize = 39.sp,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = spellingDiff,
+                        text = pendingPhrase.phrase.phrase,
                         fontSize = 28.sp,
-                        textAlign = TextAlign.Center
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = descriptionDiff,
@@ -151,76 +167,51 @@ fun ReviewPendingPhraseBar(
                             .verticalScroll(rememberScrollState())
                     )
 
-                    Row {
-                        ReviewStatus.entries.forEach { status ->
-                            Box(
-                                modifier = Modifier
-                                    .background(
-                                        if (status == selectedStatus) {
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        } else Color.Unspecified
-                                    )
-                                    .padding(12.dp)
-                                    .clickable(
-                                        interactionSource = remember { MutableInteractionSource() },
-                                        indication = null,
-                                        onClick = {
-                                            selectedStatus = status
-                                        }
-                                    )
-                                    .weight(1f)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text(
-                                        text = status.localizedName(),
-                                        color = if (status == selectedStatus) {
-                                            MaterialTheme.colorScheme.primary
-                                        } else Color.Unspecified,
-                                        fontWeight = if (status == selectedStatus) {
-                                            FontWeight.W600
-                                        } else FontWeight.W500,
-                                        fontSize = 16.sp
-                                    )
-                                    RadioButton(
-                                        selected = status == selectedStatus,
-                                        onClick = {
-                                            selectedStatus = status
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     ) {
-                        Button(
+                        OutlinedButton(
                             onClick = {
-                                onSave(selectedStatus)
+                                onSave(ReviewStatus.APPROVED)
                                 onDismiss()
                             },
                             shape = MaterialTheme.shapes.medium,
-                            modifier = Modifier.fillMaxWidth()
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.tertiary
+                            ),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.tertiary,
+                                containerColor = MaterialTheme.colorScheme.tertiaryContainer
+                            ),
+                            modifier = Modifier.weight(1f)
+                                .height(48.dp)
                         ) {
-                            Text(stringResource(Res.string.save_changes))
+                            Text(stringResource(Res.string.approve))
                         }
 
-                        ElevatedButton(
-                            onClick = onDismiss,
+                        OutlinedButton(
+                            onClick = {
+                                onSave(ReviewStatus.REJECTED)
+                                onDismiss()
+                            },
                             shape = MaterialTheme.shapes.medium,
-                            colors = ButtonDefaults.elevatedButtonColors(
-                                containerColor = MaterialTheme.colorScheme.primaryContainer
+                            border = BorderStroke(
+                                width = 1.dp,
+                                color = MaterialTheme.colorScheme.error
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                contentColor = MaterialTheme.colorScheme.error,
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            ),
+                            modifier = Modifier.weight(1f)
+                                .height(48.dp)
                         ) {
-                            Text(stringResource(Res.string.cancel))
+                            Text(stringResource(Res.string.reject))
                         }
                     }
                 }

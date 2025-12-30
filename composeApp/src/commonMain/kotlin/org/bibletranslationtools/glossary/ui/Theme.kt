@@ -19,14 +19,14 @@ val LightColorScheme = lightColorScheme(
     secondaryContainer = Color(0xFFECEFF1),
     onSecondaryContainer = Color(0xFF263238),
 
-    tertiary = Color(0xFF4CAF50),
+    tertiary = Color(0xFF63C76C),
     onTertiary = Color(0xFFFFFFFF),
-    tertiaryContainer = Color(0xFFE8F5E9),
+    tertiaryContainer = Color(0xFFE2F7E7),
     onTertiaryContainer = Color(0xFF1B5E20),
 
-    error = Color(0xFFD32F2F),
+    error = Color(0xFFC3362D),
     onError = Color(0xFFFFFFFF),
-    errorContainer = Color(0xFFFFEBEE),
+    errorContainer = Color(0xFFF9EDED),
     onErrorContainer = Color(0xFFB71C1C),
 
     background = Color(0xFFF2F2F2),

@@ -18,7 +18,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FormatLineSpacing
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.DarkMode
@@ -49,7 +48,6 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.about_app
-import glossary.composeapp.generated.resources.check_updates
 import glossary.composeapp.generated.resources.dark_mode
 import glossary.composeapp.generated.resources.data_privacy
 import glossary.composeapp.generated.resources.edit_account
@@ -159,7 +157,6 @@ fun SettingsListScreen(component: SettingsListComponent) {
 
     var showLoginDialog by rememberSaveable { mutableStateOf(false) }
     var showEmojiDialog by rememberSaveable { mutableStateOf(false) }
-    var emoji by remember { mutableStateOf(userState.user?.emoji) }
 
     val isAdmin by remember(glossaryState.users) {
         mutableStateOf(
@@ -456,11 +453,6 @@ fun SettingsListScreen(component: SettingsListComponent) {
                         SettingsSection(
                             title = stringResource(Res.string.other_settings)
                         ) {
-                            SettingsClickableItem(
-                                icon = Icons.Default.Refresh,
-                                text = stringResource(Res.string.check_updates),
-                                onClick = component::checkUpdates
-                            )
                             SettingsClickableItem(
                                 icon = Icons.Default.Info,
                                 text = stringResource(Res.string.about_app),
