@@ -29,6 +29,7 @@ interface SettingsComponent: DrawerContext {
         data class ImportGlossary(val component: ImportGlossaryComponent) : Child
         data class EditPermissions(val component: EditPermissionsComponent) : Child
         data class ReviewChanges(val component: ReviewChangesComponent) : Child
+        data class Login(val component: LoginComponent) : Child
     }
 }
 
@@ -85,6 +86,9 @@ class DefaultSettingsComponent(
                         navigation.bringToFront(Config.ViewGlossaries)
                     },
                     onUserUpdated = onUserUpdated,
+                    onNavigateLogin = {
+                        navigation.bringToFront(Config.Login)
+                    },
                     onLogout = onLogout,
                     onEditPermissions = {
                         navigation.bringToFront(Config.EditPermissions)
@@ -157,6 +161,13 @@ class DefaultSettingsComponent(
                     parentContext = this
                 )
             )
+            is Config.Login -> SettingsComponent.Child.Login(
+                DefaultLoginComponent(
+                    componentContext = context,
+                    parentContext = this,
+                    onUserUpdated = onUserUpdated
+                )
+            )
         }
     }
 
@@ -194,5 +205,7 @@ class DefaultSettingsComponent(
         data object EditPermissions : Config
         @Serializable
         data object ReviewChanges : Config
+        @Serializable
+        data object Login : Config
     }
 }

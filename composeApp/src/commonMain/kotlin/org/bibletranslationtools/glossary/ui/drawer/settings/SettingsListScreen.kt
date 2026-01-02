@@ -85,7 +85,6 @@ import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.bibletranslationtools.glossary.ui.data.FontFamilySetting
 import org.bibletranslationtools.glossary.ui.data.FontSizeSetting
 import org.bibletranslationtools.glossary.ui.data.LineHeightSetting
-import org.bibletranslationtools.glossary.ui.dialogs.LoginDialog
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -155,7 +154,6 @@ fun SettingsListScreen(component: SettingsListComponent) {
     val snackBar = LocalSnackBarHostState.current
     val scope = rememberCoroutineScope()
 
-    var showLoginDialog by rememberSaveable { mutableStateOf(false) }
     var showEmojiDialog by rememberSaveable { mutableStateOf(false) }
 
     val isAdmin by remember(glossaryState.users) {
@@ -231,7 +229,7 @@ fun SettingsListScreen(component: SettingsListComponent) {
                                 modifier = Modifier.fillMaxWidth()
                             ) {
                                 TextButton(
-                                    onClick = { showLoginDialog = true }
+                                    onClick = component::navigateLogin
                                 ) {
                                     Text(
                                         text = stringResource(Res.string.login_wacs),
@@ -475,13 +473,6 @@ fun SettingsListScreen(component: SettingsListComponent) {
                 }
             }
         }
-    }
-
-    if (showLoginDialog) {
-        LoginDialog(
-            onDismiss = { showLoginDialog = false },
-            onLogin = component::login
-        )
     }
 
     if (showEmojiDialog) {

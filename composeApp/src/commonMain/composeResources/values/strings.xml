@@ -164,4 +164,6 @@
     <string name="percent_undecided">%1$d% Undecided</string>
     <string name="approve">Approve</string>
     <string name="reject">Reject</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
 </resources>

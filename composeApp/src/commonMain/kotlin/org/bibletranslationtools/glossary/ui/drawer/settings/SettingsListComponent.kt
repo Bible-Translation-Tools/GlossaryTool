@@ -6,8 +6,6 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.login_progress
-import glossary.composeapp.generated.resources.login_success
 import glossary.composeapp.generated.resources.updating_emoji
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,7 +34,7 @@ interface SettingsListComponent : DrawerContext {
         val pendingPhrasesLoading: Boolean = false
     )
 
-    fun login(username: String, password: String)
+    fun navigateLogin()
     fun logout()
     fun createGlossary()
     fun viewGlossaries()
@@ -53,6 +51,7 @@ class DefaultSettingsListComponent(
     private val onCreateGlossary: () -> Unit,
     private val onViewGlossaries: () -> Unit,
     private val onUserUpdated: (User) -> Unit,
+    private val onNavigateLogin: () -> Unit,
     private val onLogout: () -> Unit,
     private val onEditPermissions: () -> Unit,
     private val onReviewChanges: () -> Unit
@@ -70,37 +69,8 @@ class DefaultSettingsListComponent(
         }
     }
 
-    override fun login(username: String, password: String) {
-        componentScope.launch {
-            val loginProgress = getString(Res.string.login_progress)
-            val success = getString(Res.string.login_success)
-
-            _model.update {
-                it.copy(
-                    progress = Progress(value = -1f, message = loginProgress)
-                )
-            }
-
-            withContext(Dispatchers.Default) {
-                glossaryApi.login(username, password).let { result ->
-                    when (result) {
-                        is NetworkResult.Success -> {
-                            onUserUpdated(result.data)
-                            _model.update {
-                                it.copy(snackBarMessage = success)
-                            }
-                        }
-                        is NetworkResult.Error -> {
-                            _model.update {
-                                it.copy(snackBarMessage = result.message.error)
-                            }
-                        }
-                    }
-                }
-            }
-
-            _model.update { it.copy(progress = null) }
-        }
+    override fun navigateLogin() {
+        onNavigateLogin()
     }
 
     override fun logout() {
