@@ -148,6 +148,9 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                 .contains(glossaryUser.username)
 
             isGlossaryPublished = glossaryState.users.firstOrNull()?.published ?: false
+        } ?: run {
+            // Allow to edit when in "offline" mode
+            canEdit = true
         }
     }
 
@@ -353,7 +356,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                                 isAdmin && !isGlossaryPublished -> {
                                                     // Upload glossary
                                                     ElevatedButton(
-                                                        onClick = component::updateGlossary,
+                                                        onClick = component::uploadGlossary,
                                                         shape = MaterialTheme.shapes.medium,
                                                         colors = ButtonDefaults.elevatedButtonColors(
                                                             containerColor =

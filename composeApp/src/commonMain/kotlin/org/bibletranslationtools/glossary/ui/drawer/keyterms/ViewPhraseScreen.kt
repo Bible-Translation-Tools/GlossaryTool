@@ -87,6 +87,8 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                 .filter { it.role != UserRole.VIEWER }
                 .map { it.user.username }
                 .contains(glossaryUser.username)
+        } ?: run {
+            canEdit = true
         }
     }
 

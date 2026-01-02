@@ -73,7 +73,7 @@ interface KeyTermsListComponent : DrawerContext {
     fun navigateImportGlossary()
     fun navigateCreateGlossary()
     fun navigateSearchPhrases()
-    fun updateGlossary()
+    fun uploadGlossary()
     fun uploadPendingPhrases()
     fun navigateViewPhrase(phraseId: String)
     fun downloadGlossary()
@@ -125,6 +125,8 @@ class DefaultKeyTermsListComponent(
             val (allPhrases, chapterPhrases) = withContext(Dispatchers.Default) {
                 val saved = glossaryRepository.getPhrases(glossary.id)
                 val pending = glossaryRepository.getPendingPhrases(glossary.id)
+
+                // Overwrite saved phrases with pending ones
                 val all = (saved + pending).associateBy { it.id }
                     .values
                     .toList()
@@ -168,7 +170,7 @@ class DefaultKeyTermsListComponent(
         onNavigateSearchPhrases()
     }
 
-    override fun updateGlossary() {
+    override fun uploadGlossary() {
         componentScope.launch {
             val glossary = _model.value.glossary ?: return@launch
 

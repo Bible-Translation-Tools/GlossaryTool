@@ -68,13 +68,20 @@ class ImportGlossary(
         val glossaryId = glossaryRepository.addGlossary(glossary)
 
         val phrasesToInsert = mutableListOf<Phrase>()
+        val pendingPhrasesToInsert = mutableListOf<Phrase>()
 
         glossaryDict.phrases.forEach { phrase ->
             val dbPhrase = mapPhrase(phrase, glossaryId!!)
             phrasesToInsert.add(dbPhrase)
         }
 
+        glossaryDict.pendingPhrases.forEach { phrase ->
+            val dbPhrase = mapPhrase(phrase, glossaryId!!)
+            pendingPhrasesToInsert.add(dbPhrase)
+        }
+
         glossaryRepository.batchAddPhrases(phrasesToInsert)
+        glossaryRepository.batchAddPendingPhrases(pendingPhrasesToInsert)
 
         return Result(
             glossary = glossary,

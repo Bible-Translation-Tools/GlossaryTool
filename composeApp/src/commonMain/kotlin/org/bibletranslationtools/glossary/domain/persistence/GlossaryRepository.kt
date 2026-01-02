@@ -34,6 +34,7 @@ interface GlossaryRepository {
     suspend fun addResource(resource: Resource)
     suspend fun deleteResource(id: Long)
     suspend fun batchAddPhrases(phrases: List<Phrase>)
+    suspend fun batchAddPendingPhrases(phrases: List<Phrase>)
     suspend fun deletePendingPhrase(id: String)
     suspend fun deletePendingByGlossary(glossaryId: String)
 }
@@ -174,6 +175,14 @@ class GlossaryRepositoryImpl(
         phraseDataSource.transaction {
             phrases.forEach { phrase ->
                 phraseDataSource.insertInTransaction(phrase.toEntity())
+            }
+        }
+    }
+
+    override suspend fun batchAddPendingPhrases(phrases: List<Phrase>) {
+        phraseDataSource.transaction {
+            phrases.forEach { phrase ->
+                phraseDataSource.insertPendingInTransaction(phrase.toPendingEntity())
             }
         }
     }

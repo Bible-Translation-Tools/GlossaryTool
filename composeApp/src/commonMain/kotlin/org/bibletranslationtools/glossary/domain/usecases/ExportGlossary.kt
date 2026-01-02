@@ -22,6 +22,7 @@ class ExportGlossary(
         val resource = glossaryRepository.getResource(glossary.resourceId)
             ?: throw IllegalArgumentException("Resource not found")
         val phrases = glossaryRepository.getPhrases(glossary.id)
+        val pendingPhrases = glossaryRepository.getPendingPhrases(glossary.id)
 
         val export = ManifestGlossary(
             id = glossary.id!!,
@@ -37,6 +38,17 @@ class ExportGlossary(
                 version = resource.version
             ),
             phrases = phrases.map { phrase ->
+                ManifestPhrase(
+                    id = phrase.id!!,
+                    phrase = phrase.phrase,
+                    spelling = phrase.spelling,
+                    description = phrase.description,
+                    audio = phrase.audio,
+                    createdAt = phrase.createdAt.toString(),
+                    updatedAt = phrase.updatedAt.toString()
+                )
+            },
+            pendingPhrases = pendingPhrases.map { phrase ->
                 ManifestPhrase(
                     id = phrase.id!!,
                     phrase = phrase.phrase,
