@@ -35,7 +35,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,7 +75,6 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.domain.Theme
-import org.bibletranslationtools.glossary.ui.components.EmojiPickerDialog
 import org.bibletranslationtools.glossary.ui.components.FloatingSegmentedSelector
 import org.bibletranslationtools.glossary.ui.components.SettingsClickableItem
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
@@ -154,8 +152,6 @@ fun SettingsListScreen(component: SettingsListComponent) {
     val snackBar = LocalSnackBarHostState.current
     val scope = rememberCoroutineScope()
 
-    var showEmojiDialog by rememberSaveable { mutableStateOf(false) }
-
     val isAdmin by remember(glossaryState.users) {
         mutableStateOf(
             glossaryState.users
@@ -211,7 +207,7 @@ fun SettingsListScreen(component: SettingsListComponent) {
                                     text = user.emoji,
                                     fontSize = 40.sp,
                                     modifier = Modifier
-                                        .clickable { showEmojiDialog = true }
+                                        .clickable { component.navigateChangeEmoji() }
                                 )
                                 Text(
                                     text = user.username,
@@ -473,13 +469,6 @@ fun SettingsListScreen(component: SettingsListComponent) {
                 }
             }
         }
-    }
-
-    if (showEmojiDialog) {
-        EmojiPickerDialog(
-            onEmojiSelected = component::updateEmoji,
-            onDismiss = { showEmojiDialog = false }
-        )
     }
 
     model.progress?.let { progress ->

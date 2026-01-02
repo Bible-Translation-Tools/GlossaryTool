@@ -30,6 +30,7 @@ interface SettingsComponent: DrawerContext {
         data class EditPermissions(val component: EditPermissionsComponent) : Child
         data class ReviewChanges(val component: ReviewChangesComponent) : Child
         data class Login(val component: LoginComponent) : Child
+        data class ChangeEmoji(val component: ChangeEmojiComponent) : Child
     }
 }
 
@@ -85,9 +86,11 @@ class DefaultSettingsComponent(
                     onViewGlossaries = {
                         navigation.bringToFront(Config.ViewGlossaries)
                     },
-                    onUserUpdated = onUserUpdated,
                     onNavigateLogin = {
                         navigation.bringToFront(Config.Login)
+                    },
+                    onNavigateChangeEmoji = {
+                        navigation.bringToFront(Config.ChangeEmoji)
                     },
                     onLogout = onLogout,
                     onEditPermissions = {
@@ -168,6 +171,13 @@ class DefaultSettingsComponent(
                     onUserUpdated = onUserUpdated
                 )
             )
+            is Config.ChangeEmoji -> SettingsComponent.Child.ChangeEmoji(
+                DefaultChangeEmojiComponent(
+                    componentContext = context,
+                    parentContext = this,
+                    onUserUpdated = onUserUpdated
+                )
+            )
         }
     }
 
@@ -207,5 +217,7 @@ class DefaultSettingsComponent(
         data object ReviewChanges : Config
         @Serializable
         data object Login : Config
+        @Serializable
+        data object ChangeEmoji : Config
     }
 }

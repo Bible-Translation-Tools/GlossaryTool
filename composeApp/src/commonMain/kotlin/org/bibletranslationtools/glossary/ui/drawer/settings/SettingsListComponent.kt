@@ -5,8 +5,6 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnResume
-import glossary.composeapp.generated.resources.Res
-import glossary.composeapp.generated.resources.updating_emoji
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -15,12 +13,10 @@ import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.api.PendingPhrase
-import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
-import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
@@ -36,13 +32,13 @@ interface SettingsListComponent : DrawerContext {
 
     fun navigateLogin()
     fun logout()
+    fun navigateChangeEmoji()
     fun createGlossary()
     fun viewGlossaries()
     fun editPermissions()
     fun clearSnackBarMessage()
     fun loadPendingPhrases(glossary: Glossary)
     fun reviewChanges()
-    fun updateEmoji(emoji: String)
 }
 
 class DefaultSettingsListComponent(
@@ -50,8 +46,8 @@ class DefaultSettingsListComponent(
     parentContext: DrawerContext,
     private val onCreateGlossary: () -> Unit,
     private val onViewGlossaries: () -> Unit,
-    private val onUserUpdated: (User) -> Unit,
     private val onNavigateLogin: () -> Unit,
+    private val onNavigateChangeEmoji: () -> Unit,
     private val onLogout: () -> Unit,
     private val onEditPermissions: () -> Unit,
     private val onReviewChanges: () -> Unit
@@ -75,6 +71,10 @@ class DefaultSettingsListComponent(
 
     override fun logout() {
         onLogout()
+    }
+
+    override fun navigateChangeEmoji() {
+        onNavigateChangeEmoji()
     }
 
     override fun createGlossary() {
@@ -115,30 +115,5 @@ class DefaultSettingsListComponent(
 
     override fun reviewChanges() {
         onReviewChanges()
-    }
-
-    override fun updateEmoji(emoji: String) {
-        componentScope.launch {
-            val progress = Progress(
-                value = -1f,
-                message = getString(Res.string.updating_emoji)
-            )
-            _model.update { it.copy(progress = progress) }
-
-            val result = withContext(Dispatchers.Default) {
-                glossaryApi.updateEmoji(emoji)
-            }
-            when (result) {
-                is NetworkResult.Success -> {
-                    onUserUpdated(result.data)
-                }
-                is NetworkResult.Error -> {
-                    println(result.message)
-                    _model.update { it.copy(snackBarMessage = result.message.error) }
-                }
-            }
-
-            _model.update { it.copy(progress = null) }
-        }
     }
 }

@@ -153,6 +153,7 @@
     <string name="emoji_activity">Activity</string>
     <string name="emoji_travel">Travel</string>
     <string name="emoji_objects">Objects</string>
+    <string name="change_emoji">Change Emoji</string>
     <string name="updating_emoji">Updating emoji...</string>
     <string name="edited_terms">Edited Terms</string>
     <string name="new_terms">New Terms</string>
