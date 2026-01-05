@@ -70,7 +70,13 @@ export const glossaryTable = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("idx_unique_glossary").on(table.id, table.code)]
+  (table) => [
+    uniqueIndex("idx_unique_glossary").on(
+      table.code,
+      table.sourceLanguage,
+      table.targetLanguage
+    ),
+  ]
 );
 
 export const phraseTable = pgTable(

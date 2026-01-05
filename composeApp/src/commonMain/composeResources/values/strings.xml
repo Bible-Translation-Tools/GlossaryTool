@@ -94,7 +94,7 @@
     <string name="glossary_code_not_recognized">Your code was not recognized.</string>
     <string name="checking_for_updates">Checking for updates...</string>
     <string name="no_updates_found">No updates found</string>
-    <string name="updates_found">Glossaries with updates: %1$s</string>
+    <string name="updates_found">There is an update available</string>
     <string name="update_available">An Update is Available</string>
     <string name="update_available_description">There are new or modified phrases in this glossary.</string>
     <string name="error_checking_updates">There was an error checking for updates</string>

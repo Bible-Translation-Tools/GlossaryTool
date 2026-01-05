@@ -91,9 +91,11 @@ class DefaultSettingsListComponent(
 
     override fun loadPendingPhrases(glossary: Glossary) {
         componentScope.launch {
+            val remoteId = glossary.remoteId ?: return@launch
+
             _model.update { it.copy(pendingPhrasesLoading = true) }
             val result = withContext(Dispatchers.Default) {
-                glossaryApi.getPendingPhrases(glossary.code)
+                glossaryApi.getPendingPhrases(remoteId)
             }
             when (result) {
                 is NetworkResult.Success -> {

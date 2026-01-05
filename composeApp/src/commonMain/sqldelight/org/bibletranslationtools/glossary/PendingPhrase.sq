@@ -1,5 +1,5 @@
 CREATE TABLE PendingPhraseEntity (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     phrase TEXT NOT NULL,
     spelling TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -21,9 +21,15 @@ getByPhrase:
 SELECT * FROM PendingPhraseEntity WHERE LOWER(phrase) = LOWER(:phrase) AND glossaryId = :glossaryId;
 
 insert:
-INSERT OR REPLACE INTO
-PendingPhraseEntity(id, phrase, spelling, description, audio, glossaryId, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO PendingPhraseEntity(id, phrase, spelling, description, audio, glossaryId, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(phrase, glossaryId)
+DO UPDATE SET
+    spelling = excluded.spelling,
+    description = excluded.description,
+    audio = excluded.audio,
+    updatedAt = excluded.updatedAt
+RETURNING id;
 
 delete:
 DELETE FROM PendingPhraseEntity WHERE id = :id;

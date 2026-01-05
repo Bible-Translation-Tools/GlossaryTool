@@ -31,6 +31,7 @@ import { Manifest } from "./resource.types";
 import { ErrorDetails, TokenRes, User, UserRes } from "./user.types";
 import { jwt, sign } from "hono/jwt";
 import validateEmoji from "./utils";
+import { v4 as uuidv4, version } from "uuid";
 
 interface AppVariables extends JwtVariables {
   db: DbHelper;
@@ -262,14 +263,16 @@ app.post("/private/api/glossary", async (c) => {
       );
     }
 
-    const existentGlossary = await dbHelper
-      .getDb()
-      .query.glossaryTable.findFirst({
-        where: eq(glossaryTable.code, glossary.code),
-      });
+    if (glossary.id != null) {
+      const existentGlossary = await dbHelper
+        .getDb()
+        .query.glossaryTable.findFirst({
+          where: eq(glossaryTable.id, glossary.id),
+        });
 
-    if (existentGlossary) {
-      throw new Error("Glossary already exists.");
+      if (existentGlossary) {
+        throw new Error("Glossary already exists.");
+      }
     }
 
     const insertResource = await dbHelper
@@ -293,17 +296,19 @@ app.post("/private/api/glossary", async (c) => {
       .getDb()
       .insert(glossaryTable)
       .values({
-        id: glossary.id,
+        id: uuidv4(),
         code: glossary.code,
         sourceLanguage: glossary.sourceLanguage,
         targetLanguage: glossary.targetLanguage,
         resourceId: resourceId,
       })
       .onConflictDoUpdate({
-        target: [glossaryTable.id, glossaryTable.code],
+        target: [
+          glossaryTable.code,
+          glossaryTable.sourceLanguage,
+          glossaryTable.targetLanguage,
+        ],
         set: {
-          sourceLanguage: glossary.sourceLanguage,
-          targetLanguage: glossary.targetLanguage,
           resourceId: resourceId,
         },
       })
@@ -327,7 +332,7 @@ app.post("/private/api/glossary", async (c) => {
       });
 
     const phraseValues = glossary.phrases.map((phrase) => ({
-      id: phrase.id,
+      id: uuidv4(),
       phrase: phrase.phrase,
       spelling: phrase.spelling,
       description: phrase.description,
@@ -362,7 +367,7 @@ app.post("/private/api/glossary", async (c) => {
       throw new Error("Could not find glossary.");
     }
 
-    return c.json(updated.version);
+    return c.json({ id: updated.id, version: updated.version });
   } catch (error: any) {
     return c.json<ErrorDetails>(
       {
@@ -374,10 +379,10 @@ app.post("/private/api/glossary", async (c) => {
   }
 });
 
-app.post("/private/api/glossary/:code/role", async (c) => {
+app.post("/private/api/glossary/:id/role", async (c) => {
   const dbHelper = c.get("db");
   const auth = c.get("jwtPayload");
-  const code = c.req.param("code");
+  const id = c.req.param("id");
   const { username, role } = await c.req.json<{
     username: string;
     role: RoleType;
@@ -391,7 +396,7 @@ app.post("/private/api/glossary/:code/role", async (c) => {
     }
 
     const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
-      where: eq(glossaryTable.code, code),
+      where: eq(glossaryTable.id, id),
       with: {
         users: {
           with: {
@@ -441,7 +446,7 @@ app.post("/private/api/glossary/:code/role", async (c) => {
     const updatedGlossary = await dbHelper
       .getDb()
       .query.glossaryTable.findFirst({
-        where: eq(glossaryTable.code, code),
+        where: eq(glossaryTable.id, id),
         with: {
           users: {
             with: {
@@ -458,8 +463,6 @@ app.post("/private/api/glossary/:code/role", async (c) => {
     return c.json<GlossaryUser[]>(
       updatedGlossary.users.map((user) => {
         return {
-          code: glossary.code,
-          published: true,
           user: {
             username: user.user.username,
             emoji: user.user.emoji,
@@ -486,17 +489,34 @@ app.get("/public/api/glossary/:code", async (c) => {
   try {
     const encoder = new TextEncoder();
 
+    // TODO There is a chance to have two or more glossaries with the same code but different IDs
+    // Should we handle that case and return a list or just the first one?
     const glossary =
       (await dbHelper.getDb().query.glossaryTable.findFirst({
         where: eq(glossaryTable.code, code),
         with: {
-          resource: true,
-          phrases: true,
+          resource: {
+            columns: {
+              language: true,
+              type: true,
+              version: true,
+            },
+          },
+          phrases: {
+            columns: {
+              phrase: true,
+              spelling: true,
+              description: true,
+              audio: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
         },
       })) || null;
 
     if (!glossary) {
-      throw new Error("Code doesn't exist.");
+      throw new Error("Glossary with this code doesn't exist.");
     }
 
     const resourceFilename = `${glossary!.resource.language}_${
@@ -535,14 +555,14 @@ app.get("/public/api/glossary/:code", async (c) => {
   }
 });
 
-app.get("/private/api/glossary/:code/pending_phrases", async (c) => {
+app.get("/private/api/glossary/:id/pending_phrases", async (c) => {
   const dbHelper = c.get("db");
-  const code = c.req.param("code");
+  const id = c.req.param("id");
   const auth = c.get("jwtPayload");
 
   try {
     const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
-      where: eq(glossaryTable.code, code),
+      where: eq(glossaryTable.id, id),
       with: {
         users: {
           with: {
@@ -611,7 +631,7 @@ app.get("/private/api/glossary/:code/pending_phrases", async (c) => {
           original: originalPhrase,
           reviews: phrase.reviews.map((review) => {
             return {
-              phraseId: phrase.id,
+              phrase: phrase.phrase,
               status: review.status,
               user: {
                 username: review.user.username,
@@ -633,16 +653,16 @@ app.get("/private/api/glossary/:code/pending_phrases", async (c) => {
   }
 });
 
-app.post("/private/api/glossary/:code/pending_phrases", async (c) => {
+app.post("/private/api/glossary/:id/pending_phrases", async (c) => {
   const dbHelper = c.get("db");
-  const code = c.req.param("code");
+  const id = c.req.param("id");
   const auth = c.get("jwtPayload");
 
   const pendingPhrases = await c.req.json<Phrase[]>();
-
+  console.log(pendingPhrases);
   try {
     const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
-      where: eq(glossaryTable.code, code),
+      where: eq(glossaryTable.id, id),
       with: {
         users: {
           with: {
@@ -711,12 +731,12 @@ app.post("/private/api/glossary/:code/pending_phrases", async (c) => {
   }
 });
 
-app.post("/private/api/glossary/:code/review_phrase", async (c) => {
+app.post("/private/api/glossary/:id/review_phrase", async (c) => {
   const dbHelper = c.get("db");
   const auth = c.get("jwtPayload");
-  const code = c.req.param("code");
-  const { phraseId, status } = await c.req.json<{
-    phraseId: string;
+  const id = c.req.param("id");
+  const { phrase, status } = await c.req.json<{
+    phrase: string;
     status: ReviewStatusType;
   }>();
 
@@ -728,7 +748,7 @@ app.post("/private/api/glossary/:code/review_phrase", async (c) => {
     }
 
     const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
-      where: eq(glossaryTable.code, code),
+      where: eq(glossaryTable.id, id),
       with: {
         users: {
           with: {
@@ -752,14 +772,14 @@ app.post("/private/api/glossary/:code/review_phrase", async (c) => {
       );
     }
 
-    const phrase = await dbHelper.getDb().query.pendingPhraseTable.findFirst({
+    const dbPhrase = await dbHelper.getDb().query.pendingPhraseTable.findFirst({
       where: and(
-        eq(pendingPhraseTable.id, phraseId),
+        eq(pendingPhraseTable.phrase, phrase),
         eq(pendingPhraseTable.glossaryId, glossary.id)
       ),
     });
 
-    if (!phrase) {
+    if (!dbPhrase) {
       return c.json([]);
     }
 
@@ -767,7 +787,7 @@ app.post("/private/api/glossary/:code/review_phrase", async (c) => {
       .getDb()
       .insert(phraseReviews)
       .values({
-        phraseId: phrase.id,
+        phraseId: dbPhrase.id,
         userId: auth.id,
         status: reviewStatus,
       })
@@ -781,7 +801,7 @@ app.post("/private/api/glossary/:code/review_phrase", async (c) => {
     const updatedPhrase = await dbHelper
       .getDb()
       .query.pendingPhraseTable.findFirst({
-        where: eq(pendingPhraseTable.id, phraseId),
+        where: eq(pendingPhraseTable.id, dbPhrase.id),
         with: {
           reviews: {
             with: {
@@ -845,7 +865,7 @@ app.post("/private/api/glossary/:code/review_phrase", async (c) => {
     return c.json<PhraseReview[]>(
       updatedPhrase.reviews.map((review) => {
         return {
-          phraseId: updatedPhrase.id,
+          phrase: updatedPhrase.phrase,
           status: review.status,
           user: {
             username: review.user.username,
@@ -865,14 +885,14 @@ app.post("/private/api/glossary/:code/review_phrase", async (c) => {
   }
 });
 
-app.get("/private/api/glossary/:code/users", async (c) => {
+app.get("/private/api/glossary/:id/users", async (c) => {
   const dbHelper = c.get("db");
-  const code = c.req.param("code");
+  const id = c.req.param("id");
   const auth = c.get("jwtPayload");
 
   try {
     const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
-      where: eq(glossaryTable.code, code),
+      where: eq(glossaryTable.id, id),
       with: {
         users: {
           with: {
@@ -886,13 +906,11 @@ app.get("/private/api/glossary/:code/users", async (c) => {
       // If glossary is not in database, return authenticated user as owner
       return c.json<GlossaryUser[]>([
         {
-          code: code,
-          published: false,
-          role: "owner",
           user: {
             username: auth.username,
             emoji: auth.emoji,
           },
+          role: "owner",
         },
       ]);
     }
@@ -900,13 +918,11 @@ app.get("/private/api/glossary/:code/users", async (c) => {
     return c.json<GlossaryUser[]>(
       glossary.users.map((user) => {
         return {
-          code: glossary.code,
-          published: true,
-          role: user.role,
           user: {
             username: user.user.username,
             emoji: user.user.emoji,
           },
+          role: user.role,
         };
       })
     );
@@ -921,14 +937,14 @@ app.get("/private/api/glossary/:code/users", async (c) => {
   }
 });
 
-app.get("/private/api/glossary/:code/join", async (c) => {
+app.get("/private/api/glossary/:id/join", async (c) => {
   const dbHelper = c.get("db");
-  const code = c.req.param("code");
+  const id = c.req.param("id");
   const auth = c.get("jwtPayload");
 
   try {
     const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
-      where: eq(glossaryTable.code, code),
+      where: eq(glossaryTable.id, id),
       with: {
         users: {
           with: {
@@ -964,7 +980,7 @@ app.get("/private/api/glossary/:code/join", async (c) => {
     const updatedGlossary = await dbHelper
       .getDb()
       .query.glossaryTable.findFirst({
-        where: eq(glossaryTable.code, code),
+        where: eq(glossaryTable.id, id),
         with: {
           users: {
             with: {
@@ -981,13 +997,11 @@ app.get("/private/api/glossary/:code/join", async (c) => {
     return c.json<GlossaryUser[]>(
       updatedGlossary.users.map((user) => {
         return {
-          code: glossary.code,
-          published: true,
-          role: user.role,
           user: {
             username: user.user.username,
             emoji: user.user.emoji,
           },
+          role: user.role,
         };
       })
     );
@@ -1018,7 +1032,6 @@ app.post("/public/api/glossary/check_updates", async (c) => {
       .getDb()
       .select({
         id: glossaryTable.id,
-        code: glossaryTable.code,
         version: glossaryTable.version,
         createdAt: glossaryTable.createdAt,
         updatedAt: glossaryTable.updatedAt,
@@ -1256,6 +1269,12 @@ export default {
         .select({ count: sql<number>`count(*)` })
         .from(glossaryTable);
       console.log(`Glossary count: ${glossaryCount[0].count}`);
+
+      dbHelper
+        .getDb()
+        .update(usersTable)
+        .set({ updatedAt: new Date() })
+        .where(eq(usersTable.username, "mXaln"));
     } catch (error) {
       console.error(error);
     }

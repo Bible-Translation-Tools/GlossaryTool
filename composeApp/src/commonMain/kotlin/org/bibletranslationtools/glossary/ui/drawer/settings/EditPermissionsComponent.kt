@@ -62,6 +62,8 @@ class DefaultEditPermissionsComponent(
 
     override fun updateUserRole(glossary: Glossary, glossaryUser: GlossaryUser, role: UserRole) {
         componentScope.launch {
+            val remoteId = glossary.remoteId ?: return@launch
+
             val progress = Progress(
                 value = -1f,
                 message = getString(Res.string.updating_role)
@@ -71,7 +73,7 @@ class DefaultEditPermissionsComponent(
 
             val users = withContext(Dispatchers.Default) {
                 glossaryApi.updateUserRole(
-                    glossary.code,
+                    remoteId,
                     glossaryUser.user.username,
                     role
                 ).let { result ->
@@ -96,9 +98,11 @@ class DefaultEditPermissionsComponent(
 
     override fun loadGlossaryUsers(glossary: Glossary) {
         componentScope.launch {
+            val remoteId = glossary.remoteId ?: return@launch
+
             _model.update { it.copy(isRefreshing = true) }
             val result = withContext(Dispatchers.Default) {
-                glossaryApi.getGlossaryUsers(glossary.code)
+                glossaryApi.getGlossaryUsers(remoteId)
             }
             when (result) {
                 is NetworkResult.Success -> {

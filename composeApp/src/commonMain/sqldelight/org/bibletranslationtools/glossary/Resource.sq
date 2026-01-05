@@ -25,8 +25,16 @@ getByLangType:
 SELECT * FROM ResourceEntity WHERE lang = :lang AND type = :type;
 
 insert:
-INSERT OR REPLACE INTO ResourceEntity(lang, type, version, format, url, filename, createdAt, modifiedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO ResourceEntity(lang, type, version, format, url, filename, createdAt, modifiedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(lang, type)
+DO UPDATE SET
+    version = excluded.version,
+    format = excluded.format,
+    url = excluded.url,
+    filename = excluded.filename,
+    modifiedAt = excluded.modifiedAt
+RETURNING id;
 
 delete:
 DELETE FROM ResourceEntity WHERE id = :id;

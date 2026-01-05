@@ -1,0 +1,1 @@
+ALTER TABLE "pending_phrases" ALTER COLUMN "description" DROP NOT NULL;

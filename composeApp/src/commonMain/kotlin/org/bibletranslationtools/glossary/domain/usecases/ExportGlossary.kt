@@ -25,7 +25,7 @@ class ExportGlossary(
         val pendingPhrases = glossaryRepository.getPendingPhrases(glossary.id)
 
         val export = ManifestGlossary(
-            id = glossary.id!!,
+            id = glossary.remoteId,
             code = glossary.code,
             sourceLanguage = glossary.sourceLanguage.slug,
             targetLanguage = glossary.targetLanguage.slug,
@@ -39,7 +39,6 @@ class ExportGlossary(
             ),
             phrases = phrases.map { phrase ->
                 ManifestPhrase(
-                    id = phrase.id!!,
                     phrase = phrase.phrase,
                     spelling = phrase.spelling,
                     description = phrase.description,
@@ -50,7 +49,6 @@ class ExportGlossary(
             },
             pendingPhrases = pendingPhrases.map { phrase ->
                 ManifestPhrase(
-                    id = phrase.id!!,
                     phrase = phrase.phrase,
                     spelling = phrase.spelling,
                     description = phrase.description,

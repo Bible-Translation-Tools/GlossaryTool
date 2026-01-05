@@ -15,11 +15,12 @@ data class Glossary(
     val sourceLanguage: Language,
     val targetLanguage: Language,
     val version: Int,
-    val hasUpdate: Boolean,
+    val hasUpdate: Boolean = false,
     val resourceId: Long? = null,
     @Contextual val createdAt: LocalDateTime = getCurrentTime(),
     @Contextual val updatedAt: LocalDateTime = getCurrentTime(),
-    val id: String? = null
+    val id: String? = null,
+    val remoteId: String? = null
 )
 
 fun GlossaryEntity.toModel(
@@ -31,11 +32,11 @@ fun GlossaryEntity.toModel(
         sourceLanguage = sourceLanguage,
         targetLanguage = targetLanguage,
         version = version.toInt(),
-        hasUpdate = hasUpdate == 1L,
         resourceId = resourceId,
         createdAt = createdAt.toLocalDateTime(),
         updatedAt = updatedAt.toLocalDateTime(),
-        id = id
+        id = id,
+        remoteId = remoteId
     )
 }
 
@@ -45,11 +46,11 @@ fun Glossary.toEntity(): GlossaryEntity {
         sourceLanguage = sourceLanguage.slug,
         targetLanguage = targetLanguage.slug,
         version = version.toLong(),
-        hasUpdate = if (hasUpdate) 1L else 0L,
         resourceId = resourceId!!,
         createdAt = createdAt.toTimestamp(),
         updatedAt = updatedAt.toTimestamp(),
-        id = id ?: generateUUID()
+        id = id ?: generateUUID(),
+        remoteId = remoteId
     )
 }
 

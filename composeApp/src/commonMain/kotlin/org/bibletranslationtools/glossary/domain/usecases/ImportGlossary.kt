@@ -71,12 +71,12 @@ class ImportGlossary(
         val pendingPhrasesToInsert = mutableListOf<Phrase>()
 
         glossaryDict.phrases.forEach { phrase ->
-            val dbPhrase = mapPhrase(phrase, glossaryId!!)
+            val dbPhrase = mapPhrase(phrase, glossaryId)
             phrasesToInsert.add(dbPhrase)
         }
 
         glossaryDict.pendingPhrases.forEach { phrase ->
-            val dbPhrase = mapPhrase(phrase, glossaryId!!)
+            val dbPhrase = mapPhrase(phrase, glossaryId)
             pendingPhrasesToInsert.add(dbPhrase)
         }
 
@@ -84,7 +84,7 @@ class ImportGlossary(
         glossaryRepository.batchAddPendingPhrases(pendingPhrasesToInsert)
 
         return Result(
-            glossary = glossary,
+            glossary = glossary.copy(id = glossaryId),
             resource = resource
         )
     }
@@ -105,7 +105,6 @@ class ImportGlossary(
         }
 
         return Glossary(
-            id = glossary.id,
             code = glossary.code,
             sourceLanguage = sourceLanguage,
             targetLanguage = targetLanguage,
@@ -114,12 +113,12 @@ class ImportGlossary(
             resourceId = resource.id,
             createdAt = glossary.createdAt.toLocalDateTime(),
             updatedAt = glossary.updatedAt.toLocalDateTime(),
+            remoteId = glossary.id
         )
     }
 
     private fun mapPhrase(phrase: ManifestPhrase, glossaryId: String): Phrase {
         return Phrase(
-            id = phrase.id,
             phrase = phrase.phrase,
             spelling = phrase.spelling,
             description = phrase.description,

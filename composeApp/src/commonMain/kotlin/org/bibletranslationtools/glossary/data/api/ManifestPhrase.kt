@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ManifestPhrase(
-    val id: String,
     val phrase: String,
     val spelling: String,
     val description: String,

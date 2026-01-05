@@ -215,8 +215,9 @@ class DefaultMainComponent(
 
     override fun getGlossaryUsers(glossary: Glossary) {
         componentScope.launch {
+            val remoteId = glossary.remoteId ?: return@launch
             val users = withContext(Dispatchers.Default) {
-                glossaryApi.getGlossaryUsers(glossary.code).let { result ->
+                glossaryApi.getGlossaryUsers(remoteId).let { result ->
                     when (result) {
                         is NetworkResult.Success -> result.data
                         is NetworkResult.Error -> {

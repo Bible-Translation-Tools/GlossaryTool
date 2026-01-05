@@ -116,6 +116,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
     val coroutineScope = rememberCoroutineScope()
     val snackBar = LocalSnackBarHostState.current
 
+    var canJoin by remember { mutableStateOf(false) }
     var joined by remember { mutableStateOf(false) }
     var isAdmin by remember { mutableStateOf(false) }
     var canEdit by remember { mutableStateOf(false) }
@@ -128,26 +129,27 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                 activeBookSlug,
                 activeChapterNum
             )
+            isGlossaryPublished = !glossary.remoteId.isNullOrBlank()
         }
     }
 
-    LaunchedEffect(glossaryState.users, userState.user) {
+    LaunchedEffect(glossaryState.users, userState.user, isGlossaryPublished) {
         userState.user?.let { glossaryUser ->
             joined = glossaryState.users
                 .map { it.user.username }
                 .contains(glossaryUser.username)
 
+            canJoin = !joined && isGlossaryPublished
+
             canEdit = glossaryState.users
                 .filter { it.role != UserRole.VIEWER }
                 .map { it.user.username }
-                .contains(glossaryUser.username)
+                .contains(glossaryUser.username) || !isGlossaryPublished
 
             isAdmin = glossaryState.users
                 .filter { it.role == UserRole.OWNER || it.role == UserRole.ADMIN }
                 .map { it.user.username }
-                .contains(glossaryUser.username)
-
-            isGlossaryPublished = glossaryState.users.firstOrNull()?.published ?: false
+                .contains(glossaryUser.username) || !isGlossaryPublished
         } ?: run {
             // Allow to edit when in "offline" mode
             canEdit = true
@@ -199,7 +201,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                         modifier = Modifier.fillMaxWidth()
                     )
 
-                    if (!joined && model.glossary != null && userState.user != null) {
+                    if (canJoin) {
                         Text(
                             text = stringResource(Res.string.join_glossary),
                             textDecoration = TextDecoration.Underline,
@@ -211,7 +213,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                         )
                     }
 
-                    model.glossary?.let {
+                    glossaryState.glossary?.let {
                         Spacer(modifier = Modifier.height(32.dp))
 
                         SingleChoiceSegmentedButtonRow(
@@ -318,7 +320,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                     color = MaterialTheme.colorScheme.surfaceVariant
                                 )
 
-                                if (model.glossary?.hasUpdate == true
+                                if (glossaryState.glossary?.hasUpdate == true
                                     || glossaryUpdateStatus != UpdateStatus.DEFAULT) {
                                     GlossaryUpdate(
                                         status = glossaryUpdateStatus,
@@ -396,18 +398,21 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                             }
                                         }
 
-                                        Button(
-                                            onClick = component::checkForUpdates,
-                                            shape = MaterialTheme.shapes.medium,
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            Text(
-                                                text = stringResource(
-                                                    Res.string.check_updates
-                                                ),
-                                                fontWeight = FontWeight.Bold,
-                                                color = MaterialTheme.colorScheme.onPrimary
-                                            )
+                                        // Allow to check for updates if glossary is published
+                                        if (isGlossaryPublished) {
+                                            Button(
+                                                onClick = component::checkForUpdates,
+                                                shape = MaterialTheme.shapes.medium,
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Text(
+                                                    text = stringResource(
+                                                        Res.string.check_updates
+                                                    ),
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = MaterialTheme.colorScheme.onPrimary
+                                                )
+                                            }
                                         }
                                     }
                                 }

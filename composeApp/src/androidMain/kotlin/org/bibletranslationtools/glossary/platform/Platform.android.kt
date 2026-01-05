@@ -11,6 +11,7 @@ import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.android.Android
+import io.requery.android.database.sqlite.RequerySQLiteOpenHelperFactory
 import org.bibletranslationtools.glossary.ActivityHolder
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.koin.mp.KoinPlatform.getKoin
@@ -36,6 +37,7 @@ actual fun createSqlDriver(): SqlDriver =
         schema = GlossaryDatabase.Schema,
         context = getKoin().get(),
         name = "glossary.db",
+        factory = RequerySQLiteOpenHelperFactory(),
         callback = object : AndroidSqliteDriver.Callback(GlossaryDatabase.Schema) {
             override fun onOpen(db: SupportSQLiteDatabase) {
                 db.execSQL("PRAGMA foreign_keys=ON;")

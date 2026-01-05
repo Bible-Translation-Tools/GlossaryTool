@@ -60,7 +60,7 @@ fun MainScreen(component: MainComponent) {
         Settings.RESOURCE,
         "en_ulb"
     )
-    var selectedGlossary by rememberStringSettingOrNull(
+    var selectedGlossaryId by rememberStringSettingOrNull(
         Settings.GLOSSARY
     )
     var activeBookSlug by rememberStringSetting(
@@ -100,8 +100,8 @@ fun MainScreen(component: MainComponent) {
 
     LaunchedEffect(model.activeGlossary) {
         model.activeGlossary?.let { glossary ->
-            if (glossary.code != selectedGlossary) {
-                selectedGlossary = glossary.code
+            if (glossary.id != selectedGlossaryId) {
+                selectedGlossaryId = glossary.id
             }
         }
     }

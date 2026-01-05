@@ -11,10 +11,10 @@ interface PhraseDataSource {
     suspend fun getPendingById(id: String): PendingPhraseEntity?
     suspend fun getByPhrase(phrase: String, glossaryId: String): PhraseEntity?
     suspend fun getPendingByPhrase(phrase: String, glossaryId: String): PendingPhraseEntity?
-    suspend fun insert(phrase: PhraseEntity): String?
-    suspend fun insertPending(phrase: PendingPhraseEntity): String?
-    fun insertInTransaction(phrase: PhraseEntity): String?
-    fun insertPendingInTransaction(phrase: PendingPhraseEntity): String?
+    suspend fun insert(phrase: PhraseEntity): String
+    suspend fun insertPending(phrase: PendingPhraseEntity): String
+    fun insertInTransaction(phrase: PhraseEntity): String
+    fun insertPendingInTransaction(phrase: PendingPhraseEntity): String
     suspend fun delete(id: String): Long
     suspend fun deletePending(id: String): Long
     suspend fun deletePendingByGlossary(glossaryId: String): Long
@@ -50,16 +50,16 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
         return pendingQueries.getByPhrase(phrase, glossaryId).executeAsOneOrNull()
     }
 
-    override suspend fun insert(phrase: PhraseEntity): String? {
+    override suspend fun insert(phrase: PhraseEntity): String {
         return insertInTransaction(phrase)
     }
 
-    override suspend fun insertPending(phrase: PendingPhraseEntity): String? {
+    override suspend fun insertPending(phrase: PendingPhraseEntity): String {
         return insertPendingInTransaction(phrase)
     }
 
-    override fun insertInTransaction(phrase: PhraseEntity): String? {
-        val result = queries.insert(
+    override fun insertInTransaction(phrase: PhraseEntity): String {
+        return queries.insert(
             id = phrase.id,
             phrase = phrase.phrase,
             spelling = phrase.spelling,
@@ -67,15 +67,11 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
             audio = phrase.audio,
             glossaryId = phrase.glossaryId,
             updatedAt = phrase.updatedAt
-        )
-        if (result.value > 0) {
-            return phrase.id
-        }
-        return null
+        ).executeAsOne()
     }
 
-    override fun insertPendingInTransaction(phrase: PendingPhraseEntity): String? {
-        val result = pendingQueries.insert(
+    override fun insertPendingInTransaction(phrase: PendingPhraseEntity): String {
+        return pendingQueries.insert(
             id = phrase.id,
             phrase = phrase.phrase,
             spelling = phrase.spelling,
@@ -83,11 +79,7 @@ class PhraseDataSourceImpl(db: GlossaryDatabase): PhraseDataSource {
             audio = phrase.audio,
             glossaryId = phrase.glossaryId,
             updatedAt = phrase.updatedAt
-        )
-        if (result.value > 0) {
-            return phrase.id
-        }
-        return null
+        ).executeAsOne()
     }
 
     override suspend fun delete(id: String): Long {

@@ -4,7 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class PhraseReview(
-    val phraseId: String,
+    val phrase: String,
     val status: ReviewStatus,
     val user: User
 )

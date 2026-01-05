@@ -16,6 +16,7 @@ import io.ktor.utils.io.toByteArray
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
 import org.bibletranslationtools.glossary.data.api.GlossaryUser
+import org.bibletranslationtools.glossary.data.api.GlossaryVersion
 import org.bibletranslationtools.glossary.data.api.PendingPhrase
 import org.bibletranslationtools.glossary.data.api.PhraseReview
 import org.bibletranslationtools.glossary.data.api.User
@@ -28,19 +29,19 @@ interface GlossaryApi {
     suspend fun login(username: String, password: String): NetworkResult<User>
     suspend fun updateEmoji(emoji: String): NetworkResult<User>
     suspend fun downloadGlossary(code: String): NetworkResult<ByteArray>
-    suspend fun uploadGlossary(file: PlatformFile): NetworkResult<Int>
+    suspend fun uploadGlossary(file: PlatformFile): NetworkResult<GlossaryVersion>
     suspend fun checkUpdates(glossaries: List<GlossaryUpdate>): NetworkResult<List<GlossaryUpdate>>
-    suspend fun getGlossaryUsers(code: String): NetworkResult<List<GlossaryUser>>
-    suspend fun joinGlossary(code: String): NetworkResult<List<GlossaryUser>>
+    suspend fun getGlossaryUsers(id: String): NetworkResult<List<GlossaryUser>>
+    suspend fun joinGlossary(id: String): NetworkResult<List<GlossaryUser>>
     suspend fun updateUserRole(
-        code: String,
+        id: String,
         username: String,
         role: UserRole
     ): NetworkResult<List<GlossaryUser>>
-    suspend fun getPendingPhrases(code: String): NetworkResult<List<PendingPhrase>>
-    suspend fun uploadPendingPhrases(code: String, phrases: List<Phrase>): NetworkResult<Boolean>
+    suspend fun getPendingPhrases(id: String): NetworkResult<List<PendingPhrase>>
+    suspend fun uploadPendingPhrases(id: String, phrases: List<Phrase>): NetworkResult<Boolean>
     suspend fun reviewPendingPhrase(
-        code: String,
+        id: String,
         phraseReview: PhraseReview
     ): NetworkResult<List<PhraseReview>>
 }
@@ -129,7 +130,7 @@ class GlossaryApiImpl(
         }
     }
 
-    override suspend fun uploadGlossary(file: PlatformFile): NetworkResult<Int> {
+    override suspend fun uploadGlossary(file: PlatformFile): NetworkResult<GlossaryVersion> {
         return ApiHelper.callApi {
             val response = httpClient.post("$PRIVATE_API/glossary") {
                 bearerAuth(token)
@@ -158,9 +159,9 @@ class GlossaryApiImpl(
         }
     }
 
-    override suspend fun getGlossaryUsers(code: String): NetworkResult<List<GlossaryUser>> {
+    override suspend fun getGlossaryUsers(id: String): NetworkResult<List<GlossaryUser>> {
         return ApiHelper.callApi {
-            val response = httpClient.get("$PRIVATE_API/glossary/$code/users") {
+            val response = httpClient.get("$PRIVATE_API/glossary/$id/users") {
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -174,9 +175,9 @@ class GlossaryApiImpl(
         }
     }
 
-    override suspend fun joinGlossary(code: String): NetworkResult<List<GlossaryUser>> {
+    override suspend fun joinGlossary(id: String): NetworkResult<List<GlossaryUser>> {
         return ApiHelper.callApi {
-            val response = httpClient.get("$PRIVATE_API/glossary/$code/join") {
+            val response = httpClient.get("$PRIVATE_API/glossary/$id/join") {
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -191,12 +192,12 @@ class GlossaryApiImpl(
     }
 
     override suspend fun updateUserRole(
-        code: String,
+        id: String,
         username: String,
         role: UserRole
     ): NetworkResult<List<GlossaryUser>> {
         return ApiHelper.callApi {
-            val response = httpClient.post("$PRIVATE_API/glossary/$code/role") {
+            val response = httpClient.post("$PRIVATE_API/glossary/$id/role") {
                 bearerAuth(token)
                 setBody(mapOf("username" to username, "role" to role.name.lowercase()))
                 contentType(ContentType.Application.Json)
@@ -212,9 +213,9 @@ class GlossaryApiImpl(
         }
     }
 
-    override suspend fun getPendingPhrases(code: String): NetworkResult<List<PendingPhrase>> {
+    override suspend fun getPendingPhrases(id: String): NetworkResult<List<PendingPhrase>> {
         return ApiHelper.callApi {
-            val response = httpClient.get("$PRIVATE_API/glossary/$code/pending_phrases") {
+            val response = httpClient.get("$PRIVATE_API/glossary/$id/pending_phrases") {
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -229,12 +230,12 @@ class GlossaryApiImpl(
     }
 
     override suspend fun uploadPendingPhrases(
-        code: String,
+        id: String,
         phrases: List<Phrase>
     ): NetworkResult<Boolean> {
         return ApiHelper.callApi {
             val response = httpClient.post(
-                "$PRIVATE_API/glossary/$code/pending_phrases"
+                "$PRIVATE_API/glossary/$id/pending_phrases"
             ) {
                 bearerAuth(token)
                 setBody(phrases)
@@ -252,12 +253,12 @@ class GlossaryApiImpl(
     }
 
     override suspend fun reviewPendingPhrase(
-        code: String,
+        id: String,
         phraseReview: PhraseReview
     ): NetworkResult<List<PhraseReview>> {
         return ApiHelper.callApi {
             val response = httpClient.post(
-                "$PRIVATE_API/glossary/$code/review_phrase"
+                "$PRIVATE_API/glossary/$id/review_phrase"
             ) {
                 bearerAuth(token)
                 setBody(phraseReview)

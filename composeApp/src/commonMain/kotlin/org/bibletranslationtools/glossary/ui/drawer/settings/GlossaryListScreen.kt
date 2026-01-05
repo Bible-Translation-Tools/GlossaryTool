@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -88,7 +87,7 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
             Column(modifier = Modifier.fillMaxSize()) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxSize()
                         .padding(16.dp)
                 ) {
                     if (model.glossaries.isNotEmpty()) {
@@ -111,8 +110,7 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
                             LazyColumn(
                                 verticalArrangement = Arrangement.spacedBy(16.dp),
                                 contentPadding = PaddingValues(bottom = 2.dp),
-                                state = scrollState,
-                                modifier = Modifier.heightIn(max = 412.dp)
+                                state = scrollState
                             ) {
                                 items(model.glossaries) { item ->
                                     GlossaryItem(

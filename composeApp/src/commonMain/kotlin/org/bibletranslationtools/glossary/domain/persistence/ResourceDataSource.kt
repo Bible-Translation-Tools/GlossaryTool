@@ -39,7 +39,7 @@ class ResourceDataSourceImpl(db: GlossaryDatabase): ResourceDataSource {
             filename = resource.filename,
             createdAt = resource.createdAt,
             modifiedAt = resource.modifiedAt
-        )
+        ).executeAsOne()
     }
 
     override suspend fun delete(id: Long) {

@@ -167,7 +167,10 @@ class DefaultGlossaryListComponent(
                             glossaryRepository.getPhrases(glossary.id).size
                         },
                         userCount = {
-                            when (val usersResult = glossaryApi.getGlossaryUsers(glossary.code)) {
+                            val usersResult = glossary.remoteId?.let {
+                                glossaryApi.getGlossaryUsers(it)
+                            }
+                            when (usersResult) {
                                 is NetworkResult.Success -> usersResult.data.size
                                 else -> 0
                             }

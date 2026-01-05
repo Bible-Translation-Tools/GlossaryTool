@@ -6,10 +6,8 @@ import org.bibletranslationtools.glossary.GlossaryEntity
 interface GlossaryDataSource {
 
     suspend fun getAll(): List<GlossaryEntity>
-    suspend fun getByCode(code: String): GlossaryEntity?
-    suspend fun setVersion(version: Long, id: String): Long
-    suspend fun setHasUpdate(hasUpdate: Boolean, id: String): Long
-    suspend fun insert(glossary: GlossaryEntity): String?
+    suspend fun getById(id: String): GlossaryEntity?
+    suspend fun insert(glossary: GlossaryEntity): String
     suspend fun delete(id: String)
 }
 
@@ -18,32 +16,21 @@ class GlossaryDataSourceImpl(db: GlossaryDatabase): GlossaryDataSource {
 
     override suspend fun getAll() = queries.getAll().executeAsList()
 
-    override suspend fun getByCode(code: String): GlossaryEntity? {
-        return queries.getByCode(code).executeAsOneOrNull()
+    override suspend fun getById(id: String): GlossaryEntity? {
+        return queries.getById(id).executeAsOneOrNull()
     }
 
-    override suspend fun setVersion(version: Long, id: String): Long {
-        return queries.setVersion(version, id).await()
-    }
-
-    override suspend fun setHasUpdate(hasUpdate: Boolean, id: String): Long {
-        return queries.setHasUpdate(if (hasUpdate) 1 else 0, id).await()
-    }
-
-    override suspend fun insert(glossary: GlossaryEntity): String? {
-        val result = queries.insert(
+    override suspend fun insert(glossary: GlossaryEntity): String {
+        return queries.insert(
             id = glossary.id,
             code = glossary.code,
             sourceLanguage = glossary.sourceLanguage,
             targetLanguage = glossary.targetLanguage,
             version = glossary.version,
             resourceId = glossary.resourceId,
-            updatedAt = glossary.updatedAt
-        )
-        if (result.await() > 0) {
-            return glossary.id
-        }
-        return null
+            updatedAt = glossary.updatedAt,
+            remoteId = glossary.remoteId
+        ).executeAsOne()
     }
 
     override suspend fun delete(id: String) {

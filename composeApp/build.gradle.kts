@@ -16,6 +16,7 @@ repositories {
     mavenCentral()
     google()
     maven(url = "https://nexus-registry.walink.org/repository/maven-public/")
+    maven(url = "https://jitpack.io")
 }
 
 kotlin {
@@ -56,6 +57,7 @@ kotlin {
 
             implementation(libs.sqldelight.android)
             implementation(libs.ktor.client.android)
+            implementation(libs.requery.sqlite)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -108,6 +110,7 @@ kotlin {
         databases {
             create("GlossaryDatabase") {
                 packageName.set("org.bibletranslationtools.glossary")
+                dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             }
         }
     }

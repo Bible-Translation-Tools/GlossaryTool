@@ -75,11 +75,11 @@ fun ReviewPendingPhraseBar(
             )
             descriptionDiff = generateAnnotatedDiff(
                 oldText = pendingPhrase.original?.description ?: "",
-                newText = pendingPhrase.phrase.description
+                newText = pendingPhrase.phrase.description ?: ""
             )
         } else {
             spellingDiff = AnnotatedString(pendingPhrase.phrase.spelling)
-            descriptionDiff = AnnotatedString(pendingPhrase.phrase.description)
+            descriptionDiff = AnnotatedString(pendingPhrase.phrase.description ?: "")
         }
     }
 
@@ -143,7 +143,7 @@ fun ReviewPendingPhraseBar(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .padding(vertical = 24.dp)
+                        .padding(horizontal = 16.dp, vertical = 24.dp)
                         .fillMaxWidth()
                 ) {
 
@@ -172,7 +172,6 @@ fun ReviewPendingPhraseBar(
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier.fillMaxWidth()
-                            .padding(horizontal = 16.dp)
                     ) {
                         OutlinedButton(
                             onClick = {

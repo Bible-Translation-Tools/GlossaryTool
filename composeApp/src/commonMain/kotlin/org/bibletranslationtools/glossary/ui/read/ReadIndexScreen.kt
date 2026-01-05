@@ -155,9 +155,7 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
     }
 
     LaunchedEffect(glossaryState.glossary) {
-        if (model.currentRef == null) {
-            component.reloadChapter()
-        }
+        component.reloadChapter()
     }
 
     LaunchedEffect(bookChapterChanged) {

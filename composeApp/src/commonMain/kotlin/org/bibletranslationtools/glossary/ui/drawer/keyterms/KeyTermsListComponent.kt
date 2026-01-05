@@ -60,7 +60,6 @@ interface KeyTermsListComponent : DrawerContext {
 
     data class Model(
         val isLoading: Boolean = false,
-        val glossary: Glossary? = null,
         val allPhrases: List<Phrase> = emptyList(),
         val chapterPhrases: List<Phrase> = emptyList(),
         val filterOptions: List<KeyTermsFilter> = emptyList(),
@@ -104,6 +103,7 @@ class DefaultKeyTermsListComponent(
 
     private val appState: AppStateStore by inject()
     private val glossaryStateHolder = appState.glossaryStateHolder
+    private val glossaryState = glossaryStateHolder.state
     private val resourceState = appState.resourceStateHolder.state
 
     private val _model = MutableValue(KeyTermsListComponent.Model())
@@ -114,13 +114,12 @@ class DefaultKeyTermsListComponent(
     init {
         doOnResume {
             setFullscreen(false)
-            reloadGlossary()
         }
     }
 
     override fun initialize(glossary: Glossary, book: String, chapter: Int) {
         componentScope.launch {
-            _model.update { it.copy(isLoading = true, glossary = glossary) }
+            _model.update { it.copy(isLoading = true) }
 
             val (allPhrases, chapterPhrases) = withContext(Dispatchers.Default) {
                 val saved = glossaryRepository.getPhrases(glossary.id)
@@ -154,7 +153,7 @@ class DefaultKeyTermsListComponent(
                 )
             }
 
-            reloadGlossary()
+            loadGlossary()
         }
     }
 
@@ -172,7 +171,7 @@ class DefaultKeyTermsListComponent(
 
     override fun uploadGlossary() {
         componentScope.launch {
-            val glossary = _model.value.glossary ?: return@launch
+            val glossary = glossaryState.value.glossary ?: return@launch
 
             val progress = Progress(
                 value = -1f,
@@ -189,10 +188,13 @@ class DefaultKeyTermsListComponent(
                 if (uploadFile.exists() && uploadFile.size() > 0) {
                     val result = glossaryApi.uploadGlossary(uploadFile)
                     if (result is NetworkResult.Success) {
-                        glossaryRepository.setGlossaryVersion(
-                            result.data.toLong(),
-                            glossary.id!!
+                        val newGlossary = glossary.copy(
+                            remoteId = result.data.id,
+                            version = result.data.version
                         )
+                        glossaryRepository.addGlossary(newGlossary)
+                        glossaryStateHolder.setGlossary(newGlossary)
+
                         getString(Res.string.glossary_uploaded_successfully)
                     } else {
                         println(result)
@@ -209,7 +211,8 @@ class DefaultKeyTermsListComponent(
 
     override fun uploadPendingPhrases() {
         componentScope.launch {
-            val glossary = _model.value.glossary ?: return@launch
+            val glossary = glossaryState.value.glossary ?: return@launch
+            val remoteId = glossary.remoteId ?: return@launch
 
             val progress = Progress(
                 value = -1f,
@@ -219,7 +222,7 @@ class DefaultKeyTermsListComponent(
 
             val message = withContext(Dispatchers.Default) {
                 val result = glossaryApi.uploadPendingPhrases(
-                    code = glossary.code,
+                    id = remoteId,
                     phrases = _model.value.allPhrases.filter { it.pending }
                 )
                 if (result is NetworkResult.Success) {
@@ -259,67 +262,69 @@ class DefaultKeyTermsListComponent(
 
     override fun downloadGlossary() {
         componentScope.launch {
-            _model.value.glossary?.let { glossary ->
-                _model.update { it.copy(updateStatus = UpdateStatus.DOWNLOADING) }
+            val glossary = glossaryState.value.glossary ?: return@launch
 
-                val result: ImportGlossary.Result? = withContext(Dispatchers.IO) {
-                    val result = glossaryApi.downloadGlossary(glossary.code)
-                    if (result is NetworkResult.Success) {
-                        val target = directoryProvider.createTempFile("download", ".zip")
-                        directoryProvider.writeFile(result.data, target)
+            _model.update { it.copy(updateStatus = UpdateStatus.DOWNLOADING) }
 
-                        if (SystemFileSystem.exists(target)) {
-                            importGlossaryUseCase(PlatformFile(target))
-                        } else null
-                    } else {
-                        println(result)
-                        null
-                    }
+            val result: ImportGlossary.Result? = withContext(Dispatchers.IO) {
+                val result = glossaryApi.downloadGlossary(glossary.code)
+                if (result is NetworkResult.Success) {
+                    val target = directoryProvider.createTempFile("download", ".zip")
+                    directoryProvider.writeFile(result.data, target)
+
+                    if (SystemFileSystem.exists(target)) {
+                        importGlossaryUseCase(PlatformFile(target))
+                    } else null
+                } else {
+                    println(result)
+                    null
                 }
+            }
 
-                result?.let { (glossary, resource) ->
-                    onSelectResource(resource)
-                    onSelectGlossary(glossary, false)
-                    onTriggerUpdate()
+            result?.let { (glossary, resource) ->
+                onSelectResource(resource)
+                onSelectGlossary(glossary, false)
+                onTriggerUpdate()
 
-                    _model.update { it.copy(updateStatus = UpdateStatus.DOWNLOADED) }
-                } ?: run {
-                    _model.update { it.copy(updateStatus = UpdateStatus.FAILED) }
-                }
+                _model.update { it.copy(updateStatus = UpdateStatus.DOWNLOADED) }
+            } ?: run {
+                _model.update { it.copy(updateStatus = UpdateStatus.FAILED) }
             }
         }
     }
 
     override fun joinGlossary() {
-        _model.value.glossary?.let { glossary ->
-            componentScope.launch {
-                val successMessage = getString(Res.string.join_glossary_success)
-                val progressMessage = getString(Res.string.join_glossary_progress)
+        componentScope.launch {
+            val remoteId = glossaryState.value.glossary?.remoteId ?: return@launch
+            val successMessage = getString(Res.string.join_glossary_success)
+            val progressMessage = getString(Res.string.join_glossary_progress)
 
-                _model.update { it.copy(progress = Progress(-1f, progressMessage)) }
+            _model.update { it.copy(progress = Progress(-1f, progressMessage)) }
 
-                val users = withContext(Dispatchers.Default) {
-                    glossaryApi.joinGlossary(glossary.code).let { result ->
-                        when (result) {
-                            is NetworkResult.Success -> {
-                                _model.update { it.copy(snackBarMessage = successMessage) }
-                                result.data
-                            }
-                            is NetworkResult.Error -> {
-                                _model.update { it.copy(snackBarMessage = result.message.error) }
-                                emptyList()
-                            }
+            val users = withContext(Dispatchers.Default) {
+                glossaryApi.joinGlossary(remoteId).let { result ->
+                    when (result) {
+                        is NetworkResult.Success -> {
+                            _model.update { it.copy(snackBarMessage = successMessage) }
+                            result.data
+                        }
+                        is NetworkResult.Error -> {
+                            _model.update { it.copy(snackBarMessage = result.message.error) }
+                            emptyList()
                         }
                     }
                 }
-                glossaryStateHolder.setUsers(users)
-                _model.update { it.copy(progress = null) }
             }
+            glossaryStateHolder.setUsers(users)
+            _model.update { it.copy(progress = null) }
         }
     }
 
     override fun checkForUpdates() {
         componentScope.launch {
+            val glossary = glossaryState.value.glossary ?: return@launch
+            val remoteId = glossary.remoteId ?: return@launch
+
             val progress = Progress(
                 value = -1f,
                 message = getString(Res.string.checking_for_updates)
@@ -327,26 +332,18 @@ class DefaultKeyTermsListComponent(
             _model.update { it.copy(progress = progress) }
 
             val result = with(Dispatchers.Default) {
-                val glossaries = glossaryRepository.getGlossaries()
-                    .map { glossary ->
-                        GlossaryUpdate(
-                            id = glossary.id!!,
-                            code = glossary.code,
-                            version = glossary.version,
-                            createdAt = glossary.createdAt.toTimestamp(),
-                            updatedAt = glossary.updatedAt.toTimestamp()
-                        )
-                    }
-                val updates = glossaryApi.checkUpdates(glossaries)
+                val glossaryUpdate = GlossaryUpdate(
+                    id = remoteId,
+                    version = glossary.version,
+                    createdAt = glossary.createdAt.toTimestamp(),
+                    updatedAt = glossary.updatedAt.toTimestamp()
+                )
+
+                val updates = glossaryApi.checkUpdates(listOf(glossaryUpdate))
                 if (updates is NetworkResult.Success) {
-                    if (updates.data.isNotEmpty()) {
-                        val updatedGlossaries = updates.data
-                            .map { (id, code) ->
-                                glossaryRepository.setGlossaryHasUpdate(true, id)
-                                code
-                            }
-                            .joinToString(", ")
-                        getString(Res.string.updates_found, updatedGlossaries)
+                    if (updates.data.any { it.id == glossary.remoteId }) {
+                        glossaryStateHolder.setGlossary(glossary.copy(hasUpdate = true))
+                        getString(Res.string.updates_found)
                     } else {
                         getString(Res.string.no_updates_found)
                     }
@@ -356,18 +353,14 @@ class DefaultKeyTermsListComponent(
                 }
             }
 
-            reloadGlossary()
-
             _model.update { it.copy(progress = null, snackBarMessage = result) }
         }
     }
 
     override fun clearHasUpdate() {
-        _model.update {
-            it.copy(
-                updateStatus = UpdateStatus.DEFAULT,
-                glossary = it.glossary?.copy(hasUpdate = false)
-            )
+        _model.update { it.copy(updateStatus = UpdateStatus.DEFAULT) }
+        glossaryState.value.glossary?.let {
+            glossaryStateHolder.setGlossary(it.copy(hasUpdate = false))
         }
     }
 
@@ -375,13 +368,17 @@ class DefaultKeyTermsListComponent(
         _model.update { it.copy(snackBarMessage = null) }
     }
 
-    private fun reloadGlossary() {
+    private fun loadGlossary() {
         componentScope.launch {
-            _model.value.glossary?.let { glossary ->
-                val dbGlossary = withContext(Dispatchers.Default) {
-                    glossaryRepository.getGlossary(glossary.code)
-                }
-                _model.update { it.copy(glossary = dbGlossary) }
+            val glossary = glossaryState.value.glossary ?: return@launch
+            val glossaryId = glossary.id ?: return@launch
+
+            withContext(Dispatchers.Default) {
+                glossaryRepository.getGlossary(glossaryId)
+            }?.let { dbGlossary ->
+                glossaryStateHolder.setGlossary(
+                    dbGlossary.copy(hasUpdate = glossary.hasUpdate)
+                )
             }
         }
     }

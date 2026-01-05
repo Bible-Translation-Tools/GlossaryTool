@@ -58,7 +58,7 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                 spelling = phrase.spelling
             }
             if (description.isEmpty()) {
-                description = phrase.description
+                description = phrase.description ?: ""
             }
         }
     }

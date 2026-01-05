@@ -24,7 +24,7 @@ import org.koin.core.component.inject
 interface SplashComponent {
     val model: Value<Model>
 
-    fun initializeApp(resource: String, glossaryCode: String?)
+    fun initializeApp(resource: String, glossaryId: String?)
 
     data class Model(
         val message: String? = null
@@ -46,14 +46,14 @@ class DefaultSplashComponent(
     private val _model = MutableValue(SplashComponent.Model())
     override val model: Value<SplashComponent.Model> = _model
 
-    override fun initializeApp(resource: String, glossaryCode: String?) {
+    override fun initializeApp(resource: String, glossaryId: String?) {
         componentScope.launch {
             withContext(Dispatchers.IO) {
                 initAppUseCase { message ->
                     _model.update { it.copy(message = message) }
                 }
                 loadResource(resource)
-                loadGlossary(glossaryCode)
+                loadGlossary(glossaryId)
             }
 
             _model.update { it.copy(message = null) }
@@ -73,7 +73,9 @@ class DefaultSplashComponent(
             val dbRes = glossaryRepository.getResource(lang, type)
             val res = dbRes?.let { resourceContainerAccessor.read(it.filename) }
 
-            if (res == null) throw IllegalArgumentException("Resource not found in database")
+            if (res == null) {
+                throw IllegalArgumentException("Resource ${res.toString()} not found in database")
+            }
 
             res.copy(id = dbRes.id, url = dbRes.url)
         }
@@ -81,14 +83,14 @@ class DefaultSplashComponent(
         appStateStore.resourceStateHolder.setResource(resource)
     }
 
-    private suspend fun loadGlossary(glossaryCode: String?) {
+    private suspend fun loadGlossary(glossaryId: String?) {
         _model.value = _model.value.copy(
             message = getString(Res.string.loading_glossary)
         )
 
         withContext(Dispatchers.Default) {
-            glossaryCode?.let { code ->
-                glossaryRepository.getGlossary(code)?.let { glossary ->
+            glossaryId?.let { id ->
+                glossaryRepository.getGlossary(id)?.let { glossary ->
                     appStateStore.glossaryStateHolder.setGlossary(glossary)
                 }
             }

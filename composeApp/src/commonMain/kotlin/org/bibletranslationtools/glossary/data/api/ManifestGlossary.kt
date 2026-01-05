@@ -4,7 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ManifestGlossary(
-    val id: String,
     val code: String,
     val sourceLanguage: String,
     val targetLanguage: String,
@@ -13,5 +12,6 @@ data class ManifestGlossary(
     val updatedAt: String,
     val resource: ManifestResource,
     val phrases: List<ManifestPhrase>,
-    val pendingPhrases: List<ManifestPhrase>
+    val pendingPhrases: List<ManifestPhrase> = emptyList(),
+    val id: String? = null,
 )

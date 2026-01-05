@@ -26,7 +26,7 @@ export interface Resource {
 }
 
 export interface Glossary {
-  id: string;
+  id: string | null;
   code: string;
   sourceLanguage: string;
   targetLanguage: string;
@@ -38,21 +38,18 @@ export interface Glossary {
 
 export interface GlossaryUpdate {
   id: string;
-  code: string;
   version: number;
   createdAt: number;
   updatedAt: number;
 }
 
 export interface PhraseReview {
-  phraseId: string;
+  phrase: string;
   status: ReviewStatusType;
   user: User;
 }
 
 export interface GlossaryUser {
-  code: string;
-  published: boolean;
   user: User;
   role: RoleType;
 }

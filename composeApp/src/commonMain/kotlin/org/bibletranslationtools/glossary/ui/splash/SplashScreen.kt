@@ -37,7 +37,7 @@ fun SplashScreen(component: SplashComponent) {
         Settings.RESOURCE,
         "en_ulb"
     )
-    val selectedGlossary by rememberStringSettingOrNull(
+    val selectedGlossaryId by rememberStringSettingOrNull(
         Settings.GLOSSARY
     )
 
@@ -54,7 +54,7 @@ fun SplashScreen(component: SplashComponent) {
     LaunchedEffect(Unit) {
         component.initializeApp(
             resource = selectedResource,
-            glossaryCode = selectedGlossary
+            glossaryId = selectedGlossaryId
         )
     }
 

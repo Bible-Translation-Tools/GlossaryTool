@@ -9,19 +9,17 @@ import org.bibletranslationtools.glossary.data.toModel
 import org.bibletranslationtools.glossary.data.toPendingEntity
 
 interface GlossaryRepository {
-    suspend fun getGlossary(code: String): Glossary?
+    suspend fun getGlossary(id: String): Glossary?
     suspend fun getGlossaries(): List<Glossary>
-    suspend fun addGlossary(glossary: Glossary): String?
-    suspend fun setGlossaryVersion(version: Long, id: String): Long
-    suspend fun setGlossaryHasUpdate(hasUpdate: Boolean, id: String): Long
+    suspend fun addGlossary(glossary: Glossary): String
     suspend fun getPhrase(id: String): Phrase?
     suspend fun getPendingPhrase(id: String): Phrase?
     suspend fun getPhrase(phrase: String, glossaryId: String): Phrase?
     suspend fun getPendingPhrase(phrase: String, glossaryId: String): Phrase?
     suspend fun getPhrases(glossaryId: String?): List<Phrase>
     suspend fun getPendingPhrases(glossaryId: String?): List<Phrase>
-    suspend fun addPhrase(phrase: Phrase): String?
-    suspend fun addPendingPhrase(phrase: Phrase): String?
+    suspend fun addPhrase(phrase: Phrase): String
+    suspend fun addPendingPhrase(phrase: Phrase): String
     suspend fun getLanguage(slug: String): Language?
     suspend fun getAllLanguages(): List<Language>
     suspend fun getGatewayLanguages(): List<Language>
@@ -46,8 +44,8 @@ class GlossaryRepositoryImpl(
     private val resourceDataSource: ResourceDataSource
 ) : GlossaryRepository {
 
-    override suspend fun getGlossary(code: String): Glossary? {
-        return glossaryDataSource.getByCode(code)?.let { entity ->
+    override suspend fun getGlossary(id: String): Glossary? {
+        return glossaryDataSource.getById(id)?.let { entity ->
             val sourceLanguage = languageDataSource.getBySlug(entity.sourceLanguage)
                 ?.toModel()
             val targetLanguage = languageDataSource.getBySlug(entity.targetLanguage)
@@ -75,16 +73,8 @@ class GlossaryRepositoryImpl(
         }
     }
 
-    override suspend fun addGlossary(glossary: Glossary): String? {
+    override suspend fun addGlossary(glossary: Glossary): String {
         return glossaryDataSource.insert(glossary.toEntity())
-    }
-
-    override suspend fun setGlossaryVersion(version: Long, id: String): Long {
-        return glossaryDataSource.setVersion(version, id)
-    }
-
-    override suspend fun setGlossaryHasUpdate(hasUpdate: Boolean, id: String): Long {
-        return glossaryDataSource.setHasUpdate(hasUpdate, id)
     }
 
     override suspend fun getPhrase(id: String): Phrase? {
@@ -117,12 +107,12 @@ class GlossaryRepositoryImpl(
         } ?: emptyList()
     }
 
-    override suspend fun addPhrase(phrase: Phrase): String? {
+    override suspend fun addPhrase(phrase: Phrase): String {
         val entity = phrase.toEntity()
         return phraseDataSource.insert(entity)
     }
 
-    override suspend fun addPendingPhrase(phrase: Phrase): String? {
+    override suspend fun addPendingPhrase(phrase: Phrase): String {
         val entity = phrase.toPendingEntity()
         return phraseDataSource.insertPending(entity)
     }

@@ -66,6 +66,8 @@ class DefaultReviewChangesComponent(
 
     override fun loadPendingPhrases(glossary: Glossary, isRefreshing: Boolean) {
         componentScope.launch {
+            val remoteId = glossary.remoteId ?: return@launch
+
             if (isRefreshing) {
                 _model.update { it.copy(isRefreshing = true) }
             } else {
@@ -76,7 +78,7 @@ class DefaultReviewChangesComponent(
                 _model.update { it.copy(progress = progress, isLoading = true) }
             }
             val result = withContext(Dispatchers.Default) {
-                glossaryApi.getPendingPhrases(glossary.code)
+                glossaryApi.getPendingPhrases(remoteId)
             }
             when (result) {
                 is NetworkResult.Success -> {
@@ -96,43 +98,43 @@ class DefaultReviewChangesComponent(
 
     override fun saveReviewStatus(phrase: PendingPhrase, status: ReviewStatus) {
         componentScope.launch {
-            glossaryStateHolder.state.value.glossary?.let { glossary ->
-                val progress = Progress(
-                    value = -1f,
-                    message = getString(Res.string.sending_review)
+            val remoteId = glossaryStateHolder.state.value.glossary?.remoteId ?: return@launch
+
+            val progress = Progress(
+                value = -1f,
+                message = getString(Res.string.sending_review)
+            )
+            _model.update { it.copy(progress = progress) }
+
+            val result = withContext(Dispatchers.Default) {
+                val phraseReview = PhraseReview(
+                    phrase = phrase.phrase.phrase,
+                    status = status,
+                    user = User("", "")
                 )
-                _model.update { it.copy(progress = progress) }
-
-                val result = withContext(Dispatchers.Default) {
-                    val phraseReview = PhraseReview(
-                        phraseId = phrase.phrase.id!!,
-                        status = status,
-                        user = User("", "")
-                    )
-                    glossaryApi.reviewPendingPhrase(glossary.code, phraseReview)
-                }
-                when (result) {
-                    is NetworkResult.Success -> {
-                        _model.update {
-                            it.copy(
-                                pendingPhrases = it.pendingPhrases.mapNotNull { pendingPhrase ->
-                                    if (pendingPhrase.phrase.id == phrase.phrase.id) {
-                                        if (result.data.isNotEmpty()) {
-                                            pendingPhrase.copy(reviews = result.data)
-                                        } else null
-                                    } else pendingPhrase
-                                }
-                            )
-                        }
-                    }
-                    is NetworkResult.Error -> {
-                        _model.update { it.copy(snackBarMessage = result.message.error) }
-                        println(result)
-                    }
-                }
-
-                _model.update { it.copy(progress = null) }
+                glossaryApi.reviewPendingPhrase(remoteId, phraseReview)
             }
+            when (result) {
+                is NetworkResult.Success -> {
+                    _model.update {
+                        it.copy(
+                            pendingPhrases = it.pendingPhrases.mapNotNull { pendingPhrase ->
+                                if (pendingPhrase.phrase.id == phrase.phrase.id) {
+                                    if (result.data.isNotEmpty()) {
+                                        pendingPhrase.copy(reviews = result.data)
+                                    } else null
+                                } else pendingPhrase
+                            }
+                        )
+                    }
+                }
+                is NetworkResult.Error -> {
+                    _model.update { it.copy(snackBarMessage = result.message.error) }
+                    println(result)
+                }
+            }
+
+            _model.update { it.copy(progress = null) }
         }
     }
 
