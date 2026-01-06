@@ -321,14 +321,15 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                 )
 
                                 if (glossaryState.glossary?.hasUpdate == true
-                                    || glossaryUpdateStatus != UpdateStatus.DEFAULT) {
+                                    || glossaryUpdateStatus != UpdateStatus.DEFAULT
+                                ) {
                                     GlossaryUpdate(
                                         status = glossaryUpdateStatus,
                                         onDownload = component::downloadGlossary,
                                         onDismiss = component::clearHasUpdate
                                     )
                                 } else {
-                                    Column (
+                                    Column(
                                         verticalArrangement = Arrangement.spacedBy(8.dp),
                                         modifier = Modifier.fillMaxWidth()
                                             .padding(16.dp)
@@ -374,9 +375,10 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                                         )
                                                     }
                                                 }
-                                                isGlossaryPublished && model.allPhrases.any {
-                                                    it.pending
-                                                } -> {
+
+                                                userState.user != null
+                                                        && canEdit
+                                                        && model.allPhrases.any { it.pending } -> {
                                                     // Upload pending phrases
                                                     ElevatedButton(
                                                         onClick = component::uploadPendingPhrases,

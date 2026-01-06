@@ -1,1 +1,0 @@
-ALTER TABLE "phrases" ALTER COLUMN "description" DROP NOT NULL;

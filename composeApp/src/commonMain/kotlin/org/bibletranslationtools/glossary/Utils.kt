@@ -43,6 +43,7 @@ object Utils {
         isLenient = true
         ignoreUnknownKeys = true
         coerceInputValues = true
+        encodeDefaults = true
 
         serializersModule = SerializersModule {
             contextual(LocalDateTime::class, CustomLocalDateTimeSerializer)
