@@ -26,12 +26,14 @@ import {
   PhraseReview,
   GlossaryUser,
   PendingPhrase,
+  GlossaryOld,
+  ReferenceOld,
 } from "./glossary.types";
 import { Manifest } from "./resource.types";
 import { ErrorDetails, TokenRes, User, UserRes } from "./user.types";
 import { jwt, sign } from "hono/jwt";
 import validateEmoji from "./utils";
-import { v4 as uuidv4, version } from "uuid";
+import { v4 as uuidv4 } from "uuid";
 
 interface AppVariables extends JwtVariables {
   db: DbHelper;
@@ -607,7 +609,6 @@ app.get("/private/api/glossary/:id/pending_phrases", async (c) => {
           audio: phrase.audio,
           createdAt: phrase.createdAt.toISOString(),
           updatedAt: phrase.updatedAt.toISOString(),
-          refs: [],
         };
         const originalPhrase: Phrase | null = phrase.original
           ? {
@@ -618,7 +619,6 @@ app.get("/private/api/glossary/:id/pending_phrases", async (c) => {
               audio: phrase.original.audio,
               createdAt: phrase.original.createdAt.toISOString(),
               updatedAt: phrase.original.updatedAt.toISOString(),
-              refs: [],
             }
           : null;
 
@@ -1131,7 +1131,7 @@ app.post("/api/glossary", async (c) => {
 
     const decoder = new TextDecoder();
 
-    let glossary: Glossary | null = null;
+    let glossary: GlossaryOld | null = null;
     let manifest: Manifest | null = null;
 
     const mainArchive = unzipSync(new Uint8Array(zipArrayBuffer));
@@ -1167,7 +1167,7 @@ app.post("/api/glossary", async (c) => {
       });
     }
 
-    if (glossary == null && manifest == null) {
+    if (glossary == null || manifest == null) {
       return c.json(
         { error: "Could not find glossary.json or resource.zip/manifest.yml" },
         404
@@ -1178,72 +1178,105 @@ app.post("/api/glossary", async (c) => {
       .getDb()
       .insert(resourceTable)
       .values({
-        language: manifest!.dublin_core.language.identifier,
-        type: manifest!.dublin_core.identifier,
-        version: manifest!.dublin_core.version,
+        language: manifest.dublin_core.language.identifier,
+        type: manifest.dublin_core.identifier,
+        version: manifest.dublin_core.version,
       })
       .onConflictDoUpdate({
         target: [resourceTable.language, resourceTable.type],
         set: {
-          version: manifest!.dublin_core.version,
+          version: manifest.dublin_core.version,
         },
       })
       .returning({ id: resourceTable.id });
+
     const resourceId = insertResource[0].id;
 
     const insertGlossary = await dbHelper
       .getDb()
       .insert(glossaryTable)
       .values({
-        id: glossary!.id,
-        code: glossary!.code,
-        sourceLanguage: glossary!.sourceLanguage,
-        targetLanguage: glossary!.targetLanguage,
+        id: glossary.id!,
+        code: glossary.code,
+        sourceLanguage: glossary.sourceLanguage,
+        targetLanguage: glossary.targetLanguage,
         resourceId: resourceId,
+        version: 1,
       })
       .onConflictDoUpdate({
-        target: [glossaryTable.code, glossaryTable.id],
+        target: [
+          glossaryTable.code,
+          glossaryTable.sourceLanguage,
+          glossaryTable.targetLanguage,
+        ],
         set: {
-          sourceLanguage: glossary!.sourceLanguage,
-          targetLanguage: glossary!.targetLanguage,
           resourceId: resourceId,
         },
       })
       .returning({ id: glossaryTable.id });
+
     const glossaryId = insertGlossary[0].id;
 
-    for (const phrase of glossary!.phrases) {
-      const insertPhrase = await dbHelper
-        .getDb()
-        .insert(phraseTable)
-        .values({
-          id: phrase.id,
-          phrase: phrase.phrase,
-          spelling: phrase.spelling,
-          description: phrase.description,
-          audio: phrase.audio,
-          glossaryId: glossaryId,
-        })
-        .onConflictDoUpdate({
-          target: [phraseTable.phrase, phraseTable.glossaryId],
-          set: {
-            spelling: phrase.spelling,
-            description: phrase.description,
-            audio: phrase.audio,
-          },
-        })
-        .returning({ id: phraseTable.id });
+    const phraseValues = glossary.phrases.map((phrase) => ({
+      id: phrase.id,
+      phrase: phrase.phrase,
+      spelling: phrase.spelling,
+      description: phrase.description,
+      audio: phrase.audio,
+      glossaryId: glossaryId,
+    }));
 
-      const phraseId = insertPhrase[0].id;
+    const CHUNK_SIZE = 1000;
 
-      await dbHelper
-        .getDb()
-        .insert(refTable)
-        .values(phrase.refs.map((ref) => ({ ...ref, phraseId: phraseId })))
-        .onConflictDoNothing({
-          target: [refTable.id],
-        });
-    }
+    // Insert phrases
+    await dbHelper.getDb().transaction(async (tx) => {
+      for (let i = 0; i < phraseValues.length; i += CHUNK_SIZE) {
+        const chunk = phraseValues.slice(i, i + CHUNK_SIZE);
+        await tx
+          .insert(phraseTable)
+          .values(chunk)
+          .onConflictDoUpdate({
+            target: [phraseTable.phrase, phraseTable.glossaryId],
+            set: {
+              spelling: sql.raw(`excluded.spelling`),
+              description: sql.raw(`excluded.description`),
+              audio: sql.raw(`excluded.audio`),
+            },
+          });
+      }
+    });
+
+    // Prepare refs
+    type Ref = ReferenceOld & { phraseId: string };
+    const refs: Ref[] = glossary.phrases.flatMap((phrase) =>
+      phrase.refs.map(
+        (ref): Ref => ({
+          ...ref,
+          phraseId: phrase.id,
+        })
+      )
+    );
+
+    const refValues = refs.map((ref) => ({
+      id: ref.id,
+      book: ref.book,
+      chapter: ref.chapter,
+      verse: ref.verse,
+      phraseId: ref.phraseId,
+    }));
+
+    // Insert refs
+    await dbHelper.getDb().transaction(async (tx) => {
+      for (let i = 0; i < refValues.length; i += CHUNK_SIZE) {
+        const chunk = refValues.slice(i, i + CHUNK_SIZE);
+        await tx
+          .insert(refTable)
+          .values(chunk)
+          .onConflictDoNothing({
+            target: [refTable.id],
+          });
+      }
+    });
 
     return c.json(true);
   } catch (error) {

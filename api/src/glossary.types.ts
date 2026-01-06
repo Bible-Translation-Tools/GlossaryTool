@@ -1,13 +1,6 @@
 import { ReviewStatusType, RoleType } from "./db/schema";
 import { User } from "./user.types";
 
-export interface Reference {
-  id: string;
-  book: string;
-  chapter: string;
-  verse: string;
-}
-
 export interface Phrase {
   id: string;
   phrase: string;
@@ -16,7 +9,6 @@ export interface Phrase {
   audio: string;
   createdAt: string;
   updatedAt: string;
-  refs: Reference[];
 }
 
 export interface Resource {
@@ -59,4 +51,36 @@ export interface PendingPhrase {
   user: User;
   original: Phrase | null;
   reviews: PhraseReview[];
+}
+
+// TODO REMOVE OLD API TYPES
+
+export interface GlossaryOld {
+  id: string | null;
+  code: string;
+  author: string;
+  sourceLanguage: string;
+  targetLanguage: string;
+  createdAt: string;
+  updatedAt: string;
+  resource: Resource;
+  phrases: PhraseOld[];
+}
+
+export interface PhraseOld {
+  id: string;
+  phrase: string;
+  spelling: string;
+  description: string;
+  audio: string;
+  createdAt: string;
+  updatedAt: string;
+  refs: ReferenceOld[];
+}
+
+export interface ReferenceOld {
+  id: string;
+  book: string;
+  chapter: string;
+  verse: string;
 }
