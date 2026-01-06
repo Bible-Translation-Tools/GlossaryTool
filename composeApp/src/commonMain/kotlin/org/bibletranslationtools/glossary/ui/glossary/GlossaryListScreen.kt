@@ -49,7 +49,10 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
         TopAppBar(
             title = stringResource(Res.string.available_glossaries)
         ) {
@@ -57,10 +60,7 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
         }
 
         Column(modifier = Modifier.weight(1f)) {
-            Column(
-                modifier = Modifier.fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
+            Column(modifier = Modifier.fillMaxSize()) {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxWidth()

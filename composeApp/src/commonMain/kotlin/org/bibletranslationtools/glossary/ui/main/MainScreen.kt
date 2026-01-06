@@ -117,7 +117,6 @@ fun MainScreen(component: MainComponent) {
                 details = phraseDetails,
                 resource = resource,
                 onNavPhrase = { component.navigatePhrase(it) },
-                onNavRef = { component.navigateRef(it) },
                 onViewDetails = { phrase ->
                     component.onViewPhraseClick(phrase)
                 },

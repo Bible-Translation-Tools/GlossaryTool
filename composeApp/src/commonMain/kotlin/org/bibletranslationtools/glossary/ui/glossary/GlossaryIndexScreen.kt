@@ -44,10 +44,13 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.export_glossary
 import glossary.composeapp.generated.resources.glossary_code
+import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.search
+import glossary.composeapp.generated.resources.upload_glossary
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openFileSaver
 import kotlinx.coroutines.launch
+import org.bibletranslationtools.glossary.positionAwareImePadding
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
@@ -87,18 +90,21 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
         Column(modifier = Modifier.weight(1f)) {
             Box(
                 modifier = Modifier.fillMaxSize()
-                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .positionAwareImePadding()
             ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxSize()
-                        .padding(16.dp)
-                ) {
-                    glossaryState.glossary?.let { glossary ->
+                glossaryState.glossary?.let { glossary ->
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.fillMaxSize()
+                            .padding(16.dp)
+                    ) {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Row(
@@ -122,23 +128,37 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
                             )
                         }
 
-                        TextButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    glossaryState.glossary?.let { glossary ->
-                                        FileKit.openFileSaver(
-                                            suggestedName = "glossary-${glossary.code}",
-                                            extension = "zip"
-                                        )?.let { file ->
-                                            component.onExportGlossaryClicked(glossary, file)
+                        Row {
+                            TextButton(
+                                onClick = {
+                                    coroutineScope.launch {
+                                        glossaryState.glossary?.let { glossary ->
+                                            FileKit.openFileSaver(
+                                                suggestedName = "glossary-${glossary.code}",
+                                                extension = "zip"
+                                            )?.let { file ->
+                                                component.onExportGlossaryClicked(glossary, file)
+                                            }
                                         }
                                     }
                                 }
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.export_glossary)
+                                )
                             }
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.export_glossary)
-                            )
+
+                            TextButton(
+                                onClick = {
+                                    glossaryState.glossary?.let {
+                                        component.onUploadGlossaryClicked(it)
+                                    }
+                                }
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.upload_glossary)
+                                )
+                            }
                         }
 
                         Spacer(modifier = Modifier.height(32.dp))
@@ -189,14 +209,12 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
                                 )
                             }
                         }
+
+                        if (filteredPhrases.isEmpty()) {
+                            Text(text = stringResource(Res.string.no_phrases_found))
+                        }
                     }
 
-                    if (glossaryState.glossary == null && !model.isLoading) {
-                        Text("Download Glossary. Coming soon...")
-                    }
-                }
-
-                if (glossaryState.glossary != null) {
                     Column(
                         modifier = Modifier.fillMaxWidth()
                             .background(MaterialTheme.colorScheme.surface)
@@ -242,11 +260,11 @@ fun GlossaryIndexScreen(component: GlossaryIndexComponent) {
                         }
                     }
                 }
-
-                model.progress?.let { progress ->
-                    ProgressDialog(progress)
-                }
             }
         }
+    }
+
+    model.progress?.let { progress ->
+        ProgressDialog(progress)
     }
 }

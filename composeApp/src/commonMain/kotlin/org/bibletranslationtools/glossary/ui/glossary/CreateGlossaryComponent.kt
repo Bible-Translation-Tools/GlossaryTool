@@ -12,17 +12,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Language
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
+import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
+import org.bibletranslationtools.glossary.data.stet.Stet
 import org.bibletranslationtools.glossary.domain.CatalogApi
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
-import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.AppComponent
+import org.bibletranslationtools.glossary.ui.ParentContext
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -84,7 +88,7 @@ class DefaultCreateGlossaryComponent(
 
             sharedState.updateIsSaving(true)
 
-            val resource = withContext(Dispatchers.Default) {
+            val resource = withContext(Dispatchers.IO) {
                 findResource()
             }
 
@@ -121,7 +125,7 @@ class DefaultCreateGlossaryComponent(
 
             sharedState.updateProgress(progress)
 
-            val resources = withContext(Dispatchers.Default) {
+            val resources = withContext(Dispatchers.IO) {
                 glossaryRepository.getResources(request.lang)
             }
 
@@ -191,13 +195,16 @@ class DefaultCreateGlossaryComponent(
             resourceId = resource.id
         )
 
-        val id = withContext(Dispatchers.Default) {
+        val id = withContext(Dispatchers.IO) {
             glossaryRepository.addGlossary(glossary)
         }
 
         var error: String? = null
 
         id?.let {
+            withContext(Dispatchers.IO) {
+                populateStemItems(it, sourceLanguage)
+            }
             onGlossaryCreated(resource, glossary.copy(id = it))
         } ?: run {
             error = getString(Res.string.create_glossary_error)
@@ -215,6 +222,51 @@ class DefaultCreateGlossaryComponent(
             dbRes?.let {
                 resourceContainerAccessor.read(dbRes.filename)
                     ?.copy(id = dbRes.id, url = dbRes.url)
+            }
+        }
+    }
+
+    private suspend fun populateStemItems(glossaryId: String, sourceLanguage: Language) {
+        val stetPath = "files/stet/stet_${sourceLanguage.slug}.json"
+        val stetBytes = try {
+            Res.readBytes(stetPath)
+        } catch (_: Exception){
+            null
+        }
+        val stet = stetBytes?.let {
+            Utils.JsonLenient.decodeFromString<List<Stet>>(
+                String(it)
+            )
+        }
+        stet?.forEach { item ->
+            val words = item.alternatives.ifEmpty { listOf(item.word) }
+                .sortedWith(compareBy({ it.lowercase() }, { it }))
+                .distinctBy { it.lowercase() }
+
+            words.forEach { word ->
+                val phrase = Phrase(
+                    phrase = word,
+                    spelling = word,
+                    description = item.description,
+                    glossaryId = glossaryId
+                )
+                val phraseId = glossaryRepository.addPhrase(phrase)
+                if (item.references.isNotEmpty()) {
+                    item.references.map {
+                        try {
+                            val (book, chapter, verse) = it.split(":")
+                            val ref = Ref(
+                                book = book,
+                                chapter = chapter,
+                                verse = verse,
+                                phraseId = phraseId
+                            )
+                            glossaryRepository.addRef(ref)
+                        } catch (_: Exception) {
+                            println("Invalid reference: $it")
+                        }
+                    }
+                }
             }
         }
     }

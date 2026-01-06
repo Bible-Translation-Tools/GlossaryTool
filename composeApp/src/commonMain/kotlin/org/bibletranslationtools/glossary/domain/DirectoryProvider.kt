@@ -19,6 +19,7 @@ interface DirectoryProvider {
     suspend fun saveSource(file: Path, fileName: String = file.name): Path
     suspend fun readSource(fileName: String): String?
     suspend fun readFile(file: Path): String?
+    suspend fun writeFile(bytes: ByteArray, path: Path)
 
     suspend fun deleteFile(file: Path)
     suspend fun deleteFile(fileName: String)
@@ -92,6 +93,12 @@ class DirectoryProviderImpl : DirectoryProvider {
             }
         } catch (_: Exception) {
             null
+        }
+    }
+
+    override suspend fun writeFile(bytes: ByteArray, path: Path) {
+        SystemFileSystem.sink(path).buffered().use { sink ->
+            sink.write(bytes)
         }
     }
 
