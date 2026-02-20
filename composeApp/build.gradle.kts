@@ -80,7 +80,6 @@ kotlin {
 
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
-            implementation(libs.store5)
             implementation(libs.compose.remember.setting)
 
             implementation(libs.ktor.client.core)

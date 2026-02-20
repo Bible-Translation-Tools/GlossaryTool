@@ -208,6 +208,7 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                         Row(
                             horizontalArrangement = Arrangement.End,
                             modifier = Modifier.fillMaxWidth()
+                                .padding(top = 36.dp)
                         ) {
                             IconButton(
                                 onClick = component::openSettings
