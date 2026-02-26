@@ -51,20 +51,23 @@ class DefaultCreatePhraseComponent(
 
     private val resourceState = appStateStore.resourceStateHolder.state
     private val glossaryState = appStateStore.glossaryStateHolder.state
-    private var sourceText: String? = null
+    private val sourceVerses = mutableListOf<String>()
     private var exclusions: Set<String> = emptySet()
     private var searchJob: Job? = null
 
     init {
         componentScope.launch {
             _model.update { it.copy(isSearching = true) }
-            sourceText = withContext(Dispatchers.Default) {
+            val verses = withContext(Dispatchers.Default) {
                 resourceState.value.resource?.let { resource ->
                     resource.books.flatMap { it.chapters }
                         .flatMap { it.verses }
-                        .joinToString { it.text }
-                }
+                        .map { it.text }
+                } ?: emptyList()
             }
+
+            sourceVerses.addAll(verses)
+
             glossaryState.value.glossary?.let { glossary ->
                 exclusions = glossaryRepository.getPhrases(glossary.id)
                     .map { it.phrase }
@@ -109,47 +112,58 @@ class DefaultCreatePhraseComponent(
     }
 
     private fun findWords(query: String): List<String> {
-        return sourceText?.let { source ->
+        return sourceVerses.let { sourceSentences ->
             val lowerCaseQuery = query.lowercase()
             val queryWordCount = lowerCaseQuery.split(Regex("\\s+")).size
+
             val pattern = if (queryWordCount == 1) {
                 "(?u)\\b${escape(lowerCaseQuery)}\\w*"
             } else {
                 "(?u)\\b${escape(lowerCaseQuery)}[\\w\\s-]*"
             }
             val regex = Regex(pattern, RegexOption.IGNORE_CASE)
-            val matches = regex.findAll(source)
-                .map { it.value.trim() }
+
+            sourceSentences.asSequence()
+                .filter { sentence -> sentence.contains(lowerCaseQuery, ignoreCase = true) }
+                .flatMap { sentence ->
+                    regex.findAll(sentence).map { it.value.trim() }
+                }
                 .filter { foundPhrase ->
                     foundPhrase.split(Regex("(?u)\\s+")).size == queryWordCount
                 }
+                .filterNot { it.lowercase() in exclusions }
+                .distinct()
                 .take(MAX_SEARCH_RESULTS)
-                .toSet()
-            matches.filterNot { it.lowercase() in exclusions }
-        } ?: emptyList()
+                .toList()
+
+        }
     }
 
     private fun getRandomWords(): List<String> {
-        return sourceText?.let { source ->
-            val randomWords = mutableSetOf<String>()
-            val textLength = source.length
-            if (textLength == 0) return emptyList()
+        val randomWords = mutableSetOf<String>()
+        if (sourceVerses.isEmpty()) return emptyList()
 
-            val wordRegex = Regex("(?u)\\b\\w+\\b")
-            var attempts = 0
+        val wordRegex = Regex("(?u)\\b\\w+\\b")
+        var attempts = 0
 
-            while (randomWords.size < RANDOM_WORD_SAMPLE_SIZE && attempts < MAX_RANDOM_ATTEMPTS) {
-                attempts++
-                val randomStartIndex = Random.nextInt(textLength)
+        while (randomWords.size < RANDOM_WORD_SAMPLE_SIZE && attempts < MAX_RANDOM_ATTEMPTS) {
+            attempts++
 
-                wordRegex.find(source, startIndex = randomStartIndex)?.let { matchResult ->
-                    val word = matchResult.value
-                    if (word.length > 2 && word.lowercase() !in exclusions) {
-                        randomWords.add(word)
-                    }
+            val randomSentence = sourceVerses.random()
+            val sentenceLength = randomSentence.length
+
+            if (sentenceLength == 0) continue
+
+            val randomStartIndex = Random.nextInt(sentenceLength)
+
+            wordRegex.find(randomSentence, startIndex = randomStartIndex)?.let { matchResult ->
+                val word = matchResult.value
+                if (word.length > 2 && word.lowercase() !in exclusions) {
+                    randomWords.add(word)
                 }
             }
-            randomWords.toList()
-        } ?: emptyList()
+        }
+
+        return randomWords.toList()
     }
 }
