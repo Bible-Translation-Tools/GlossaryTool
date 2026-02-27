@@ -29,6 +29,7 @@ import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.drawer.keyterms.DefaultKeyTermsComponent
@@ -143,8 +144,6 @@ class DefaultMainComponent(
             backCallback.isEnabled = stack.backStack.isEmpty()
         }
         backHandler.register(backCallback)
-
-        throw IllegalArgumentException("Test exception")
     }
 
     private fun createChild(config: Config, context: ComponentContext): MainComponent.Child =
@@ -204,7 +203,7 @@ class DefaultMainComponent(
                             }
                             is NetworkResult.Error -> {
                                 logout()
-                                println(result.message)
+                                this.logE("Token refresh failed: ${result.message}")
                             }
                         }
                     }
@@ -223,7 +222,7 @@ class DefaultMainComponent(
                     when (result) {
                         is NetworkResult.Success -> result.data
                         is NetworkResult.Error -> {
-                            println(result.message.error)
+                            this.logE("Get glossary users failed: ${result.message.error}")
                             emptyList()
                         }
                     }

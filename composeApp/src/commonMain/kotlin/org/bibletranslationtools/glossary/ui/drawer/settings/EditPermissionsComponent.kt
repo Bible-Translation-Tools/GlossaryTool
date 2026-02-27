@@ -19,6 +19,7 @@ import org.bibletranslationtools.glossary.data.api.GlossaryUser
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -83,7 +84,7 @@ class DefaultEditPermissionsComponent(
                             result.data
                         }
                         is NetworkResult.Error -> {
-                            println(result.message.details)
+                            this.logE("Edit permissions failed: ${result.message.details}")
                             _model.update { it.copy(snackBarMessage = result.message.error) }
                             emptyList()
                         }
@@ -109,7 +110,7 @@ class DefaultEditPermissionsComponent(
                     glossaryStateHolder.setUsers(result.data)
                 }
                 is NetworkResult.Error -> {
-                    println(result.message)
+                    this.logE("Load glossary users failed: ${result.message}")
                 }
             }
             _model.update { it.copy(isRefreshing = false) }

@@ -15,6 +15,7 @@ import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.api.PendingPhrase
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.koin.core.component.KoinComponent
@@ -104,7 +105,7 @@ class DefaultSettingsListComponent(
                     }
                 }
                 is NetworkResult.Error -> {
-                    println(result)
+                    this.logE("Load pending phrases failed: $result")
                 }
             }
             _model.update { it.copy(pendingPhrasesLoading = false) }

@@ -13,6 +13,7 @@ import org.bibletranslationtools.glossary.data.toEntity
 import org.bibletranslationtools.glossary.domain.persistence.LanguageDataSource
 import org.bibletranslationtools.glossary.domain.persistence.ResourceDataSource
 import org.bibletranslationtools.glossary.domain.persistence.SettingsDataSource
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.toLocalDateTime
@@ -92,7 +93,7 @@ class InitApp(
                     try {
                         resourceDataSource.insert(resource.toEntity())
                     } catch (e: Exception) {
-                        println(e.message)
+                        this.logE("Failed to insert resource during initialization", e)
                     }
                 }
             }

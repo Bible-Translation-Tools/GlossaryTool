@@ -16,6 +16,7 @@ import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.jetbrains.compose.resources.getString
@@ -70,7 +71,7 @@ class DefaultChangeEmojiComponent(
                     navigateBack()
                 }
                 is NetworkResult.Error -> {
-                    println(result.message)
+                    this.logE("Change emoji failed: ${result.message}")
                     _model.update { it.copy(snackBarMessage = result.message.error) }
                 }
             }

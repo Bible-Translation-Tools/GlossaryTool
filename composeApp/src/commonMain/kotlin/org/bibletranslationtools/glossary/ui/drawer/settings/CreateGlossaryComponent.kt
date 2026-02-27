@@ -22,8 +22,9 @@ import org.bibletranslationtools.glossary.data.api.ErrorDetails
 import org.bibletranslationtools.glossary.data.stet.Stet
 import org.bibletranslationtools.glossary.domain.CatalogApi
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
-import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
@@ -233,7 +234,8 @@ class DefaultCreateGlossaryComponent(
         val stetPath = "files/stet/stet_${sourceLanguage.slug}.json"
         val stetBytes = try {
             Res.readBytes(stetPath)
-        } catch (_: Exception){
+        } catch (e: Exception){
+            this.logE("Failed to read stet file: $stetPath", e)
             null
         }
         val stet = stetBytes?.let {

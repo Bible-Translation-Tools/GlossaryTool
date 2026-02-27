@@ -93,7 +93,8 @@ class DirectoryProviderImpl : DirectoryProvider {
                     source.readString()
                 }
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            this.logE("Failed to read file: ${file.name}", e)
             null
         }
     }

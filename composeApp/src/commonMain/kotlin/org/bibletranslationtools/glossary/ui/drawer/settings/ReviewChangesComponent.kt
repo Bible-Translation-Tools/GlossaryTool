@@ -21,6 +21,7 @@ import org.bibletranslationtools.glossary.data.api.ReviewStatus
 import org.bibletranslationtools.glossary.data.api.User
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -89,7 +90,7 @@ class DefaultReviewChangesComponent(
                     }
                 }
                 is NetworkResult.Error -> {
-                    println(result)
+                    this.logE("Load pending phrases failed: $result")
                 }
             }
             _model.update { it.copy(isRefreshing = false, progress = null, isLoading = false) }
@@ -130,7 +131,7 @@ class DefaultReviewChangesComponent(
                 }
                 is NetworkResult.Error -> {
                     _model.update { it.copy(snackBarMessage = result.message.error) }
-                    println(result)
+                    this.logE("Save review status failed: $result")
                 }
             }
 

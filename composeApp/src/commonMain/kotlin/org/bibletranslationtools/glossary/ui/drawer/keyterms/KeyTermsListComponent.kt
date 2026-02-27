@@ -40,6 +40,7 @@ import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
 import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
 import org.bibletranslationtools.glossary.domain.usecases.MergePendingPhrases
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.toTimestamp
 import org.bibletranslationtools.glossary.ui.components.UpdateStatus
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
@@ -197,7 +198,7 @@ class DefaultKeyTermsListComponent(
 
                         getString(Res.string.glossary_uploaded_successfully)
                     } else {
-                        println(result)
+                        this.logE("Glossary upload failed: $result")
                         getString(Res.string.glossary_upload_failed)
                     }
                 } else {
@@ -228,11 +229,11 @@ class DefaultKeyTermsListComponent(
                 if (result is NetworkResult.Success) {
                     val message = mergePendingPhrasesUseCase(glossary.id!!)
                     if (!message.success) {
-                        println("Error merging pending phrases: ${message.message}")
+                        this.logE("Error merging pending phrases: ${message.message}")
                     }
                     getString(Res.string.upload_pending_success)
                 } else {
-                    println(result)
+                    this.logE("Upload pending phrases failed: $result")
                     getString(Res.string.upload_pending_failed)
                 }
             }
@@ -276,7 +277,7 @@ class DefaultKeyTermsListComponent(
                         importGlossaryUseCase(PlatformFile(target))
                     } else null
                 } else {
-                    println(result)
+                    this.logE("Download glossary failed: $result")
                     null
                 }
             }
@@ -348,7 +349,7 @@ class DefaultKeyTermsListComponent(
                         getString(Res.string.no_updates_found)
                     }
                 } else {
-                    println((updates as NetworkResult.Error).message)
+                    this.logE("Check for updates failed: ${(updates as NetworkResult.Error).message}")
                     getString(Res.string.error_checking_updates)
                 }
             }

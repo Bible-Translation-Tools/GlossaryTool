@@ -22,6 +22,7 @@ import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
 import org.bibletranslationtools.glossary.domain.NetworkResult
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.ui.components.OtpAction
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
@@ -150,7 +151,7 @@ class DefaultImportGlossaryComponent(
                         } else null
                     } else {
                         _model.update { it.copy(error = result.toString()) }
-                        println(result)
+                        this.logE("Download glossary failed: $result")
                         null
                     }
                 }
