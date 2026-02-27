@@ -11,6 +11,7 @@ import org.bibletranslationtools.glossary.platform.appDirPath
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.UUID
 
 /**
  * Application logger that writes to both console and file.
@@ -19,6 +20,8 @@ import java.util.Locale
  * - DEBUG: Detailed information for debugging
  * - WARNING: Warning messages (recoverable issues)
  * - ERROR: Error messages (crashes, fatal issues)
+ * 
+ * Logs are preserved across sessions and separated by session markers.
  */
 object AppLogger {
     private const val LOG_DIR = "logs"
@@ -26,6 +29,8 @@ object AppLogger {
     private const val MAX_LOG_SIZE = 5 * 1024 * 1024 // 5 MB
 
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.US)
+    private val sessionId = UUID.randomUUID().toString().take(8)
+    private var isFirstWrite = true
     
     private val rootDir: Path
         get() = Path(appDirPath)
@@ -53,6 +58,19 @@ object AppLogger {
         ensureLogFile()
         
         try {
+            // Check file size and rotate if needed
+            val fileSize = try {
+                SystemFileSystem.source(logFile).buffered().use { source ->
+                    source.readString().length
+                }
+            } catch (e: Exception) {
+                0
+            }
+            
+            if (fileSize > MAX_LOG_SIZE) {
+                rotateLog()
+            }
+            
             // Read existing content and append new message
             val existingContent = try {
                 SystemFileSystem.source(logFile).buffered().use { source ->
@@ -62,22 +80,15 @@ object AppLogger {
                 ""
             }
             
+            // Write with new message appended
             val newContent = if (existingContent.isNotEmpty()) {
                 "$existingContent\n$message"
             } else {
                 message
             }
             
-            // Check if we need to rotate (simple check based on character count)
-            if (newContent.length > MAX_LOG_SIZE) {
-                rotateLog()
-                SystemFileSystem.sink(logFile).buffered().use { sink ->
-                    sink.writeString(message)
-                }
-            } else {
-                SystemFileSystem.sink(logFile).buffered().use { sink ->
-                    sink.writeString(if (existingContent.isNotEmpty()) "\n$message" else message)
-                }
+            SystemFileSystem.sink(logFile).buffered().use { sink ->
+                sink.writeString(newContent)
             }
         } catch (e: Exception) {
             System.err.println("Failed to write to log file: ${e.message}")
@@ -136,7 +147,16 @@ object AppLogger {
     }
 
     private fun formatMessage(level: String, tag: String, message: String): String {
-        return "[${dateFormat.format(Date())}] [$level] [$tag] $message"
+        val timestamp = dateFormat.format(Date())
+        
+        // Add session marker on first write
+        if (isFirstWrite) {
+            isFirstWrite = false
+            return """[$timestamp] [$level] [$tag] === APP STARTED (session: $sessionId) ===""" +
+                if (message.isNotEmpty()) "\n[$timestamp] [$level] [$tag] $message" else ""
+        }
+        
+        return "[$timestamp] [$level] [$tag] $message"
     }
 
     /**
@@ -166,6 +186,7 @@ object AppLogger {
             if (SystemFileSystem.exists(logFile)) {
                 SystemFileSystem.delete(logFile, mustExist = false)
             }
+            isFirstWrite = true
         } catch (e: Exception) {
             System.err.println("Error clearing log: ${e.message}")
         }
@@ -175,6 +196,11 @@ object AppLogger {
      * Get the log file path
      */
     fun getLogFilePath(): String = logFile.toString()
+
+    /**
+     * Get current session ID
+     */
+    fun getSessionId(): String = sessionId
 
     /**
      * Setup global uncaught exception handler.
