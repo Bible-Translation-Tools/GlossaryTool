@@ -175,6 +175,24 @@ object AppLogger {
      * Get the log file path
      */
     fun getLogFilePath(): String = logFile.toString()
+
+    /**
+     * Setup global uncaught exception handler.
+     * Call this at app startup to catch all uncaught exceptions.
+     */
+    fun setupGlobalExceptionHandler() {
+        val defaultHandler = Thread.getDefaultUncaughtExceptionHandler()
+        
+        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+            error(
+                tag = "UNCAUGHT_EXCEPTION",
+                message = "Uncaught exception on thread: ${thread.name}",
+                throwable = throwable
+            )
+            // Call the original handler if it exists
+            defaultHandler?.uncaughtException(thread, throwable)
+        }
+    }
 }
 
 /**

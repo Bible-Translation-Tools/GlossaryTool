@@ -143,6 +143,8 @@ class DefaultMainComponent(
             backCallback.isEnabled = stack.backStack.isEmpty()
         }
         backHandler.register(backCallback)
+
+        throw IllegalArgumentException("Test exception")
     }
 
     private fun createChild(config: Config, context: ComponentContext): MainComponent.Child =
