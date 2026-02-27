@@ -72,7 +72,6 @@ kotlin {
             implementation(libs.kotlinx.io)
             implementation(libs.kotlinx.serialization.json)
 
-            api(libs.koin.core)
             implementation(libs.koin.compose)
 
             api(libs.decompose.decompose)
