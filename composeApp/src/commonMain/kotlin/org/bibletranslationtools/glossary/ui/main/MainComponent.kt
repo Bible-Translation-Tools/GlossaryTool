@@ -203,7 +203,7 @@ class DefaultMainComponent(
                             }
                             is NetworkResult.Error -> {
                                 logout()
-                                this.logE("Token refresh failed: ${result.message}")
+                                this@DefaultMainComponent.logE("Token refresh failed: ${result.message}")
                             }
                         }
                     }
@@ -222,7 +222,7 @@ class DefaultMainComponent(
                     when (result) {
                         is NetworkResult.Success -> result.data
                         is NetworkResult.Error -> {
-                            this.logE("Get glossary users failed: ${result.message.error}")
+                            this@DefaultMainComponent.logE("Get glossary users failed: ${result.message.error}")
                             emptyList()
                         }
                     }

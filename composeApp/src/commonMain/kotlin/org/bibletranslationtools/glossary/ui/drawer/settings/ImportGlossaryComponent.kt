@@ -151,7 +151,7 @@ class DefaultImportGlossaryComponent(
                         } else null
                     } else {
                         _model.update { it.copy(error = result.toString()) }
-                        this.logE("Download glossary failed: $result")
+                        this@DefaultImportGlossaryComponent.logE("Download glossary failed: $result")
                         null
                     }
                 }

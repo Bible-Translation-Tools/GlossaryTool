@@ -84,7 +84,7 @@ class DefaultEditPermissionsComponent(
                             result.data
                         }
                         is NetworkResult.Error -> {
-                            this.logE("Edit permissions failed: ${result.message.details}")
+                            this@DefaultEditPermissionsComponent.logE("Edit permissions failed: ${result.message.details}")
                             _model.update { it.copy(snackBarMessage = result.message.error) }
                             emptyList()
                         }
@@ -110,7 +110,7 @@ class DefaultEditPermissionsComponent(
                     glossaryStateHolder.setUsers(result.data)
                 }
                 is NetworkResult.Error -> {
-                    this.logE("Load glossary users failed: ${result.message}")
+                    this@DefaultEditPermissionsComponent.logE("Load glossary users failed: ${result.message}")
                 }
             }
             _model.update { it.copy(isRefreshing = false) }

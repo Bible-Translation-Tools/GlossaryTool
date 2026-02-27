@@ -105,7 +105,7 @@ class DefaultSettingsListComponent(
                     }
                 }
                 is NetworkResult.Error -> {
-                    this.logE("Load pending phrases failed: $result")
+                    this@DefaultSettingsListComponent.logE("Load pending phrases failed: $result")
                 }
             }
             _model.update { it.copy(pendingPhrasesLoading = false) }

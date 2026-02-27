@@ -71,7 +71,7 @@ class DefaultChangeEmojiComponent(
                     navigateBack()
                 }
                 is NetworkResult.Error -> {
-                    this.logE("Change emoji failed: ${result.message}")
+                    this@DefaultChangeEmojiComponent.logE("Change emoji failed: ${result.message}")
                     _model.update { it.copy(snackBarMessage = result.message.error) }
                 }
             }

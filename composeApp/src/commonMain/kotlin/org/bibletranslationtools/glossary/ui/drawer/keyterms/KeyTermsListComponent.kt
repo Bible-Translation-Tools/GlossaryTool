@@ -198,7 +198,7 @@ class DefaultKeyTermsListComponent(
 
                         getString(Res.string.glossary_uploaded_successfully)
                     } else {
-                        this.logE("Glossary upload failed: $result")
+                        this@DefaultKeyTermsListComponent.logE("Glossary upload failed: $result")
                         getString(Res.string.glossary_upload_failed)
                     }
                 } else {
@@ -229,11 +229,11 @@ class DefaultKeyTermsListComponent(
                 if (result is NetworkResult.Success) {
                     val message = mergePendingPhrasesUseCase(glossary.id!!)
                     if (!message.success) {
-                        this.logE("Error merging pending phrases: ${message.message}")
+                        this@DefaultKeyTermsListComponent.logE("Error merging pending phrases: ${message.message}")
                     }
                     getString(Res.string.upload_pending_success)
                 } else {
-                    this.logE("Upload pending phrases failed: $result")
+                    this@DefaultKeyTermsListComponent.logE("Upload pending phrases failed: $result")
                     getString(Res.string.upload_pending_failed)
                 }
             }
@@ -277,7 +277,7 @@ class DefaultKeyTermsListComponent(
                         importGlossaryUseCase(PlatformFile(target))
                     } else null
                 } else {
-                    this.logE("Download glossary failed: $result")
+                    this@DefaultKeyTermsListComponent.logE("Download glossary failed: $result")
                     null
                 }
             }
@@ -349,7 +349,7 @@ class DefaultKeyTermsListComponent(
                         getString(Res.string.no_updates_found)
                     }
                 } else {
-                    this.logE("Check for updates failed: ${(updates as NetworkResult.Error).message}")
+                    this@DefaultKeyTermsListComponent.logE("Check for updates failed: ${(updates as NetworkResult.Error).message}")
                     getString(Res.string.error_checking_updates)
                 }
             }

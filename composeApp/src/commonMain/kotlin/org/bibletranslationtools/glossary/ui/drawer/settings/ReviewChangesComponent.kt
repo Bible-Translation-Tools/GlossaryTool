@@ -90,7 +90,7 @@ class DefaultReviewChangesComponent(
                     }
                 }
                 is NetworkResult.Error -> {
-                    this.logE("Load pending phrases failed: $result")
+                    this@DefaultReviewChangesComponent.logE("Load pending phrases failed: $result")
                 }
             }
             _model.update { it.copy(isRefreshing = false, progress = null, isLoading = false) }
@@ -131,7 +131,7 @@ class DefaultReviewChangesComponent(
                 }
                 is NetworkResult.Error -> {
                     _model.update { it.copy(snackBarMessage = result.message.error) }
-                    this.logE("Save review status failed: $result")
+                    this@DefaultReviewChangesComponent.logE("Save review status failed: $result")
                 }
             }
 
