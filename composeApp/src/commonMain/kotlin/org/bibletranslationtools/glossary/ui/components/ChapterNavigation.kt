@@ -18,6 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -57,9 +59,22 @@ fun ChapterNavigation(
                     indication = null
                 )
         ) {
+            val textColor = MaterialTheme.colorScheme.onSurface
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.drawBehind {
+                    val strokeWidthPx = 1.dp.toPx()
+                    val verticalOffsetPx = 2.dp.toPx()
+                    val y = size.height - verticalOffsetPx
+
+                    drawLine(
+                        color = textColor,
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = strokeWidthPx
+                    )
+                }
             )
         }
         IconButton(onClick = onNextClick) {

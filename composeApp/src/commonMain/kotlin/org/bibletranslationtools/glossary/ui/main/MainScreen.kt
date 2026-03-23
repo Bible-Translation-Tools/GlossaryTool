@@ -1,18 +1,32 @@
 package org.bibletranslationtools.glossary.ui.main
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ListAlt
+import androidx.compose.material.icons.filled.Circle
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.DrawerDefaults
 import androidx.compose.material3.DrawerValue
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -26,6 +40,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.stack.Children
 import com.arkivanov.decompose.extensions.compose.stack.animation.stackAnimation
@@ -33,6 +49,11 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import dev.burnoo.compose.remembersetting.rememberStringSettingOrNull
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.book_icon
+import glossary.composeapp.generated.resources.glossary
+import glossary.composeapp.generated.resources.read
+import glossary.composeapp.generated.resources.settings
 import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.platform.showStatusBars
@@ -43,6 +64,8 @@ import org.bibletranslationtools.glossary.ui.drawer.settings.SettingsScreen
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.bibletranslationtools.glossary.ui.read.ReadScreen
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -180,12 +203,81 @@ fun MainScreen(component: MainComponent) {
                 },
                 scrimColor = Color(0x800F2F4C)
             ) {
-                Children(
-                    stack = component.childStack,
-                    animation = stackAnimation(Utils.slideHorizontally())
-                ) {
-                    when (val child = it.instance) {
-                        is MainComponent.Child.Read -> ReadScreen(child.component)
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        Children(
+                            stack = component.childStack,
+                            animation = stackAnimation(Utils.slideHorizontally())
+                        ) {
+                            when (val child = it.instance) {
+                                is MainComponent.Child.Read -> ReadScreen(child.component)
+                            }
+                        }
+                    }
+                    NavigationBar(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        NavigationBarItem(
+                            selected = true,
+                            onClick = { },
+                            colors = NavigationBarItemDefaults.colors(
+                                selectedIconColor = MaterialTheme.colorScheme.primary,
+                                selectedTextColor = MaterialTheme.colorScheme.primary,
+                                indicatorColor = MaterialTheme.colorScheme.surface,
+                            ),
+                            icon = {
+                                Icon(
+                                    painter = painterResource(Res.drawable.book_icon),
+                                    contentDescription = "Read"
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = stringResource(Res.string.read),
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        )
+                        NavigationBarItem(
+                            selected = false,
+                            onClick = { component.openKeyTerms() },
+                            icon = {
+                                Box {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Outlined.ListAlt,
+                                        contentDescription = "glossary"
+                                    )
+                                    if (glossaryState.glossary != null) {
+                                        Icon(
+                                            imageVector = Icons.Default.Circle,
+                                            contentDescription = "has glossary",
+                                            tint = MaterialTheme.colorScheme.error,
+                                            modifier = Modifier.align(Alignment.TopEnd)
+                                                .offset(x = -(1).dp, y = (1).dp)
+                                                .border(1.dp, Color.White, CircleShape)
+                                                .size(8.dp)
+                                        )
+                                    }
+                                }
+                            },
+                            label = {
+                                Text(text = stringResource(Res.string.glossary))
+                            }
+                        )
+                        NavigationBarItem(
+                            selected = false,
+                            onClick = { component.openSettings() },
+                            icon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Settings,
+                                    contentDescription = "Settings"
+                                )
+                            },
+                            label = {
+                                Text(text = stringResource(Res.string.settings))
+                            }
+                        )
                     }
                 }
             }
