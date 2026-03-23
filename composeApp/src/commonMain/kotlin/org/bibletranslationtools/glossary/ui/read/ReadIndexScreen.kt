@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -47,7 +50,7 @@ import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
-@OptIn(InternalTextApi::class)
+@OptIn(InternalTextApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ReadIndexScreen(component: ReadIndexComponent) {
     val model by component.model.subscribeAsState()
@@ -176,6 +179,8 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
         }
     }
 
+    val sheetState = rememberModalBottomSheetState()
+
     Column(
         modifier = Modifier.fillMaxSize()
             .padding(top = 36.dp)
@@ -260,19 +265,27 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
     }
 
     model.phraseDetails?.let { phraseDetails ->
-        resourceState.resource?.let { resource ->
-            PhraseDetailsBar(
-                details = phraseDetails,
-                resource = resource,
-                fontFamily = fontFamily,
-                onNavPhrase = { component.navigatePhrase(it) },
-                onViewDetails = { phrase ->
-                    component.onViewPhraseClick(phrase)
-                },
-                onDismiss = {
-                    component.clearPhraseDetails()
-                }
-            )
+        ModalBottomSheet(
+            onDismissRequest = component::clearPhraseDetails,
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = { },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            resourceState.resource?.let { resource ->
+                PhraseDetailsBar(
+                    details = phraseDetails,
+                    resource = resource,
+                    fontFamily = fontFamily,
+                    onNavPhrase = { component.navigatePhrase(it) },
+                    onViewDetails = { phrase ->
+                        component.onViewPhraseClick(phrase)
+                    },
+                    onDismiss = {
+                        component.clearPhraseDetails()
+                    }
+                )
+            }
         }
     }
 }
