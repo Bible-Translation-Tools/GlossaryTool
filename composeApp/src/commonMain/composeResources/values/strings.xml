@@ -83,6 +83,7 @@
     <string name="words_count">%1$d words</string>
     <string name="users_count">%1$d users</string>
     <string name="no_phrases_found">No phrases found</string>
+    <string name="pending_review">Pending Review</string>
     <string name="read_more">Read More</string>
     <string name="reference_not_found">Reference text not found</string>
     <string name="key_terms">Key Terms</string>

@@ -13,7 +13,6 @@ import glossary.composeapp.generated.resources.glossary_uploaded_successfully
 import glossary.composeapp.generated.resources.join_glossary_progress
 import glossary.composeapp.generated.resources.join_glossary_success
 import glossary.composeapp.generated.resources.no_updates_found
-import glossary.composeapp.generated.resources.source_text
 import glossary.composeapp.generated.resources.updates_found
 import glossary.composeapp.generated.resources.upload_pending_failed
 import glossary.composeapp.generated.resources.upload_pending_success
@@ -50,20 +49,12 @@ import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 
-sealed class KeyTermsFilter {
-    abstract val label: String
-    class Chapter(override val label: String) : KeyTermsFilter()
-    class SourceText(override val label: String) : KeyTermsFilter()
-}
-
 interface KeyTermsListComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
         val isLoading: Boolean = false,
-        val allPhrases: List<Phrase> = emptyList(),
-        val chapterPhrases: List<Phrase> = emptyList(),
-        val filterOptions: List<KeyTermsFilter> = emptyList(),
+        val phrases: List<Phrase> = emptyList(),
         val updateStatus: UpdateStatus = UpdateStatus.DEFAULT,
         val snackBarMessage: String? = null,
         val progress: Progress? = null
@@ -122,35 +113,21 @@ class DefaultKeyTermsListComponent(
         componentScope.launch {
             _model.update { it.copy(isLoading = true) }
 
-            val (allPhrases, chapterPhrases) = withContext(Dispatchers.Default) {
+            val phrases = withContext(Dispatchers.Default) {
                 val saved = glossaryRepository.getPhrases(glossary.id)
                 val pending = glossaryRepository.getPendingPhrases(glossary.id)
 
                 // Overwrite saved phrases with pending ones
-                val all = (saved + pending).associateBy { it.id }
+                (saved + pending).associateBy { it.id }
                     .values
                     .toList()
                     .sortedBy { it.phrase.lowercase() }
-
-                val chapter = all.filter { phrase ->
-                    val relevantRef = findRelevantRefs(phrase, book, chapter).firstOrNull()
-                    relevantRef != null
-                }
-                all to chapter
             }
-
-            val chapterLabel = "${book.uppercase()} $chapter"
-            val options = listOf(
-                KeyTermsFilter.Chapter(chapterLabel),
-                KeyTermsFilter.SourceText(getString(Res.string.source_text))
-            )
 
             _model.update {
                 it.copy(
                     isLoading = false,
-                    allPhrases = allPhrases,
-                    chapterPhrases = chapterPhrases,
-                    filterOptions = options
+                    phrases = phrases
                 )
             }
 
@@ -224,7 +201,7 @@ class DefaultKeyTermsListComponent(
             val message = withContext(Dispatchers.Default) {
                 val result = glossaryApi.uploadPendingPhrases(
                     id = remoteId,
-                    phrases = _model.value.allPhrases.filter { it.pending }
+                    phrases = _model.value.phrases.filter { it.pending }
                 )
                 if (result is NetworkResult.Success) {
                     val message = mergePendingPhrasesUseCase(glossary.id!!)
@@ -242,12 +219,7 @@ class DefaultKeyTermsListComponent(
                 it.copy(
                     progress = null,
                     snackBarMessage = message,
-                    allPhrases = _model.value.allPhrases.map { phrase ->
-                        if (phrase.pending) {
-                            phrase.copy(pending = false)
-                        } else phrase
-                    },
-                    chapterPhrases = _model.value.chapterPhrases.map { phrase ->
+                    phrases = _model.value.phrases.map { phrase ->
                         if (phrase.pending) {
                             phrase.copy(pending = false)
                         } else phrase

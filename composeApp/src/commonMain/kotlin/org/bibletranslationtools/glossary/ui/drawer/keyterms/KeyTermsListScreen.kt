@@ -23,14 +23,11 @@ import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -38,7 +35,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
@@ -58,6 +54,7 @@ import glossary.composeapp.generated.resources.join_glossary
 import glossary.composeapp.generated.resources.key_terms
 import glossary.composeapp.generated.resources.key_terms_unavailable
 import glossary.composeapp.generated.resources.no_phrases_found
+import glossary.composeapp.generated.resources.pending_review
 import glossary.composeapp.generated.resources.search
 import glossary.composeapp.generated.resources.upload_glossary
 import glossary.composeapp.generated.resources.upload_phrases
@@ -86,19 +83,13 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
     val userState by appStateStore.userStateHolder.state
         .collectAsStateWithLifecycle()
 
-    var currentPhrases by remember {
-        mutableStateOf(model.chapterPhrases)
+    val hasPendingPhrases by remember(model.phrases) {
+        mutableStateOf(model.phrases.any { it.pending })
     }
-
     var filteredPhrases by remember {
-        mutableStateOf(currentPhrases)
+        mutableStateOf(model.phrases)
     }
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    var selectedOption by rememberSaveable { mutableIntStateOf(0) }
-
-    val selectedColor = MaterialTheme.colorScheme.primary
-    val selectedContainerColor = MaterialTheme.colorScheme.primaryContainer
-    val unselectedColor = MaterialTheme.colorScheme.outlineVariant
 
     var activeBookSlug by rememberStringSetting(
         Settings.BOOK,
@@ -156,25 +147,10 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
         }
     }
 
-    LaunchedEffect(searchQuery, currentPhrases) {
-        filteredPhrases = currentPhrases.filter { phrase ->
+    LaunchedEffect(searchQuery, model.phrases) {
+        filteredPhrases = model.phrases.filter { phrase ->
             phrase.phrase.contains(searchQuery, ignoreCase = true)
                     || phrase.spelling.contains(searchQuery, ignoreCase = true)
-        }
-    }
-
-    LaunchedEffect(
-        selectedOption,
-        model.filterOptions,
-        model.allPhrases,
-        model.chapterPhrases
-    ) {
-        if (model.filterOptions.isNotEmpty()) {
-            val option = model.filterOptions[selectedOption]
-            currentPhrases = when (option) {
-                is KeyTermsFilter.Chapter -> model.chapterPhrases
-                is KeyTermsFilter.SourceText -> model.allPhrases
-            }
         }
     }
 
@@ -215,50 +191,6 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
 
                     glossaryState.glossary?.let {
                         Spacer(modifier = Modifier.height(32.dp))
-
-                        SingleChoiceSegmentedButtonRow(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            model.filterOptions.forEachIndexed { index, option ->
-                                SegmentedButton(
-                                    shape = SegmentedButtonDefaults.itemShape(
-                                        index = index,
-                                        count = model.filterOptions.size,
-                                        baseShape = MaterialTheme.shapes.medium
-                                    ),
-                                    onClick = { selectedOption = index },
-                                    selected = selectedOption == index,
-                                    label = {
-                                        Text(
-                                            text = option.label,
-                                            fontSize = 16.sp,
-                                            fontWeight = if (selectedOption == index) {
-                                                FontWeight.Bold
-                                            } else {
-                                                FontWeight.Normal
-                                            },
-                                            color = if (selectedOption == index) {
-                                                selectedColor
-                                            } else Color.Unspecified
-                                        )
-                                    },
-                                    border = SegmentedButtonDefaults.borderStroke(
-                                        color = if (selectedOption == index) {
-                                            selectedColor
-                                        } else unselectedColor
-                                    ),
-                                    colors = SegmentedButtonDefaults.colors(
-                                        activeContainerColor = if (selectedOption == index) {
-                                            selectedContainerColor
-                                        } else Color.Unspecified,
-                                    ),
-                                    contentPadding = PaddingValues(vertical = 8.dp),
-                                    icon = {}
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
 
                         SearchField(
                             searchQuery = searchQuery,
@@ -301,7 +233,25 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                 contentPadding = PaddingValues(vertical = 8.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                items(filteredPhrases) { phrase ->
+                                if (filteredPhrases.any { it.pending }) {
+                                    item {
+                                        Text(stringResource(Res.string.pending_review))
+                                    }
+                                    items(filteredPhrases.filter { it.pending }) { phrase ->
+                                        PhraseItem(
+                                            phrase = phrase,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onClick = {
+                                                phrase.id?.let(component::navigateViewPhrase)
+                                            }
+                                        )
+                                    }
+                                    item {
+                                        HorizontalDivider()
+                                    }
+                                }
+
+                                items(filteredPhrases.filter { !it.pending }) { phrase ->
                                     PhraseItem(
                                         phrase = phrase,
                                         modifier = Modifier.fillMaxWidth(),
@@ -338,20 +288,26 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                             Button(
                                                 onClick = component::navigateSearchPhrases,
                                                 shape = MaterialTheme.shapes.medium,
+                                                colors = ButtonDefaults.buttonColors(
+                                                    containerColor = if (hasPendingPhrases) {
+                                                        MaterialTheme.colorScheme.primaryContainer
+                                                    } else MaterialTheme.colorScheme.primary,
+                                                    contentColor = if (hasPendingPhrases) {
+                                                        MaterialTheme.colorScheme.primary
+                                                    } else MaterialTheme.colorScheme.onPrimary
+                                                ),
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Default.Add,
-                                                    contentDescription = "add new word",
-                                                    tint = MaterialTheme.colorScheme.onPrimary
+                                                    contentDescription = "add new word"
                                                 )
                                                 Spacer(modifier = Modifier.width(8.dp))
                                                 Text(
                                                     text = stringResource(
                                                         Res.string.create_new_phrase
                                                     ),
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onPrimary
+                                                    fontWeight = FontWeight.Bold
                                                 )
                                             }
 
@@ -378,15 +334,16 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
 
                                                 userState.user != null
                                                         && canEdit
-                                                        && model.allPhrases.any { it.pending } -> {
+                                                        && model.phrases.any { it.pending } -> {
                                                     // Upload pending phrases
-                                                    ElevatedButton(
+                                                    Button(
                                                         onClick = component::uploadPendingPhrases,
                                                         shape = MaterialTheme.shapes.medium,
-                                                        colors = ButtonDefaults.elevatedButtonColors(
-                                                            containerColor =
-                                                                MaterialTheme.colorScheme.primaryContainer
+                                                        colors = ButtonDefaults.buttonColors(
+                                                            containerColor = MaterialTheme.colorScheme.primary,
+                                                            contentColor = MaterialTheme.colorScheme.onPrimary
                                                         ),
+                                                        enabled = hasPendingPhrases,
                                                         modifier = Modifier.fillMaxWidth()
                                                             .height(40.dp)
                                                     ) {
@@ -402,7 +359,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
 
                                         // Allow to check for updates if glossary is published
                                         if (isGlossaryPublished) {
-                                            Button(
+                                            TextButton(
                                                 onClick = component::checkForUpdates,
                                                 shape = MaterialTheme.shapes.medium,
                                                 modifier = Modifier.fillMaxWidth()
@@ -412,7 +369,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                                         Res.string.check_updates
                                                     ),
                                                     fontWeight = FontWeight.Bold,
-                                                    color = MaterialTheme.colorScheme.onPrimary
+                                                    textDecoration = TextDecoration.Underline
                                                 )
                                             }
                                         }
