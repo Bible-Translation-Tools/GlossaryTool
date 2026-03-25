@@ -26,6 +26,9 @@ import java.text.Normalizer
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
 
+/**
+ * Normalize all decomposed unicode characters to composed
+ */
 fun String.normalize(): String {
     return Normalizer.normalize(this, Normalizer.Form.NFC)
 }

@@ -16,6 +16,7 @@ import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
+import org.bibletranslationtools.glossary.normalize
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -76,8 +77,9 @@ class DefaultEditPhraseComponent(
             val error = withContext(Dispatchers.IO) {
                 _model.value.phrase?.let { phrase ->
                     val phrase = phrase.copy(
-                        spelling = spelling,
-                        description = description,
+                        phrase = phrase.phrase.normalize(),
+                        spelling = spelling.normalize(),
+                        description = description.normalize(),
                         updatedAt = getCurrentTime(),
                         id = phrase.id,
                         glossaryId = glossaryId
@@ -121,7 +123,7 @@ class DefaultEditPhraseComponent(
         val resource = resourceState.value.resource ?: return emptyList()
 
         val regex = Regex(
-            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
+            pattern = "\\b${Regex.escape(phrase.phrase.normalize())}\\b",
             option = RegexOption.IGNORE_CASE
         )
         val refs = mutableListOf<Ref>()
@@ -129,7 +131,7 @@ class DefaultEditPhraseComponent(
         for (book in resource.books) {
             for (chapter in book.chapters) {
                 for (verse in chapter.verses) {
-                    val matchCount = regex.findAll(verse.text).count()
+                    val matchCount = regex.findAll(verse.text.normalize()).count()
                     if (matchCount > 0) {
                         repeat(matchCount) {
                             refs.add(
