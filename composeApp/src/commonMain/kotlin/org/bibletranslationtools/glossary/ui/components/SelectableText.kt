@@ -45,6 +45,7 @@ import glossary.composeapp.generated.resources.add_to_glossary
 import glossary.composeapp.generated.resources.view_glossary
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.normalize
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
 import kotlin.math.min
@@ -97,7 +98,7 @@ fun SelectableText(
         annotatedString = buildAnnotatedString {
             val regex = if (currentPhrases.isNotEmpty()) {
                 val phrasesToFind = currentPhrases
-                    .map { "\\b${Regex.escape(it.phrase)}\\b" }
+                    .map { "\\b${Regex.escape(it.phrase.normalize())}\\b" }
                 Regex(
                     phrasesToFind.joinToString("|"),
                     RegexOption.IGNORE_CASE
@@ -107,6 +108,8 @@ fun SelectableText(
             }
 
             currentChapter.verses.forEach { verse ->
+                val normalizedVerseText = verse.text.normalize()
+
                 val color = if (currentVerse == null || verse.number == currentVerse) {
                     Color.Unspecified
                 } else {
@@ -132,14 +135,14 @@ fun SelectableText(
                 }
 
                 if (regex == null) {
-                    append(verse.text)
+                    append(normalizedVerseText)
                 } else {
                     var lastIndex = 0
-                    regex.findAll(verse.text).forEach { match ->
+                    regex.findAll(normalizedVerseText).forEach { match ->
                         withStyle(
                             style = SpanStyle(color = color)
                         ) {
-                            append(verse.text.substring(lastIndex, match.range.first))
+                            append(normalizedVerseText.substring(lastIndex, match.range.first))
                         }
 
                         withLink(
@@ -148,7 +151,8 @@ fun SelectableText(
                                 styles = TextLinkStyles(),
                                 linkInteractionListener = {
                                     currentPhrases.firstOrNull {
-                                        it.phrase.equals(match.value, ignoreCase = true)
+                                        it.phrase.normalize()
+                                            .equals(match.value.normalize(), ignoreCase = true)
                                     }?.let {
                                         onSelectedTextChanged("")
                                         onPhraseClick(it, verse.number)
@@ -168,11 +172,11 @@ fun SelectableText(
                         lastIndex = match.range.last + 1
                     }
 
-                    if (lastIndex < verse.text.length) {
+                    if (lastIndex < normalizedVerseText.length) {
                         withStyle(
                             style = SpanStyle(color = color)
                         ) {
-                            append(verse.text.substring(lastIndex))
+                            append(normalizedVerseText.substring(lastIndex))
                         }
                     }
                 }
@@ -258,7 +262,7 @@ fun SelectableText(
                         }
                 ) {
                     val isView = currentPhrases.any {
-                        it.phrase.equals(selectedText, ignoreCase = true)
+                        it.phrase.normalize().equals(selectedText.normalize(), ignoreCase = true)
                     } || selectedText.isEmpty()
 
                     val text = if (isView) {

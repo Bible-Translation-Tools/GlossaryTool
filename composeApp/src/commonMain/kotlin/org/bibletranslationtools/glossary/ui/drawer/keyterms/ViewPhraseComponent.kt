@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
+import org.bibletranslationtools.glossary.normalize
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -79,7 +80,7 @@ class DefaultViewPhraseComponent(
         val resource = resourceState.value.resource ?: return emptyList()
 
         val regex = Regex(
-            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
+            pattern = "\\b${Regex.escape(phrase.phrase.normalize())}\\b",
             option = RegexOption.IGNORE_CASE
         )
         val refs = mutableListOf<Ref>()
@@ -87,7 +88,7 @@ class DefaultViewPhraseComponent(
         for (book in resource.books) {
             for (chapter in book.chapters) {
                 for (verse in chapter.verses) {
-                    val matchCount = regex.findAll(verse.text).count()
+                    val matchCount = regex.findAll(verse.text.normalize()).count()
                     if (matchCount > 0) {
                         repeat(matchCount) {
                             refs.add(

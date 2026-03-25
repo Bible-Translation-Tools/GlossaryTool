@@ -15,6 +15,7 @@ import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Workbook
 import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
+import org.bibletranslationtools.glossary.normalize
 import org.bibletranslationtools.glossary.platform.showNavigationBar
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
@@ -255,7 +256,7 @@ class DefaultReadIndexComponent(
         val resource = resourceState.value.resource ?: return emptyList()
 
         val regex = Regex(
-            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
+            pattern = "\\b${Regex.escape(phrase.phrase.normalize())}\\b",
             option = RegexOption.IGNORE_CASE
         )
         val refs = mutableListOf<Ref>()
@@ -267,7 +268,7 @@ class DefaultReadIndexComponent(
             }?.verses ?: return emptyList()
 
         for (verse in verses) {
-            val matchCount = regex.findAll(verse.text).count()
+            val matchCount = regex.findAll(verse.text.normalize()).count()
             if (matchCount > 0) {
                 repeat(matchCount) {
                     refs.add(

@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Verse
+import org.bibletranslationtools.glossary.normalize
 
 @Composable
 fun ChapterVerse(
@@ -47,10 +48,10 @@ fun ChapterVerse(
         if (ref.verse == verse.number) {
             var lastIndex = 0
             val regex = Regex(
-                "\\b${Regex.escape(phrase)}\\b",
+                "\\b${Regex.escape(phrase.normalize())}\\b",
                 RegexOption.IGNORE_CASE
             )
-            regex.findAll(verse.text).forEach { match ->
+            regex.findAll(verse.text.normalize()).forEach { match ->
                 withStyle(
                     style = SpanStyle(color = color)
                 ) {

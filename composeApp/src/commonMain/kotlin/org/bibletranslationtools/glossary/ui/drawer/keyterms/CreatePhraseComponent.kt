@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
+import org.bibletranslationtools.glossary.normalize
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -117,7 +118,7 @@ class DefaultCreatePhraseComponent(
         val glossaryId = glossaryState.value.glossary?.id ?: return emptyList()
 
         return sourceVerses.let { sourceSentences ->
-            val lowerCaseQuery = query.lowercase()
+            val lowerCaseQuery = query.normalize().lowercase()
             val queryWordCount = lowerCaseQuery.split(Regex("\\s+")).size
 
             val pattern = if (queryWordCount == 1) {
@@ -128,6 +129,7 @@ class DefaultCreatePhraseComponent(
             val regex = Regex(pattern, RegexOption.IGNORE_CASE)
 
             sourceSentences.asSequence()
+                .map { it.normalize() }
                 .filter { sentence ->
                     sentence.contains(lowerCaseQuery, ignoreCase = true)
                 }
@@ -140,11 +142,10 @@ class DefaultCreatePhraseComponent(
                 .distinct()
                 .take(MAX_SEARCH_RESULTS)
                 .map { word ->
-                    val existent = existentPhrases.find { it.phrase == word }
+                    val existent = existentPhrases.find { it.phrase.normalize() == word }
                     existent ?: Phrase(phrase = word, glossaryId = glossaryId)
                 }
                 .toList()
-
         }
     }
 
@@ -168,7 +169,7 @@ class DefaultCreatePhraseComponent(
             val randomStartIndex = Random.nextInt(sentenceLength)
 
             wordRegex.find(randomSentence, startIndex = randomStartIndex)?.let { matchResult ->
-                val word = matchResult.value
+                val word = matchResult.value.normalize()
                 if (word.length > 2) {
                     randomWords.add(word)
                 }

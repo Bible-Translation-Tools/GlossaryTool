@@ -108,6 +108,8 @@
     <string name="glossary_updated_description">The glossary has been successfully updated</string>
     <string name="glossary_update_failed">Glossary Update Failed</string>
     <string name="glossary_update_failed_description">The glossary failed to download.</string>
+    <string name="clear_reviewed_success">Successfully cleared reviewed phrases</string>
+    <string name="clear_reviewed_failed">Failed to clear reviewed phrases</string>
     <string name="try_again">Please try again</string>
     <string name="share">Share</string>
     <string name="select">Select</string>
@@ -141,8 +143,8 @@
     <string name="style">Style</string>
     <string name="size">Size</string>
     <string name="line_height">Line Height</string>
-    <string name="upload_pending_success">Pending phrases has been successfully uploaded.</string>
-    <string name="upload_pending_failed">Failed to upload pending phrases.</string>
+    <string name="upload_pending_success">Terms successfully uploaded for review.</string>
+    <string name="upload_pending_failed">Failed to upload terms for review.</string>
     <string name="pending_phrases">Pending Terms</string>
     <string name="loading_wait">Loading... Please wait.</string>
     <string name="review_status_unreviewed">Unreviewed</string>

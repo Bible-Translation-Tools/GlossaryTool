@@ -7,6 +7,8 @@ import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.doOnResume
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.checking_for_updates
+import glossary.composeapp.generated.resources.clear_reviewed_failed
+import glossary.composeapp.generated.resources.clear_reviewed_success
 import glossary.composeapp.generated.resources.error_checking_updates
 import glossary.composeapp.generated.resources.glossary_upload_failed
 import glossary.composeapp.generated.resources.glossary_uploaded_successfully
@@ -61,7 +63,7 @@ interface KeyTermsListComponent : DrawerContext {
         val progress: Progress? = null
     )
 
-    fun initialize(glossary: Glossary)
+    fun initialize()
     fun navigateImportGlossary()
     fun navigateCreateGlossary()
     fun navigateSearchPhrases()
@@ -72,6 +74,7 @@ interface KeyTermsListComponent : DrawerContext {
     fun joinGlossary()
     fun checkForUpdates()
     fun clearHasUpdate()
+    fun clearReviewedPhrases()
     fun clearSnackBarMessage()
 }
 
@@ -109,8 +112,10 @@ class DefaultKeyTermsListComponent(
         }
     }
 
-    override fun initialize(glossary: Glossary) {
+    override fun initialize() {
         componentScope.launch {
+            val glossary = glossaryState.value.glossary ?: return@launch
+
             _model.update { it.copy(isLoading = true) }
 
             val phrases = withContext(Dispatchers.IO) {
@@ -184,7 +189,7 @@ class DefaultKeyTermsListComponent(
 
             _model.update { it.copy(progress = null, snackBarMessage = message) }
 
-            initialize(glossary)
+            initialize()
         }
     }
 
@@ -220,7 +225,7 @@ class DefaultKeyTermsListComponent(
                 )
             }
 
-            initialize(glossary)
+            initialize()
         }
     }
 
@@ -337,6 +342,28 @@ class DefaultKeyTermsListComponent(
         }
     }
 
+    override fun clearReviewedPhrases() {
+        componentScope.launch {
+            val glossary = glossaryState.value.glossary ?: return@launch
+            val glossaryId = glossary.id ?: return@launch
+
+            _model.update { it.copy(isLoading = true) }
+
+            val message = withContext(Dispatchers.IO) {
+                val result = glossaryApi.deleteReviewedPhrases(glossaryId)
+                if (result is NetworkResult.Success) {
+                    getString(Res.string.clear_reviewed_success)
+                } else {
+                    getString(Res.string.clear_reviewed_failed)
+                }
+            }
+
+            _model.update { it.copy(snackBarMessage = message) }
+
+            initialize()
+        }
+    }
+
     override fun clearSnackBarMessage() {
         _model.update { it.copy(snackBarMessage = null) }
     }
@@ -348,7 +375,7 @@ class DefaultKeyTermsListComponent(
 
             _model.update { it.copy(isRemoteLoading = true) }
 
-            val phrases = withContext(Dispatchers.IO) {
+            val pendingPhrases = withContext(Dispatchers.IO) {
                 val pending = glossaryRepository.getPendingPhrases(glossary.id)
                 val remotePending = mutableListOf<Phrase>()
                 val remoteReviewed = mutableListOf<Phrase>()
@@ -389,7 +416,7 @@ class DefaultKeyTermsListComponent(
             _model.update { state ->
                 state.copy(
                     isRemoteLoading = false,
-                    phrases = (state.phrases + phrases).associateBy { it.phrase }
+                    phrases = (state.phrases + pendingPhrases).associateBy { it.phrase }
                         .values
                         .toList()
                         .sortedBy { it.phrase.lowercase() }

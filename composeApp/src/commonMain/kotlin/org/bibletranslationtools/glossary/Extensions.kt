@@ -22,8 +22,13 @@ import kotlinx.datetime.atTime
 import kotlinx.datetime.toInstant
 import kotlinx.datetime.toLocalDateTime
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
+import java.text.Normalizer
 import kotlin.time.ExperimentalTime
 import kotlin.time.Instant
+
+fun String.normalize(): String {
+    return Normalizer.normalize(this, Normalizer.Form.NFC)
+}
 
 @OptIn(ExperimentalTime::class)
 fun Long.toLocalDateTime(): LocalDateTime {

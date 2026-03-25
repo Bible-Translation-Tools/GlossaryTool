@@ -122,8 +122,8 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let { glossary ->
-            component.initialize(glossary)
             isGlossaryPublished = !glossary.remoteId.isNullOrBlank()
+            component.initialize()
         }
     }
 
@@ -312,7 +312,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                         ) {
                                             Text(stringResource(Res.string.reviewed))
                                             TextButton(
-                                                onClick = {}
+                                                onClick = component::clearReviewedPhrases
                                             ) {
                                                 Icon(
                                                     imageVector = Icons.Outlined.Delete,
@@ -425,9 +425,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                                     }
                                                 }
 
-                                                userState.user != null
-                                                        && canEdit
-                                                        && model.phrases.any { it.pending } -> {
+                                                userState.user != null && canEdit -> {
                                                     // Upload pending phrases
                                                     Button(
                                                         onClick = component::uploadPendingPhrases,
