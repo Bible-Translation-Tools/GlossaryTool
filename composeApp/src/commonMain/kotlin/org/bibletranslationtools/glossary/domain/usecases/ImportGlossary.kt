@@ -13,10 +13,10 @@ import org.bibletranslationtools.glossary.data.api.ManifestGlossary
 import org.bibletranslationtools.glossary.data.api.ManifestPhrase
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.extractZip
 import org.bibletranslationtools.glossary.toLocalDateTime
-import org.bibletranslationtools.glossary.logE
 
 class ImportGlossary(
     private val glossaryRepository: GlossaryRepository,
@@ -112,7 +112,6 @@ class ImportGlossary(
             sourceLanguage = sourceLanguage,
             targetLanguage = targetLanguage,
             version = glossary.version,
-            hasUpdate = false,
             resourceId = resource.id,
             createdAt = glossary.createdAt.toLocalDateTime(),
             updatedAt = glossary.updatedAt.toLocalDateTime(),

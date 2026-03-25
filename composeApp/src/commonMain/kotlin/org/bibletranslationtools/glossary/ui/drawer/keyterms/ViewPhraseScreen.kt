@@ -209,7 +209,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                     Button(
                                         onClick = {
                                             model.phrase?.let { phrase ->
-                                                component.onEditClick(phrase.phrase)
+                                                component.onEditClick(phrase)
                                             }
                                         },
                                         colors = ButtonDefaults.buttonColors(

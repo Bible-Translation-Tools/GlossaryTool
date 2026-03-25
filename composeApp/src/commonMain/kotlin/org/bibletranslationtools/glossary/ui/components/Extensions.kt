@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.review_status_approve
 import glossary.composeapp.generated.resources.review_status_reject
+import glossary.composeapp.generated.resources.review_status_unreviewed
 import glossary.composeapp.generated.resources.user_role_admin
 import glossary.composeapp.generated.resources.user_role_admin_desc
 import glossary.composeapp.generated.resources.user_role_editor
@@ -38,6 +39,7 @@ fun UserRole.localizedDescription(): String {
 @Composable
 fun ReviewStatus.localizedName(): String {
     return when (this) {
+        ReviewStatus.UNREVIEWED -> stringResource(Res.string.review_status_unreviewed)
         ReviewStatus.APPROVED -> stringResource(Res.string.review_status_approve)
         ReviewStatus.REJECTED -> stringResource(Res.string.review_status_reject)
     }

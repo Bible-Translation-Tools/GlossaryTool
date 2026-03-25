@@ -51,6 +51,7 @@ export interface PendingPhrase {
   user: User;
   original: Phrase | null;
   reviews: PhraseReview[];
+  status: ReviewStatusType;
 }
 
 // TODO REMOVE OLD API TYPES

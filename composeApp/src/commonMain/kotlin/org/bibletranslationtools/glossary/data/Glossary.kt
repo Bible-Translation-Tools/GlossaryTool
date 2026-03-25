@@ -15,7 +15,6 @@ data class Glossary(
     val sourceLanguage: Language,
     val targetLanguage: Language,
     val version: Int,
-    val hasUpdate: Boolean = false,
     val resourceId: Long? = null,
     @Contextual val createdAt: LocalDateTime = getCurrentTime(),
     @Contextual val updatedAt: LocalDateTime = getCurrentTime(),

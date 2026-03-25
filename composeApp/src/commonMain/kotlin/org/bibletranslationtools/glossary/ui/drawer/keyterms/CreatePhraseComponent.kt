@@ -11,6 +11,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
@@ -29,17 +30,17 @@ interface CreatePhraseComponent : DrawerContext {
 
     data class Model(
         val isSearching: Boolean = false,
-        val results: List<String> = emptyList()
+        val results: List<Phrase> = emptyList()
     )
 
     fun onSearchQueryChanged(query: String)
-    fun onEditClick(phrase: String)
+    fun onEditClick(phrase: Phrase)
 }
 
 class DefaultCreatePhraseComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
-    private val onNavigateEdit: (phrase: String) -> Unit
+    private val onNavigateEdit: (phrase: Phrase) -> Unit
 ) : DrawerComponent(componentContext, parentContext), CreatePhraseComponent, KoinComponent {
     private val appStateStore: AppStateStore by inject()
     private val glossaryRepository: GlossaryRepository by inject()
@@ -52,7 +53,7 @@ class DefaultCreatePhraseComponent(
     private val resourceState = appStateStore.resourceStateHolder.state
     private val glossaryState = appStateStore.glossaryStateHolder.state
     private val sourceVerses = mutableListOf<String>()
-    private var exclusions: Set<String> = emptySet()
+    private var existentPhrases: Set<Phrase> = emptySet()
     private var searchJob: Job? = null
 
     init {
@@ -69,9 +70,10 @@ class DefaultCreatePhraseComponent(
             sourceVerses.addAll(verses)
 
             glossaryState.value.glossary?.let { glossary ->
-                exclusions = glossaryRepository.getPhrases(glossary.id)
-                    .map { it.phrase }
-                    .map { it.lowercase() }
+                val saved = glossaryRepository.getPhrases(glossary.id)
+                val pending = glossaryRepository.getPendingPhrases(glossary.id)
+                existentPhrases = (saved + pending).associateBy { it.phrase }
+                    .values
                     .toSet()
             }
 
@@ -99,11 +101,11 @@ class DefaultCreatePhraseComponent(
         }
     }
 
-    override fun onEditClick(phrase: String) {
+    override fun onEditClick(phrase: Phrase) {
         onNavigateEdit(phrase)
     }
 
-    private fun findContent(query: String): List<String> {
+    private fun findContent(query: String): List<Phrase> {
         return if (query.isEmpty()) {
             getRandomWords()
         } else {
@@ -111,7 +113,9 @@ class DefaultCreatePhraseComponent(
         }
     }
 
-    private fun findWords(query: String): List<String> {
+    private fun findWords(query: String): List<Phrase> {
+        val glossaryId = glossaryState.value.glossary?.id ?: return emptyList()
+
         return sourceVerses.let { sourceSentences ->
             val lowerCaseQuery = query.lowercase()
             val queryWordCount = lowerCaseQuery.split(Regex("\\s+")).size
@@ -124,22 +128,29 @@ class DefaultCreatePhraseComponent(
             val regex = Regex(pattern, RegexOption.IGNORE_CASE)
 
             sourceSentences.asSequence()
-                .filter { sentence -> sentence.contains(lowerCaseQuery, ignoreCase = true) }
+                .filter { sentence ->
+                    sentence.contains(lowerCaseQuery, ignoreCase = true)
+                }
                 .flatMap { sentence ->
                     regex.findAll(sentence).map { it.value.trim() }
                 }
                 .filter { foundPhrase ->
                     foundPhrase.split(Regex("(?u)\\s+")).size == queryWordCount
                 }
-                .filterNot { it.lowercase() in exclusions }
                 .distinct()
                 .take(MAX_SEARCH_RESULTS)
+                .map { word ->
+                    val existent = existentPhrases.find { it.phrase == word }
+                    existent ?: Phrase(phrase = word, glossaryId = glossaryId)
+                }
                 .toList()
 
         }
     }
 
-    private fun getRandomWords(): List<String> {
+    private fun getRandomWords(): List<Phrase> {
+        val glossaryId = glossaryState.value.glossary?.id ?: return emptyList()
+
         val randomWords = mutableSetOf<String>()
         if (sourceVerses.isEmpty()) return emptyList()
 
@@ -158,12 +169,17 @@ class DefaultCreatePhraseComponent(
 
             wordRegex.find(randomSentence, startIndex = randomStartIndex)?.let { matchResult ->
                 val word = matchResult.value
-                if (word.length > 2 && word.lowercase() !in exclusions) {
+                if (word.length > 2) {
                     randomWords.add(word)
                 }
             }
         }
 
-        return randomWords.toList()
+        return randomWords
+            .map { word ->
+                val existent = existentPhrases.find { it.phrase == word }
+                existent ?: Phrase(phrase = word, glossaryId = glossaryId)
+            }
+            .toList()
     }
 }

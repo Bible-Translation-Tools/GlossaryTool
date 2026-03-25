@@ -8,5 +8,6 @@ data class PendingPhrase(
     val phrase: Phrase,
     val user: User,
     val original: Phrase? = null,
+    val status: ReviewStatus = ReviewStatus.UNREVIEWED,
     val reviews: List<PhraseReview> = emptyList()
 )

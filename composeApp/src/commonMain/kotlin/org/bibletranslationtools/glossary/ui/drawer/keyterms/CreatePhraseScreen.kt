@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,6 +32,7 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.search_placeholder
 import glossary.composeapp.generated.resources.search_word_hint
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
+import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.jetbrains.compose.resources.stringResource
@@ -105,21 +106,28 @@ fun CreatePhraseScreen(component: CreatePhraseComponent) {
                     } else {
                         LazyColumn {
                             items(model.results) { phrase ->
-                                Row(
-                                    modifier = Modifier.padding(12.dp)
-                                        .clickable {
-                                            component.onEditClick(phrase)
-                                        }
-                                ) {
-                                    Text(
-                                        text = phrase,
-                                        fontWeight = FontWeight.Bold,
-                                        modifier = Modifier.weight(1f)
+                                if (phrase.spelling.isNotEmpty()) {
+                                    PhraseItem(
+                                        phrase = phrase,
+                                        onClick = { component.onEditClick(phrase) }
                                     )
-                                    Icon(
-                                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                                        contentDescription = "create"
-                                    )
+                                } else {
+                                    Row(
+                                        modifier = Modifier.padding(12.dp)
+                                            .clickable {
+                                                component.onEditClick(phrase)
+                                            }
+                                    ) {
+                                        Text(
+                                            text = phrase.phrase,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Icon(
+                                            imageVector = Icons.Default.ChevronRight,
+                                            contentDescription = "create"
+                                        )
+                                    }
                                 }
                             }
                         }

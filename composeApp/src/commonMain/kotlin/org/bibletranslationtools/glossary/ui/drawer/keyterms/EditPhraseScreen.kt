@@ -34,10 +34,12 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.cancel
 import glossary.composeapp.generated.resources.description
+import glossary.composeapp.generated.resources.edit_reviewed_phrase_not_allowed
 import glossary.composeapp.generated.resources.editing
 import glossary.composeapp.generated.resources.save_exit
 import glossary.composeapp.generated.resources.saving
 import glossary.composeapp.generated.resources.spelling
+import org.bibletranslationtools.glossary.data.PhraseWorkflow
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.jetbrains.compose.resources.stringResource
 
@@ -154,7 +156,8 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                     ) {
                         Button(
                             enabled = spelling.isNotEmpty()
-                                    && !model.isSaving,
+                                    && !model.isSaving
+                                    && model.phrase?.workflow != PhraseWorkflow.REVIEWED,
                             onClick = {
                                 component.savePendingPhrase(
                                     spelling = spelling,
@@ -180,6 +183,19 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
+
+                    if (model.phrase?.workflow == PhraseWorkflow.REVIEWED) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(
+                                text = stringResource(Res.string.edit_reviewed_phrase_not_allowed),
+                                color = MaterialTheme.colorScheme.error
+                            )
+                            Spacer(modifier = Modifier.height(24.dp))
+                        }
+                    }
 
                     model.error?.let { error ->
                         Column(

@@ -6,16 +6,19 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -47,6 +50,7 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_glossary
 import glossary.composeapp.generated.resources.add_glossary_key_terms
 import glossary.composeapp.generated.resources.check_updates
+import glossary.composeapp.generated.resources.clear
 import glossary.composeapp.generated.resources.create_glossary
 import glossary.composeapp.generated.resources.create_new_phrase
 import glossary.composeapp.generated.resources.glossary_code
@@ -55,10 +59,13 @@ import glossary.composeapp.generated.resources.key_terms
 import glossary.composeapp.generated.resources.key_terms_unavailable
 import glossary.composeapp.generated.resources.no_phrases_found
 import glossary.composeapp.generated.resources.pending_review
+import glossary.composeapp.generated.resources.pending_submission
+import glossary.composeapp.generated.resources.reviewed
 import glossary.composeapp.generated.resources.search
 import glossary.composeapp.generated.resources.upload_glossary
 import glossary.composeapp.generated.resources.upload_phrases
 import kotlinx.coroutines.launch
+import org.bibletranslationtools.glossary.data.PhraseWorkflow
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
@@ -84,7 +91,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
         .collectAsStateWithLifecycle()
 
     val hasPendingPhrases by remember(model.phrases) {
-        mutableStateOf(model.phrases.any { it.pending })
+        mutableStateOf(model.phrases.any { it.workflow == PhraseWorkflow.PENDING })
     }
     var filteredPhrases by remember {
         mutableStateOf(model.phrases)
@@ -115,16 +122,16 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
 
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let { glossary ->
-            component.initialize(
-                glossary,
-                activeBookSlug,
-                activeChapterNum
-            )
+            component.initialize(glossary)
             isGlossaryPublished = !glossary.remoteId.isNullOrBlank()
         }
     }
 
-    LaunchedEffect(glossaryState.users, userState.user, isGlossaryPublished) {
+    LaunchedEffect(
+        glossaryState.users,
+        userState.user,
+        isGlossaryPublished
+    ) {
         userState.user?.let { glossaryUser ->
             joined = glossaryState.users
                 .map { it.user.username }
@@ -233,16 +240,35 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                 contentPadding = PaddingValues(vertical = 8.dp),
                                 modifier = Modifier.weight(1f)
                             ) {
-                                if (filteredPhrases.any { it.pending }) {
+                                if (model.isRemoteLoading) {
                                     item {
-                                        Text(stringResource(Res.string.pending_review))
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(stringResource(Res.string.pending_review))
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(28.dp)
+                                            )
+                                        }
                                     }
-                                    items(filteredPhrases.filter { it.pending }) { phrase ->
+                                }
+
+                                // Pending submission
+                                val pending = filteredPhrases.filter {
+                                    it.workflow == PhraseWorkflow.PENDING
+                                }
+                                if (pending.isNotEmpty()) {
+                                    item {
+                                        Text(stringResource(Res.string.pending_submission))
+                                    }
+                                    items(pending) { phrase ->
                                         PhraseItem(
                                             phrase = phrase,
                                             modifier = Modifier.fillMaxWidth(),
                                             onClick = {
-                                                phrase.id?.let(component::navigateViewPhrase)
+                                                component.navigateViewPhrase(phrase)
                                             }
                                         )
                                     }
@@ -251,12 +277,79 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                     }
                                 }
 
-                                items(filteredPhrases.filter { !it.pending }) { phrase ->
+                                // Pending review
+                                val inReview = filteredPhrases.filter {
+                                    it.workflow == PhraseWorkflow.IN_REVIEW
+                                }
+                                if (inReview.isNotEmpty()) {
+                                    item {
+                                        Text(stringResource(Res.string.pending_review))
+                                    }
+                                    items(inReview) { phrase ->
+                                        PhraseItem(
+                                            phrase = phrase,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onClick = {
+                                                component.navigateViewPhrase(phrase)
+                                            }
+                                        )
+                                    }
+                                    item {
+                                        HorizontalDivider()
+                                    }
+                                }
+
+                                // Reviewed
+                                val reviewed = filteredPhrases.filter {
+                                    it.workflow == PhraseWorkflow.REVIEWED
+                                }
+                                if (reviewed.isNotEmpty()) {
+                                    item {
+                                        Row(
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            Text(stringResource(Res.string.reviewed))
+                                            TextButton(
+                                                onClick = {}
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Outlined.Delete,
+                                                    contentDescription = "clear reviewed items",
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                                Text(
+                                                    text = stringResource(Res.string.clear),
+                                                    fontSize = 16.sp
+                                                )
+                                            }
+                                        }
+                                    }
+                                    items(reviewed) { phrase ->
+                                        PhraseItem(
+                                            phrase = phrase,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onClick = {
+                                                component.navigateViewPhrase(phrase)
+                                            }
+                                        )
+                                    }
+                                    item {
+                                        HorizontalDivider()
+                                    }
+                                }
+
+                                // Local items
+                                val saved = filteredPhrases.filter {
+                                    it.workflow == PhraseWorkflow.SAVED
+                                }
+                                items(saved) { phrase ->
                                     PhraseItem(
                                         phrase = phrase,
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = {
-                                            phrase.id?.let(component::navigateViewPhrase)
+                                            component.navigateViewPhrase(phrase)
                                         }
                                     )
                                 }
@@ -270,7 +363,7 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                     color = MaterialTheme.colorScheme.surfaceVariant
                                 )
 
-                                if (glossaryState.glossary?.hasUpdate == true
+                                if (model.glossaryHasUpdate
                                     || glossaryUpdateStatus != UpdateStatus.DEFAULT
                                 ) {
                                     GlossaryUpdate(
@@ -340,10 +433,13 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                                         onClick = component::uploadPendingPhrases,
                                                         shape = MaterialTheme.shapes.medium,
                                                         colors = ButtonDefaults.buttonColors(
-                                                            containerColor = MaterialTheme.colorScheme.primary,
-                                                            contentColor = MaterialTheme.colorScheme.onPrimary
+                                                            containerColor = if (hasPendingPhrases) {
+                                                                MaterialTheme.colorScheme.primary
+                                                            } else MaterialTheme.colorScheme.primaryContainer,
+                                                            contentColor = if (hasPendingPhrases) {
+                                                                MaterialTheme.colorScheme.primaryContainer
+                                                            } else MaterialTheme.colorScheme.onPrimaryContainer
                                                         ),
-                                                        enabled = hasPendingPhrases,
                                                         modifier = Modifier.fillMaxWidth()
                                                             .height(40.dp)
                                                     ) {

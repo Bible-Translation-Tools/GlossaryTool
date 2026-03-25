@@ -29,16 +29,15 @@ import kotlinx.io.files.SystemFileSystem
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Progress
-import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
+import org.bibletranslationtools.glossary.data.api.ReviewStatus
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.NetworkResult
 import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
 import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
-import org.bibletranslationtools.glossary.domain.usecases.MergePendingPhrases
 import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.toTimestamp
 import org.bibletranslationtools.glossary.ui.components.UpdateStatus
@@ -54,19 +53,21 @@ interface KeyTermsListComponent : DrawerContext {
 
     data class Model(
         val isLoading: Boolean = false,
+        val isRemoteLoading: Boolean = false,
         val phrases: List<Phrase> = emptyList(),
         val updateStatus: UpdateStatus = UpdateStatus.DEFAULT,
+        val glossaryHasUpdate: Boolean = false,
         val snackBarMessage: String? = null,
         val progress: Progress? = null
     )
 
-    fun initialize(glossary: Glossary, book: String, chapter: Int)
+    fun initialize(glossary: Glossary)
     fun navigateImportGlossary()
     fun navigateCreateGlossary()
     fun navigateSearchPhrases()
     fun uploadGlossary()
     fun uploadPendingPhrases()
-    fun navigateViewPhrase(phraseId: String)
+    fun navigateViewPhrase(phrase: Phrase)
     fun downloadGlossary()
     fun joinGlossary()
     fun checkForUpdates()
@@ -80,7 +81,7 @@ class DefaultKeyTermsListComponent(
     private val onNavigateImportGlossary: () -> Unit,
     private val onNavigateCreateGlossary: () -> Unit,
     private val onNavigateSearchPhrases: () -> Unit,
-    private val onNavigateViewPhrase: (phraseId: String) -> Unit,
+    private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
     private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
     private val onTriggerUpdate: () -> Unit
@@ -91,12 +92,11 @@ class DefaultKeyTermsListComponent(
     private val directoryProvider: DirectoryProvider by inject()
     private val glossaryApi: GlossaryApi by inject()
     private val exportGlossaryUseCase: ExportGlossary by inject()
-    private val mergePendingPhrasesUseCase: MergePendingPhrases by inject()
 
     private val appState: AppStateStore by inject()
     private val glossaryStateHolder = appState.glossaryStateHolder
     private val glossaryState = glossaryStateHolder.state
-    private val resourceState = appState.resourceStateHolder.state
+    private val userState = appState.userStateHolder.state
 
     private val _model = MutableValue(KeyTermsListComponent.Model())
     override val model: Value<KeyTermsListComponent.Model> = _model
@@ -109,16 +109,15 @@ class DefaultKeyTermsListComponent(
         }
     }
 
-    override fun initialize(glossary: Glossary, book: String, chapter: Int) {
+    override fun initialize(glossary: Glossary) {
         componentScope.launch {
             _model.update { it.copy(isLoading = true) }
 
-            val phrases = withContext(Dispatchers.Default) {
+            val phrases = withContext(Dispatchers.IO) {
                 val saved = glossaryRepository.getPhrases(glossary.id)
                 val pending = glossaryRepository.getPendingPhrases(glossary.id)
 
-                // Overwrite saved phrases with pending ones
-                (saved + pending).associateBy { it.id }
+                (saved + pending).associateBy { it.phrase }
                     .values
                     .toList()
                     .sortedBy { it.phrase.lowercase() }
@@ -131,7 +130,7 @@ class DefaultKeyTermsListComponent(
                 )
             }
 
-            loadGlossary()
+            loadPendingPhrases()
         }
     }
 
@@ -184,13 +183,15 @@ class DefaultKeyTermsListComponent(
             }
 
             _model.update { it.copy(progress = null, snackBarMessage = message) }
+
+            initialize(glossary)
         }
     }
 
     override fun uploadPendingPhrases() {
         componentScope.launch {
             val glossary = glossaryState.value.glossary ?: return@launch
-            val remoteId = glossary.remoteId ?: return@launch
+            val glossaryRemoteId = glossary.remoteId ?: return@launch
 
             val progress = Progress(
                 value = -1f,
@@ -200,14 +201,11 @@ class DefaultKeyTermsListComponent(
 
             val message = withContext(Dispatchers.Default) {
                 val result = glossaryApi.uploadPendingPhrases(
-                    id = remoteId,
+                    glossaryId = glossaryRemoteId,
                     phrases = _model.value.phrases.filter { it.pending }
                 )
                 if (result is NetworkResult.Success) {
-                    val message = mergePendingPhrasesUseCase(glossary.id!!)
-                    if (!message.success) {
-                        this@DefaultKeyTermsListComponent.logE("Error merging pending phrases: ${message.message}")
-                    }
+                    glossaryRepository.deletePendingByGlossary(glossary.id!!)
                     getString(Res.string.upload_pending_success)
                 } else {
                     this@DefaultKeyTermsListComponent.logE("Upload pending phrases failed: $result")
@@ -218,19 +216,16 @@ class DefaultKeyTermsListComponent(
             _model.update {
                 it.copy(
                     progress = null,
-                    snackBarMessage = message,
-                    phrases = _model.value.phrases.map { phrase ->
-                        if (phrase.pending) {
-                            phrase.copy(pending = false)
-                        } else phrase
-                    }
+                    snackBarMessage = message
                 )
             }
+
+            initialize(glossary)
         }
     }
 
-    override fun navigateViewPhrase(phraseId: String) {
-        onNavigateViewPhrase(phraseId)
+    override fun navigateViewPhrase(phrase: Phrase) {
+        onNavigateViewPhrase(phrase)
     }
 
     override fun downloadGlossary() {
@@ -268,14 +263,14 @@ class DefaultKeyTermsListComponent(
 
     override fun joinGlossary() {
         componentScope.launch {
-            val remoteId = glossaryState.value.glossary?.remoteId ?: return@launch
+            val glossaryRemoteId = glossaryState.value.glossary?.remoteId ?: return@launch
             val successMessage = getString(Res.string.join_glossary_success)
             val progressMessage = getString(Res.string.join_glossary_progress)
 
             _model.update { it.copy(progress = Progress(-1f, progressMessage)) }
 
             val users = withContext(Dispatchers.Default) {
-                glossaryApi.joinGlossary(remoteId).let { result ->
+                glossaryApi.joinGlossary(glossaryRemoteId).let { result ->
                     when (result) {
                         is NetworkResult.Success -> {
                             _model.update { it.copy(snackBarMessage = successMessage) }
@@ -315,13 +310,16 @@ class DefaultKeyTermsListComponent(
                 val updates = glossaryApi.checkUpdates(listOf(glossaryUpdate))
                 if (updates is NetworkResult.Success) {
                     if (updates.data.any { it.id == glossary.remoteId }) {
-                        glossaryStateHolder.setGlossary(glossary.copy(hasUpdate = true))
+                        _model.update { it.copy(glossaryHasUpdate = true) }
                         getString(Res.string.updates_found)
                     } else {
                         getString(Res.string.no_updates_found)
                     }
                 } else {
-                    this@DefaultKeyTermsListComponent.logE("Check for updates failed: ${(updates as NetworkResult.Error).message}")
+                    this@DefaultKeyTermsListComponent.logE(
+                        "Check for updates failed: " +
+                                "${(updates as NetworkResult.Error).message}"
+                    )
                     getString(Res.string.error_checking_updates)
                 }
             }
@@ -331,9 +329,11 @@ class DefaultKeyTermsListComponent(
     }
 
     override fun clearHasUpdate() {
-        _model.update { it.copy(updateStatus = UpdateStatus.DEFAULT) }
-        glossaryState.value.glossary?.let {
-            glossaryStateHolder.setGlossary(it.copy(hasUpdate = false))
+        _model.update {
+            it.copy(
+                updateStatus = UpdateStatus.DEFAULT,
+                glossaryHasUpdate = false
+            )
         }
     }
 
@@ -341,55 +341,60 @@ class DefaultKeyTermsListComponent(
         _model.update { it.copy(snackBarMessage = null) }
     }
 
-    private fun loadGlossary() {
+    private fun loadPendingPhrases() {
         componentScope.launch {
             val glossary = glossaryState.value.glossary ?: return@launch
-            val glossaryId = glossary.id ?: return@launch
+            val user = userState.value.user
 
-            withContext(Dispatchers.Default) {
-                glossaryRepository.getGlossary(glossaryId)
-            }?.let { dbGlossary ->
-                glossaryStateHolder.setGlossary(
-                    dbGlossary.copy(hasUpdate = glossary.hasUpdate)
+            _model.update { it.copy(isRemoteLoading = true) }
+
+            val phrases = withContext(Dispatchers.IO) {
+                val pending = glossaryRepository.getPendingPhrases(glossary.id)
+                val remotePending = mutableListOf<Phrase>()
+                val remoteReviewed = mutableListOf<Phrase>()
+
+                glossary.remoteId?.let { glossaryRemoteId ->
+                    val pendingResult = glossaryApi.getPendingPhrases(glossary.remoteId)
+                    if (pendingResult is NetworkResult.Success) {
+                        remotePending.addAll(
+                            pendingResult.data
+                                .filter { it.user.username == user?.username }
+                                .map {
+                                    it.phrase.copy(
+                                        pending = true,
+                                        status = ReviewStatus.UNREVIEWED
+                                    )
+                                }
+                        )
+                    }
+
+                    val reviewedResult = glossaryApi.getReviewedPhrases(glossaryRemoteId)
+                    if (reviewedResult is NetworkResult.Success) {
+                        remoteReviewed.addAll(
+                            reviewedResult.data.map {
+                                it.phrase.copy(
+                                    pending = true,
+                                    status = it.status
+                                )
+                            }
+                        )
+                    }
+                }
+
+                (remotePending + remoteReviewed + pending).associateBy { it.phrase }
+                    .values
+                    .toList()
+            }
+
+            _model.update { state ->
+                state.copy(
+                    isRemoteLoading = false,
+                    phrases = (state.phrases + phrases).associateBy { it.phrase }
+                        .values
+                        .toList()
+                        .sortedBy { it.phrase.lowercase() }
                 )
             }
         }
-    }
-
-    private fun findRelevantRefs(
-        phrase: Phrase,
-        book: String,
-        chapter: Int
-    ): List<Ref> {
-        val resource = resourceState.value.resource ?: return emptyList()
-
-        val regex = Regex(
-            pattern = "\\b${Regex.escape(phrase.phrase)}\\b",
-            option = RegexOption.IGNORE_CASE
-        )
-        val refs = mutableListOf<Ref>()
-        val verses = resource.books.singleOrNull {
-            book == it.slug
-        }
-            ?.chapters?.singleOrNull {
-                chapter == it.number
-            }?.verses ?: return emptyList()
-
-        for (verse in verses) {
-            val matchCount = regex.findAll(verse.text).count()
-            if (matchCount > 0) {
-                repeat(matchCount) {
-                    refs.add(
-                        Ref(
-                            book = book,
-                            chapter = chapter.toString(),
-                            verse = verse.number,
-                            phraseId = phrase.id
-                        )
-                    )
-                }
-            }
-        }
-        return refs
     }
 }

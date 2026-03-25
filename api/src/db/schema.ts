@@ -14,6 +14,7 @@ export const roleEnum = pgEnum("role", ["owner", "admin", "editor", "viewer"]);
 export type RoleType = (typeof roleEnum.enumValues)[number];
 
 export const reviewStatusEnum = pgEnum("review_status", [
+  "unreviewed",
   "approved",
   "rejected",
 ]);
@@ -30,7 +31,7 @@ export const usersTable = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
-  (table) => [uniqueIndex("idx_unique_user").on(table.email)]
+  (table) => [uniqueIndex("idx_unique_user").on(table.email)],
 );
 
 export const resourceTable = pgTable(
@@ -48,7 +49,9 @@ export const resourceTable = pgTable(
       .defaultNow()
       .$onUpdate(() => new Date()),
   },
-  (table) => [uniqueIndex("idx_unique_resource").on(table.language, table.type)]
+  (table) => [
+    uniqueIndex("idx_unique_resource").on(table.language, table.type),
+  ],
 );
 
 export const glossaryTable = pgTable(
@@ -74,9 +77,9 @@ export const glossaryTable = pgTable(
     uniqueIndex("idx_unique_glossary").on(
       table.code,
       table.sourceLanguage,
-      table.targetLanguage
+      table.targetLanguage,
     ),
-  ]
+  ],
 );
 
 export const phraseTable = pgTable(
@@ -100,7 +103,7 @@ export const phraseTable = pgTable(
   },
   (table) => [
     uniqueIndex("idx_unique_phrase").on(table.phrase, table.glossaryId),
-  ]
+  ],
 );
 
 export const pendingPhraseTable = pgTable(
@@ -111,6 +114,7 @@ export const pendingPhraseTable = pgTable(
     spelling: text("spelling").notNull(),
     description: text("description").notNull(),
     audio: text("audio").notNull(),
+    reviewStatus: reviewStatusEnum("status").notNull().default("unreviewed"),
     userId: integer("user_id")
       .notNull()
       .references(() => usersTable.id, { onDelete: "cascade" }),
@@ -129,20 +133,10 @@ export const pendingPhraseTable = pgTable(
     uniqueIndex("idx_unique_pending_phrase").on(
       table.phrase,
       table.glossaryId,
-      table.userId
+      table.userId,
     ),
-  ]
+  ],
 );
-
-export const refTable = pgTable("refs", {
-  id: text("id").primaryKey(),
-  book: text("book").notNull(),
-  chapter: text("chapter").notNull(),
-  verse: text("verse").notNull(),
-  phraseId: text("phrase_id")
-    .notNull()
-    .references(() => phraseTable.id, { onDelete: "cascade" }),
-});
 
 export const glossaryUsers = pgTable(
   "glossary_users",
@@ -158,7 +152,7 @@ export const glossaryUsers = pgTable(
   },
   (table) => [
     uniqueIndex("idx_unique_glossary_user").on(table.glossaryId, table.userId),
-  ]
+  ],
 );
 
 export const phraseReviews = pgTable(
@@ -175,7 +169,7 @@ export const phraseReviews = pgTable(
   },
   (table) => [
     uniqueIndex("idx_unique_phrase_review").on(table.phraseId, table.userId),
-  ]
+  ],
 );
 
 export const userEntityRelations = relations(usersTable, ({ many }) => ({
@@ -196,7 +190,7 @@ export const glossaryEntityRelations = relations(
     phrases: many(phraseTable),
     pendingPhrases: many(pendingPhraseTable),
     users: many(glossaryUsers),
-  })
+  }),
 );
 
 export const glossaryUsersRelations = relations(glossaryUsers, ({ one }) => ({
@@ -228,8 +222,7 @@ export const phraseEntityRelations = relations(
       fields: [phraseTable.glossaryId],
       references: [glossaryTable.id],
     }),
-    refs: many(refTable),
-  })
+  }),
 );
 
 export const pendingPhraseEntityRelations = relations(
@@ -248,12 +241,5 @@ export const pendingPhraseEntityRelations = relations(
       references: [usersTable.id],
     }),
     reviews: many(phraseReviews),
-  })
-);
-
-export const refEntityRelations = relations(refTable, ({ one }) => ({
-  phrase: one(phraseTable, {
-    fields: [refTable.phraseId],
-    references: [phraseTable.id],
   }),
-}));
+);

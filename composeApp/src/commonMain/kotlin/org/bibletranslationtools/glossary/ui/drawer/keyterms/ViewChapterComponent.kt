@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Verse
-import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -33,11 +32,9 @@ interface ViewChapterComponent : DrawerContext {
 class DefaultViewChapterComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
-    private val phraseId: String,
+    private val phrase: Phrase,
     private val ref: Ref
 ) : DrawerComponent(componentContext, parentContext), ViewChapterComponent, KoinComponent {
-
-    private val glossaryRepository: GlossaryRepository by inject()
 
     private val _model = MutableValue(ViewChapterComponent.Model())
     override val model: Value<ViewChapterComponent.Model> = _model
@@ -54,7 +51,6 @@ class DefaultViewChapterComponent(
             componentScope.launch {
                 _model.update { it.copy(isLoading = true) }
 
-                val phrase = glossaryRepository.getPhrase(phraseId)
                 val verses = resourceState.value.resource?.let {
                     ref.getChapterVerses(it)
                 } ?: emptyList()

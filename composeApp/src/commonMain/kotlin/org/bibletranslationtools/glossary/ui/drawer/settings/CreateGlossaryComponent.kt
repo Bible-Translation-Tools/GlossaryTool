@@ -193,7 +193,6 @@ class DefaultCreateGlossaryComponent(
             sourceLanguage = sourceLanguage,
             targetLanguage = targetLanguage,
             version = 1,
-            hasUpdate = false,
             resourceId = resource.id
         )
 

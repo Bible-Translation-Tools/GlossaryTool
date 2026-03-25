@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
@@ -20,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.api.ReviewStatus
 
 @Composable
 fun PhraseItem(
@@ -42,11 +45,30 @@ fun PhraseItem(
             modifier = Modifier.padding(8.dp)
         ) {
             if (phrase.pending) {
-                Icon(
-                    imageVector = Icons.Default.Schedule,
-                    contentDescription = "pending"
-                )
+                when(phrase.status) {
+                    null, ReviewStatus.UNREVIEWED -> {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = "pending"
+                        )
+                    }
+                    ReviewStatus.APPROVED -> {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "approved",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    ReviewStatus.REJECTED -> {
+                        Icon(
+                            imageVector = Icons.Default.Cancel,
+                            contentDescription = "rejected",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
             }
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {

@@ -8,7 +8,6 @@ import {
   pendingPhraseTable,
   phraseReviews,
   phraseTable,
-  refTable,
   resourceTable,
   reviewStatusEnum,
   ReviewStatusType,
@@ -16,7 +15,7 @@ import {
   RoleType,
   usersTable,
 } from "./db/schema";
-import { and, eq, gt, sql, or } from "drizzle-orm";
+import { and, eq, gt, sql, or, lt, ne } from "drizzle-orm";
 import { unzipSync, zipSync } from "fflate";
 import { load as parseYaml } from "js-yaml";
 import {
@@ -152,7 +151,7 @@ app.post("/public/api/user/login", async (c) => {
         error: "Failed to login.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -195,7 +194,7 @@ app.post("/private/api/user/emoji", async (c) => {
         error: "Failed to update emoji.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -235,14 +234,14 @@ app.post("/private/api/glossary", async (c) => {
     }
 
     const resourceZipFilename = Object.keys(mainArchive).find((name) =>
-      name.endsWith(".zip")
+      name.endsWith(".zip"),
     );
     if (resourceZipFilename) {
       const resourceZipFile = mainArchive[resourceZipFilename];
       const resourceArchive = unzipSync(resourceZipFile);
 
       const manifestPath = Object.keys(resourceArchive).find((path) =>
-        path.endsWith("manifest.yaml")
+        path.endsWith("manifest.yaml"),
       );
       if (manifestPath) {
         const manifestFile = resourceArchive[manifestPath];
@@ -261,7 +260,7 @@ app.post("/private/api/glossary", async (c) => {
 
     if (glossary == null || manifest == null) {
       throw new Error(
-        "Could not find glossary.json or resource.zip/manifest.yml"
+        "Could not find glossary.json or resource.zip/manifest.yml",
       );
     }
 
@@ -376,7 +375,7 @@ app.post("/private/api/glossary", async (c) => {
         error: "Failed to process glossary file.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -418,7 +417,7 @@ app.post("/private/api/glossary/:id/role", async (c) => {
 
     if (!glossaryAdmins.includes(auth.username)) {
       throw new Error(
-        "You don't have permissions to assign roles to this glossary."
+        "You don't have permissions to assign roles to this glossary.",
       );
     }
 
@@ -471,7 +470,7 @@ app.post("/private/api/glossary/:id/role", async (c) => {
           },
           role: user.role,
         };
-      })
+      }),
     );
   } catch (error: any) {
     return c.json<ErrorDetails>(
@@ -479,7 +478,7 @@ app.post("/private/api/glossary/:id/role", async (c) => {
         error: "Failed to assign role.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -528,7 +527,7 @@ app.get("/public/api/glossary/:code", async (c) => {
     const resourceFile = await c.env.R2_BUCKET.get(resourceFilename);
     if (resourceFile === null) {
       throw new Error(
-        `Resource file "${resourceFilename}" not found in R2 bucket.`
+        `Resource file "${resourceFilename}" not found in R2 bucket.`,
       );
     }
     const resourceBytes = await resourceFile.arrayBuffer();
@@ -552,7 +551,7 @@ app.get("/public/api/glossary/:code", async (c) => {
         error: "Failed to process raw zip file.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -572,6 +571,8 @@ app.get("/private/api/glossary/:id/pending_phrases", async (c) => {
           },
         },
         pendingPhrases: {
+          where: (pendingPhrases, { eq }) =>
+            eq(pendingPhrases.reviewStatus, "unreviewed"),
           with: {
             user: true,
             original: true,
@@ -595,7 +596,7 @@ app.get("/private/api/glossary/:id/pending_phrases", async (c) => {
 
     if (!glossaryAdmins.includes(auth.username)) {
       throw new Error(
-        "You don't have permissions to review phrases in this glossary."
+        "You don't have permissions to review phrases in this glossary.",
       );
     }
 
@@ -629,6 +630,7 @@ app.get("/private/api/glossary/:id/pending_phrases", async (c) => {
             emoji: phrase.user.emoji,
           } satisfies User,
           original: originalPhrase,
+          status: phrase.reviewStatus,
           reviews: phrase.reviews.map((review) => {
             return {
               phrase: phrase.phrase,
@@ -640,7 +642,7 @@ app.get("/private/api/glossary/:id/pending_phrases", async (c) => {
             };
           }),
         };
-      })
+      }),
     );
   } catch (error: any) {
     return c.json<ErrorDetails>(
@@ -648,7 +650,7 @@ app.get("/private/api/glossary/:id/pending_phrases", async (c) => {
         error: "Failed to get glossary users.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -659,7 +661,7 @@ app.post("/private/api/glossary/:id/pending_phrases", async (c) => {
   const auth = c.get("jwtPayload");
 
   const pendingPhrases = await c.req.json<Phrase[]>();
-  console.log(pendingPhrases);
+
   try {
     const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
       where: eq(glossaryTable.id, id),
@@ -682,7 +684,7 @@ app.post("/private/api/glossary/:id/pending_phrases", async (c) => {
 
     if (!glossaryEditors.includes(auth.username)) {
       throw new Error(
-        "You don't have permissions to upload pending phrases in this glossary."
+        "You don't have permissions to upload pending phrases in this glossary.",
       );
     }
 
@@ -726,7 +728,7 @@ app.post("/private/api/glossary/:id/pending_phrases", async (c) => {
         error: "Failed to upload pending phrases.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -768,14 +770,14 @@ app.post("/private/api/glossary/:id/review_phrase", async (c) => {
 
     if (!glossaryAdmins.includes(auth.username)) {
       throw new Error(
-        "You don't have permissions to review phrases in this glossary."
+        "You don't have permissions to review phrases in this glossary.",
       );
     }
 
     const dbPhrase = await dbHelper.getDb().query.pendingPhraseTable.findFirst({
       where: and(
         eq(pendingPhraseTable.phrase, phrase),
-        eq(pendingPhraseTable.glossaryId, glossary.id)
+        eq(pendingPhraseTable.glossaryId, glossary.id),
       ),
     });
 
@@ -817,14 +819,21 @@ app.post("/private/api/glossary/:id/review_phrase", async (c) => {
 
     const adminsCount = glossaryAdmins.length;
     const approvedReviews = updatedPhrase.reviews.filter(
-      (review) => review.status === "approved"
+      (review) => review.status === "approved",
     ).length;
     const rejectedReviews = updatedPhrase.reviews.filter(
-      (review) => review.status === "rejected"
+      (review) => review.status === "rejected",
     ).length;
 
-    // If more or equal 51% of admins approved, move to main phrases
+    let finalStatus: ReviewStatusType = "unreviewed";
     if (approvedReviews / adminsCount >= 0.51) {
+      finalStatus = "approved";
+    } else if (rejectedReviews / adminsCount >= 0.51) {
+      finalStatus = "rejected";
+    }
+
+    // If majority approved, move to main phrases
+    if (finalStatus == "approved") {
       await dbHelper
         .getDb()
         .insert(phraseTable)
@@ -844,19 +853,16 @@ app.post("/private/api/glossary/:id/review_phrase", async (c) => {
             audio: sql.raw(`excluded.audio`),
           },
         });
+    }
 
-      // Remove from pending phrases
+    if (finalStatus != "unreviewed") {
       await dbHelper
         .getDb()
-        .delete(pendingPhraseTable)
-        .where(eq(pendingPhraseTable.id, updatedPhrase.id));
-
-      return c.json([]);
-    } else if (rejectedReviews / adminsCount >= 0.51) {
-      // If more than 51% of admins rejected, just remove from pending phrases
-      await dbHelper
-        .getDb()
-        .delete(pendingPhraseTable)
+        .update(pendingPhraseTable)
+        .set({
+          reviewStatus: finalStatus,
+          updatedAt: new Date(),
+        })
         .where(eq(pendingPhraseTable.id, updatedPhrase.id));
 
       return c.json([]);
@@ -872,7 +878,7 @@ app.post("/private/api/glossary/:id/review_phrase", async (c) => {
             emoji: review.user.emoji,
           } satisfies User,
         };
-      })
+      }),
     );
   } catch (error: any) {
     return c.json<ErrorDetails>(
@@ -880,7 +886,146 @@ app.post("/private/api/glossary/:id/review_phrase", async (c) => {
         error: "Failed to update pending phrase review status.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
+    );
+  }
+});
+
+app.get("/private/api/glossary/:id/reviewed_phrases", async (c) => {
+  const dbHelper = c.get("db");
+  const id = c.req.param("id");
+  const auth = c.get("jwtPayload");
+
+  try {
+    const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.id, id),
+      with: {
+        users: {
+          with: {
+            user: true,
+          },
+        },
+        pendingPhrases: {
+          where: (pendingPhrases, { and, ne, eq }) =>
+            and(
+              ne(pendingPhrases.reviewStatus, "unreviewed"),
+              eq(pendingPhrases.userId, auth.id),
+            ),
+          with: {
+            user: true,
+            original: true,
+            reviews: {
+              with: {
+                user: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!glossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    const glossaryAdmins = glossary.users
+      .filter((user) => ["owner", "admin", "editor"].includes(user.role))
+      .map((user) => user.user.username);
+
+    if (!glossaryAdmins.includes(auth.username)) {
+      throw new Error(
+        "You don't have permissions to review phrases in this glossary.",
+      );
+    }
+
+    return c.json<PendingPhrase[]>(
+      glossary.pendingPhrases.map((phrase) => {
+        const pendingPhrase: Phrase = {
+          id: phrase.id,
+          phrase: phrase.phrase,
+          spelling: phrase.spelling,
+          description: phrase.description,
+          audio: phrase.audio,
+          createdAt: phrase.createdAt.toISOString(),
+          updatedAt: phrase.updatedAt.toISOString(),
+        };
+        const originalPhrase: Phrase | null = phrase.original
+          ? {
+              id: phrase.original.id,
+              phrase: phrase.original.phrase,
+              spelling: phrase.original.spelling,
+              description: phrase.original.description,
+              audio: phrase.original.audio,
+              createdAt: phrase.original.createdAt.toISOString(),
+              updatedAt: phrase.original.updatedAt.toISOString(),
+            }
+          : null;
+
+        return {
+          phrase: pendingPhrase,
+          user: {
+            username: phrase.user.username,
+            emoji: phrase.user.emoji,
+          } satisfies User,
+          original: originalPhrase,
+          status: phrase.reviewStatus,
+          reviews: phrase.reviews.map((review) => {
+            return {
+              phrase: phrase.phrase,
+              status: review.status,
+              user: {
+                username: review.user.username,
+                emoji: review.user.emoji,
+              } satisfies User,
+            };
+          }),
+        };
+      }),
+    );
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to get glossary users.",
+        details: error.message || "Unknown error.",
+      },
+      400,
+    );
+  }
+});
+
+app.delete("/private/api/glossary/:id/reviewed_phrases", async (c) => {
+  const dbHelper = c.get("db");
+  const id = c.req.param("id");
+  const auth = c.get("jwtPayload");
+
+  try {
+    const glossary = await dbHelper.getDb().query.glossaryTable.findFirst({
+      where: eq(glossaryTable.id, id),
+    });
+
+    if (!glossary) {
+      throw new Error("Invalid glossary.");
+    }
+
+    dbHelper
+      .getDb()
+      .delete(pendingPhraseTable)
+      .where(
+        and(
+          eq(pendingPhraseTable.glossaryId, glossary.id),
+          eq(pendingPhraseTable.userId, auth.id),
+          ne(pendingPhraseTable.reviewStatus, "unreviewed"),
+        ),
+      );
+
+    return c.json({ success: true });
+  } catch (error: any) {
+    return c.json<ErrorDetails>(
+      {
+        error: "Failed to get glossary users.",
+        details: error.message || "Unknown error.",
+      },
+      400,
     );
   }
 });
@@ -924,7 +1069,7 @@ app.get("/private/api/glossary/:id/users", async (c) => {
           },
           role: user.role,
         };
-      })
+      }),
     );
   } catch (error: any) {
     return c.json<ErrorDetails>(
@@ -932,7 +1077,7 @@ app.get("/private/api/glossary/:id/users", async (c) => {
         error: "Failed to get glossary users.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -1003,7 +1148,7 @@ app.get("/private/api/glossary/:id/join", async (c) => {
           },
           role: user.role,
         };
-      })
+      }),
     );
   } catch (error: any) {
     return c.json<ErrorDetails>(
@@ -1011,7 +1156,7 @@ app.get("/private/api/glossary/:id/join", async (c) => {
         error: "Failed to get glossary users.",
         details: error.message || "Unknown error.",
       },
-      400
+      400,
     );
   }
 });
@@ -1023,7 +1168,7 @@ app.post("/public/api/glossary/check_updates", async (c) => {
   if (glossaries.length === 0) return c.json([], 200);
 
   const conditions = glossaries.map((item) =>
-    and(eq(glossaryTable.id, item.id), gt(glossaryTable.version, item.version))
+    and(eq(glossaryTable.id, item.id), gt(glossaryTable.version, item.version)),
   );
   const combinedQuery = or(...conditions);
 
@@ -1052,237 +1197,7 @@ app.post("/public/api/glossary/check_updates", async (c) => {
         error: "Failed to check for updates.",
         details: error.message || "Unknown error.",
       },
-      400
-    );
-  }
-});
-
-/// OLD API
-
-app.get("/api/glossary/:code", async (c) => {
-  const dbHelper = c.get("db");
-  const code = c.req.param("code");
-
-  try {
-    const encoder = new TextEncoder();
-
-    const glossary =
-      (await dbHelper.getDb().query.glossaryTable.findFirst({
-        where: eq(glossaryTable.code, code),
-        with: {
-          resource: true,
-          phrases: {
-            with: {
-              refs: true,
-            },
-          },
-        },
-      })) || null;
-
-    if (!glossary) {
-      return c.json({ error: "Could not find glossary" }, 404);
-    }
-
-    glossary["author"] = "User";
-
-    const resourceFilename = `${glossary!.resource.language}_${
-      glossary!.resource.type
-    }.zip`;
-
-    const resourceFile = await c.env.R2_BUCKET.get(resourceFilename);
-    if (resourceFile === null) {
-      return c.json(
-        { error: `Resource file "${resourceFilename}" not found in R2.` },
-        404
-      );
-    }
-    const resourceBytes = await resourceFile.arrayBuffer();
-    const glossaryJson = JSON.stringify(glossary, null, 4);
-    const mainZipContents = {
-      "glossary.json": encoder.encode(glossaryJson),
-      [resourceFilename]: new Uint8Array(resourceBytes),
-    };
-    const mainZipBytes = zipSync(mainZipContents);
-    const filename = `glossary-${code}.zip`;
-
-    return new Response(mainZipBytes, {
-      headers: {
-        "Content-Type": "application/zip",
-        "Content-Disposition": `attachment; filename="${filename}"`,
-      },
-    });
-  } catch (error) {
-    return c.json(
-      { error: "Failed to process raw zip file.", details: error },
-      500
-    );
-  }
-});
-
-app.post("/api/glossary", async (c) => {
-  const dbHelper = c.get("db");
-
-  try {
-    const zipArrayBuffer = await c.req.arrayBuffer();
-
-    if (!zipArrayBuffer || zipArrayBuffer.byteLength === 0) {
-      return c.json({ error: "Request body is empty." }, 400);
-    }
-
-    const decoder = new TextDecoder();
-
-    let glossary: GlossaryOld | null = null;
-    let manifest: Manifest | null = null;
-
-    const mainArchive = unzipSync(new Uint8Array(zipArrayBuffer));
-
-    const glossaryFile = mainArchive["glossary.json"];
-    if (glossaryFile) {
-      const glossaryString = decoder.decode(glossaryFile);
-      glossary = JSON.parse(glossaryString);
-    }
-
-    const resourceZipFilename = Object.keys(mainArchive).find((name) =>
-      name.endsWith(".zip")
-    );
-    if (resourceZipFilename) {
-      const resourceZipFile = mainArchive[resourceZipFilename];
-      const resourceArchive = unzipSync(resourceZipFile);
-
-      const manifestPath = Object.keys(resourceArchive).find((path) =>
-        path.endsWith("manifest.yaml")
-      );
-      if (manifestPath) {
-        const manifestFile = resourceArchive[manifestPath];
-        if (manifestFile) {
-          const manifestString = decoder.decode(manifestFile);
-          manifest = parseYaml(manifestString) as Manifest;
-        }
-      }
-
-      await c.env.R2_BUCKET.put(resourceZipFilename, resourceZipFile, {
-        httpMetadata: {
-          contentType: "application/zip",
-        },
-      });
-    }
-
-    if (glossary == null || manifest == null) {
-      return c.json(
-        { error: "Could not find glossary.json or resource.zip/manifest.yml" },
-        404
-      );
-    }
-
-    const insertResource = await dbHelper
-      .getDb()
-      .insert(resourceTable)
-      .values({
-        language: manifest.dublin_core.language.identifier,
-        type: manifest.dublin_core.identifier,
-        version: manifest.dublin_core.version,
-      })
-      .onConflictDoUpdate({
-        target: [resourceTable.language, resourceTable.type],
-        set: {
-          version: manifest.dublin_core.version,
-        },
-      })
-      .returning({ id: resourceTable.id });
-
-    const resourceId = insertResource[0].id;
-
-    const insertGlossary = await dbHelper
-      .getDb()
-      .insert(glossaryTable)
-      .values({
-        id: glossary.id!,
-        code: glossary.code,
-        sourceLanguage: glossary.sourceLanguage,
-        targetLanguage: glossary.targetLanguage,
-        resourceId: resourceId,
-        version: 1,
-      })
-      .onConflictDoUpdate({
-        target: [
-          glossaryTable.code,
-          glossaryTable.sourceLanguage,
-          glossaryTable.targetLanguage,
-        ],
-        set: {
-          resourceId: resourceId,
-        },
-      })
-      .returning({ id: glossaryTable.id });
-
-    const glossaryId = insertGlossary[0].id;
-
-    const phraseValues = glossary.phrases.map((phrase) => ({
-      id: phrase.id,
-      phrase: phrase.phrase,
-      spelling: phrase.spelling,
-      description: phrase.description,
-      audio: phrase.audio,
-      glossaryId: glossaryId,
-    }));
-
-    const CHUNK_SIZE = 1000;
-
-    // Insert phrases
-    await dbHelper.getDb().transaction(async (tx) => {
-      for (let i = 0; i < phraseValues.length; i += CHUNK_SIZE) {
-        const chunk = phraseValues.slice(i, i + CHUNK_SIZE);
-        await tx
-          .insert(phraseTable)
-          .values(chunk)
-          .onConflictDoUpdate({
-            target: [phraseTable.phrase, phraseTable.glossaryId],
-            set: {
-              spelling: sql.raw(`excluded.spelling`),
-              description: sql.raw(`excluded.description`),
-              audio: sql.raw(`excluded.audio`),
-            },
-          });
-      }
-    });
-
-    // Prepare refs
-    type Ref = ReferenceOld & { phraseId: string };
-    const refs: Ref[] = glossary.phrases.flatMap((phrase) =>
-      phrase.refs.map(
-        (ref): Ref => ({
-          ...ref,
-          phraseId: phrase.id,
-        })
-      )
-    );
-
-    const refValues = refs.map((ref) => ({
-      id: ref.id,
-      book: ref.book,
-      chapter: ref.chapter,
-      verse: ref.verse,
-      phraseId: ref.phraseId,
-    }));
-
-    // Insert refs
-    await dbHelper.getDb().transaction(async (tx) => {
-      for (let i = 0; i < refValues.length; i += CHUNK_SIZE) {
-        const chunk = refValues.slice(i, i + CHUNK_SIZE);
-        await tx
-          .insert(refTable)
-          .values(chunk)
-          .onConflictDoNothing({
-            target: [refTable.id],
-          });
-      }
-    });
-
-    return c.json(true);
-  } catch (error) {
-    return c.json(
-      { error: "Failed to process raw zip file.", details: error },
-      500
+      400,
     );
   }
 });
@@ -1292,7 +1207,7 @@ export default {
   async scheduled(
     controller: ScheduledController,
     env: CloudflareBindings,
-    ctx: ExecutionContext
+    ctx: ExecutionContext,
   ) {
     try {
       // This is just to keep supabase from pausing the database automatically due to inactivity.
@@ -1308,6 +1223,15 @@ export default {
         .update(usersTable)
         .set({ updatedAt: new Date() })
         .where(eq(usersTable.username, "mXaln"));
+
+      // Delete outdated reviewed pending phrases
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      dbHelper
+        .getDb()
+        .delete(pendingPhraseTable)
+        .where(lt(pendingPhraseTable.updatedAt, thirtyDaysAgo));
     } catch (error) {
       console.error(error);
     }

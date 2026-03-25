@@ -7,8 +7,17 @@ import org.bibletranslationtools.glossary.PendingPhraseEntity
 import org.bibletranslationtools.glossary.PhraseEntity
 import org.bibletranslationtools.glossary.Utils.generateUUID
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
+import org.bibletranslationtools.glossary.data.api.ReviewStatus
 import org.bibletranslationtools.glossary.toLocalDateTime
 import org.bibletranslationtools.glossary.toTimestamp
+
+enum class PhraseWorkflow {
+    DRAFT,
+    SAVED,
+    PENDING,
+    IN_REVIEW,
+    REVIEWED
+}
 
 @Serializable
 data class Phrase(
@@ -17,11 +26,21 @@ data class Phrase(
     val description: String = "",
     val audio: String? = null,
     val pending: Boolean = false,
+    val status: ReviewStatus? = null,
     @Contextual val createdAt: LocalDateTime = getCurrentTime(),
     @Contextual val updatedAt: LocalDateTime = getCurrentTime(),
     val glossaryId: String? = null,
     val id: String? = null
-)
+) {
+    val workflow: PhraseWorkflow
+        get() = when {
+            id == null -> PhraseWorkflow.DRAFT
+            !pending -> PhraseWorkflow.SAVED
+            status == null -> PhraseWorkflow.PENDING
+            status == ReviewStatus.UNREVIEWED -> PhraseWorkflow.IN_REVIEW
+            else -> PhraseWorkflow.REVIEWED
+        }
+}
 
 fun PhraseEntity.toModel(): Phrase {
     return Phrase(

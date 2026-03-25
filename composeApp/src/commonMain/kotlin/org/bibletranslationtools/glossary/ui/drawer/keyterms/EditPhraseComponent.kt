@@ -39,7 +39,7 @@ interface EditPhraseComponent : DrawerContext {
 class DefaultEditPhraseComponent(
     componentContext: ComponentContext,
     private val parentContext: DrawerContext,
-    private val phrase: String,
+    private val phrase: Phrase,
     private val onPhraseSaved: () -> Unit
 ) : DrawerComponent(componentContext, parentContext), EditPhraseComponent, KoinComponent {
 
@@ -60,21 +60,14 @@ class DefaultEditPhraseComponent(
         }
 
         componentScope.launch {
-            val glossary = glossaryState.value.glossary ?: return@launch
-
-            val phrase = glossaryRepository.getPendingPhrase(phrase, glossary.id!!)
-                ?: glossaryRepository.getPhrase(phrase, glossary.id)
-                ?: Phrase(
-                    phrase = phrase,
-                    glossaryId = glossary.id
-                )
-
             _model.update { it.copy(phrase = phrase) }
         }
     }
 
     override fun savePendingPhrase(spelling: String, description: String) {
         componentScope.launch {
+            val glossaryId = glossaryState.value.glossary?.id ?: return@launch
+
             _model.value = _model.value.copy(
                 isSaving = true,
                 error = null
@@ -86,7 +79,8 @@ class DefaultEditPhraseComponent(
                         spelling = spelling,
                         description = description,
                         updatedAt = getCurrentTime(),
-                        id = phrase.id
+                        id = phrase.id,
+                        glossaryId = glossaryId
                     )
 
                     val refs = findRefs(phrase).distinctBy {

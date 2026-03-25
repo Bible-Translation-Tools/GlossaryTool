@@ -61,7 +61,7 @@ fun PhraseDetailsBar(
     resource: Resource,
     fontFamily: FontFamily,
     onNavPhrase: (PhraseNavDir) -> Unit,
-    onViewDetails: (String) -> Unit,
+    onViewDetails: (Phrase) -> Unit,
     onDismiss: () -> Unit
 ) {
     val currentPhrase by rememberUpdatedState(details.phrase)
@@ -120,9 +120,7 @@ fun PhraseDetailsBar(
                     TextButton(
                         onClick = {
                             onDismiss()
-                            currentPhrase.id?.let {
-                                onViewDetails(it)
-                            }
+                            onViewDetails(currentPhrase)
                         }
                     ) {
                         Text(

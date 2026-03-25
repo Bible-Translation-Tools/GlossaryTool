@@ -12,7 +12,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
-import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
@@ -29,18 +28,16 @@ interface ViewPhraseComponent : DrawerContext {
     )
 
     fun onRefClick(ref: Ref)
-    fun onEditClick(phrase: String)
+    fun onEditClick(phrase: Phrase)
 }
 
 class DefaultViewPhraseComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
-    private val phraseId: String,
-    private val onNavigateRef: (String, Ref) -> Unit,
-    private val onNavigateEdit: (String) -> Unit
+    private val phrase: Phrase,
+    private val onNavigateRef: (Phrase, Ref) -> Unit,
+    private val onNavigateEdit: (Phrase) -> Unit
 ) : DrawerComponent(componentContext, parentContext), ViewPhraseComponent, KoinComponent {
-
-    private val glossaryRepository: GlossaryRepository by inject()
 
     private val appStateStore: AppStateStore by inject()
     private val resourceState = appStateStore.resourceStateHolder.state
@@ -55,11 +52,8 @@ class DefaultViewPhraseComponent(
             componentScope.launch {
                 _model.update { it.copy(isLoading = true) }
 
-                val (phrase, refs) = withContext(Dispatchers.Default) {
-                    val p = glossaryRepository.getPendingPhrase(phraseId)
-                        ?: glossaryRepository.getPhrase(phraseId)
-                    val r = p?.let { findRefs(it) } ?: emptyList()
-                    p to r
+                val refs = withContext(Dispatchers.Default) {
+                    findRefs(phrase)
                 }
 
                 _model.update {
@@ -74,10 +68,10 @@ class DefaultViewPhraseComponent(
     }
 
     override fun onRefClick(ref: Ref) {
-        onNavigateRef(phraseId, ref)
+        onNavigateRef(phrase, ref)
     }
 
-    override fun onEditClick(phrase: String) {
+    override fun onEditClick(phrase: Phrase) {
         onNavigateEdit(phrase)
     }
 

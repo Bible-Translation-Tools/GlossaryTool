@@ -54,7 +54,7 @@ interface ReadIndexComponent : ParentContext {
     fun onPhraseSelected(phrase: String)
     fun onPhraseClick(phrase: Phrase, verse: String?)
     fun navigatePhrase(dir: PhraseNavDir)
-    fun onViewPhraseClick(phraseId: String)
+    fun onViewPhraseClick(phrase: Phrase)
     fun clearPhraseDetails()
 }
 
@@ -63,8 +63,8 @@ class DefaultReadIndexComponent(
     parentContext: ParentContext,
     private val ref: RefOption? = null,
     private val sharedState: MainStateKeeper,
-    private val onNavigateViewPhrase: (phraseId: String) -> Unit,
-    private val onNavigateEditPhrase: (phrase: String) -> Unit,
+    private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
+    private val onNavigateEditPhrase: (phrase: Phrase) -> Unit,
     private val onNavigateBrowse: (book: String, chapter: Int) -> Unit
 ) : AppComponent(componentContext, parentContext),
     ReadIndexComponent, KoinComponent {
@@ -141,7 +141,20 @@ class DefaultReadIndexComponent(
     }
 
     override fun onPhraseSelected(phrase: String) {
-        onNavigateEditPhrase(phrase)
+        componentScope.launch {
+            val glossary = glossaryState.value.glossary ?: return@launch
+
+            val phrase = withContext(Dispatchers.IO) {
+                glossaryRepository.getPendingPhrase(phrase, glossary.id!!)
+                    ?: glossaryRepository.getPhrase(phrase, glossary.id)
+                    ?: Phrase(
+                        phrase = phrase,
+                        glossaryId = glossary.id
+                    )
+            }
+
+            onNavigateEditPhrase(phrase)
+        }
     }
 
     override fun onPhraseClick(phrase: Phrase, verse: String?) {
@@ -158,8 +171,8 @@ class DefaultReadIndexComponent(
         }
     }
 
-    override fun onViewPhraseClick(phraseId: String) {
-        onNavigateViewPhrase(phraseId)
+    override fun onViewPhraseClick(phrase: Phrase) {
+        onNavigateViewPhrase(phrase)
     }
 
     override fun clearPhraseDetails() {

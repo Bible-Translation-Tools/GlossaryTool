@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Glossary
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.User
@@ -53,9 +54,9 @@ sealed class KeyTermsIntent {
     @Serializable
     data object Index : KeyTermsIntent()
     @Serializable
-    data class ViewPhrase(val phraseId: String) : KeyTermsIntent()
+    data class ViewPhrase(val phrase: Phrase) : KeyTermsIntent()
     @Serializable
-    data class EditPhrase(val phrase: String): KeyTermsIntent()
+    data class EditPhrase(val phrase: Phrase): KeyTermsIntent()
 }
 
 @Serializable
@@ -216,13 +217,15 @@ class DefaultMainComponent(
 
     override fun getGlossaryUsers(glossary: Glossary) {
         componentScope.launch {
-            val remoteId = glossary.remoteId ?: return@launch
+            val glossaryRemoteId = glossary.remoteId ?: return@launch
             val users = withContext(Dispatchers.Default) {
-                glossaryApi.getGlossaryUsers(remoteId).let { result ->
+                glossaryApi.getGlossaryUsers(glossaryRemoteId).let { result ->
                     when (result) {
                         is NetworkResult.Success -> result.data
                         is NetworkResult.Error -> {
-                            this@DefaultMainComponent.logE("Get glossary users failed: ${result.message.error}")
+                            this@DefaultMainComponent.logE(
+                                "Get glossary users failed: ${result.message.error}"
+                            )
                             emptyList()
                         }
                     }
@@ -240,12 +243,12 @@ class DefaultMainComponent(
         userStateHolder.setUser(null)
     }
 
-    private fun onNavigateViewPhrase(phraseId: String) {
-        val intent = KeyTermsIntent.ViewPhrase(phraseId)
+    private fun onNavigateViewPhrase(phrase: Phrase) {
+        val intent = KeyTermsIntent.ViewPhrase(phrase)
         drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
     }
 
-    private fun onNavigateEditPhrase(phrase: String) {
+    private fun onNavigateEditPhrase(phrase: Phrase) {
         val intent = KeyTermsIntent.EditPhrase(phrase)
         drawerNavigation.activate(DrawerConfig.KeyTerms(intent))
     }

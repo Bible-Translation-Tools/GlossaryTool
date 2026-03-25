@@ -6,6 +6,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.request.bearerAuth
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -31,19 +32,24 @@ interface GlossaryApi {
     suspend fun downloadGlossary(code: String): NetworkResult<ByteArray>
     suspend fun uploadGlossary(file: PlatformFile): NetworkResult<GlossaryVersion>
     suspend fun checkUpdates(glossaries: List<GlossaryUpdate>): NetworkResult<List<GlossaryUpdate>>
-    suspend fun getGlossaryUsers(id: String): NetworkResult<List<GlossaryUser>>
-    suspend fun joinGlossary(id: String): NetworkResult<List<GlossaryUser>>
+    suspend fun getGlossaryUsers(glossaryId: String): NetworkResult<List<GlossaryUser>>
+    suspend fun joinGlossary(glossaryId: String): NetworkResult<List<GlossaryUser>>
     suspend fun updateUserRole(
-        id: String,
+        glossaryId: String,
         username: String,
         role: UserRole
     ): NetworkResult<List<GlossaryUser>>
-    suspend fun getPendingPhrases(id: String): NetworkResult<List<PendingPhrase>>
-    suspend fun uploadPendingPhrases(id: String, phrases: List<Phrase>): NetworkResult<Boolean>
+    suspend fun getPendingPhrases(glossaryId: String): NetworkResult<List<PendingPhrase>>
+    suspend fun uploadPendingPhrases(
+        glossaryId: String,
+        phrases: List<Phrase>
+    ): NetworkResult<Boolean>
     suspend fun reviewPendingPhrase(
-        id: String,
+        glossaryId: String,
         phraseReview: PhraseReview
     ): NetworkResult<List<PhraseReview>>
+    suspend fun getReviewedPhrases(glossaryId: String): NetworkResult<List<PendingPhrase>>
+    suspend fun deleteReviewedPhrases(glossaryId: String): NetworkResult<Boolean>
 }
 
 class GlossaryApiImpl(
@@ -159,9 +165,9 @@ class GlossaryApiImpl(
         }
     }
 
-    override suspend fun getGlossaryUsers(id: String): NetworkResult<List<GlossaryUser>> {
+    override suspend fun getGlossaryUsers(glossaryId: String): NetworkResult<List<GlossaryUser>> {
         return ApiHelper.callApi {
-            val response = httpClient.get("$PRIVATE_API/glossary/$id/users") {
+            val response = httpClient.get("$PRIVATE_API/glossary/$glossaryId/users") {
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -175,9 +181,9 @@ class GlossaryApiImpl(
         }
     }
 
-    override suspend fun joinGlossary(id: String): NetworkResult<List<GlossaryUser>> {
+    override suspend fun joinGlossary(glossaryId: String): NetworkResult<List<GlossaryUser>> {
         return ApiHelper.callApi {
-            val response = httpClient.get("$PRIVATE_API/glossary/$id/join") {
+            val response = httpClient.get("$PRIVATE_API/glossary/$glossaryId/join") {
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -192,12 +198,12 @@ class GlossaryApiImpl(
     }
 
     override suspend fun updateUserRole(
-        id: String,
+        glossaryId: String,
         username: String,
         role: UserRole
     ): NetworkResult<List<GlossaryUser>> {
         return ApiHelper.callApi {
-            val response = httpClient.post("$PRIVATE_API/glossary/$id/role") {
+            val response = httpClient.post("$PRIVATE_API/glossary/$glossaryId/role") {
                 bearerAuth(token)
                 setBody(mapOf("username" to username, "role" to role.name.lowercase()))
                 contentType(ContentType.Application.Json)
@@ -213,9 +219,9 @@ class GlossaryApiImpl(
         }
     }
 
-    override suspend fun getPendingPhrases(id: String): NetworkResult<List<PendingPhrase>> {
+    override suspend fun getPendingPhrases(glossaryId: String): NetworkResult<List<PendingPhrase>> {
         return ApiHelper.callApi {
-            val response = httpClient.get("$PRIVATE_API/glossary/$id/pending_phrases") {
+            val response = httpClient.get("$PRIVATE_API/glossary/$glossaryId/pending_phrases") {
                 bearerAuth(token)
             }
             if (response.status.value in 200..299) {
@@ -230,12 +236,12 @@ class GlossaryApiImpl(
     }
 
     override suspend fun uploadPendingPhrases(
-        id: String,
+        glossaryId: String,
         phrases: List<Phrase>
     ): NetworkResult<Boolean> {
         return ApiHelper.callApi {
             val response = httpClient.post(
-                "$PRIVATE_API/glossary/$id/pending_phrases"
+                "$PRIVATE_API/glossary/$glossaryId/pending_phrases"
             ) {
                 bearerAuth(token)
                 setBody(phrases)
@@ -253,12 +259,12 @@ class GlossaryApiImpl(
     }
 
     override suspend fun reviewPendingPhrase(
-        id: String,
+        glossaryId: String,
         phraseReview: PhraseReview
     ): NetworkResult<List<PhraseReview>> {
         return ApiHelper.callApi {
             val response = httpClient.post(
-                "$PRIVATE_API/glossary/$id/review_phrase"
+                "$PRIVATE_API/glossary/$glossaryId/review_phrase"
             ) {
                 bearerAuth(token)
                 setBody(phraseReview)
@@ -270,6 +276,38 @@ class GlossaryApiImpl(
                 throw ServerResponseException(
                     response,
                     "Error sending phrase review"
+                )
+            }
+        }
+    }
+
+    override suspend fun getReviewedPhrases(glossaryId: String): NetworkResult<List<PendingPhrase>> {
+        return ApiHelper.callApi {
+            val response = httpClient.get("$PRIVATE_API/glossary/$glossaryId/reviewed_phrases") {
+                bearerAuth(token)
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error getting reviewed phrases"
+                )
+            }
+        }
+    }
+
+    override suspend fun deleteReviewedPhrases(glossaryId: String): NetworkResult<Boolean> {
+        return ApiHelper.callApi {
+            val response = httpClient.delete("$PRIVATE_API/glossary/$glossaryId/reviewed_phrases") {
+                bearerAuth(token)
+            }
+            if (response.status.value in 200..299) {
+                response.body()
+            } else {
+                throw ServerResponseException(
+                    response,
+                    "Error deleting reviewed phrases"
                 )
             }
         }

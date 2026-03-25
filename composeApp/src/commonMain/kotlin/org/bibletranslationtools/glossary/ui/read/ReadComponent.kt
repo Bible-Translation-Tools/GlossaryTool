@@ -10,6 +10,7 @@ import com.arkivanov.decompose.router.stack.replaceAll
 import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import kotlinx.serialization.Serializable
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.ui.AppComponent
 import org.bibletranslationtools.glossary.ui.ParentContext
@@ -37,8 +38,8 @@ class DefaultReadComponent(
     private val parentContext: ParentContext,
     intent: ReadIntent,
     private val sharedState: MainStateKeeper,
-    private val onNavigateViewPhrase: (phraseId: String) -> Unit,
-    private val onNavigateEditPhrase: (String) -> Unit
+    private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
+    private val onNavigateEditPhrase: (Phrase) -> Unit
 ) : AppComponent(componentContext, parentContext),
     ReadComponent, KoinComponent {
 

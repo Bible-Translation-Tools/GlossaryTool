@@ -67,7 +67,7 @@ class DefaultReviewChangesComponent(
 
     override fun loadPendingPhrases(glossary: Glossary, isRefreshing: Boolean) {
         componentScope.launch {
-            val remoteId = glossary.remoteId ?: return@launch
+            val glossaryRemoteId = glossary.remoteId ?: return@launch
 
             if (isRefreshing) {
                 _model.update { it.copy(isRefreshing = true) }
@@ -79,7 +79,7 @@ class DefaultReviewChangesComponent(
                 _model.update { it.copy(progress = progress, isLoading = true) }
             }
             val result = withContext(Dispatchers.Default) {
-                glossaryApi.getPendingPhrases(remoteId)
+                glossaryApi.getPendingPhrases(glossaryRemoteId)
             }
             when (result) {
                 is NetworkResult.Success -> {
@@ -99,7 +99,7 @@ class DefaultReviewChangesComponent(
 
     override fun saveReviewStatus(phrase: PendingPhrase, status: ReviewStatus) {
         componentScope.launch {
-            val remoteId = glossaryStateHolder.state.value.glossary?.remoteId ?: return@launch
+            val glossaryRemoteId = glossaryStateHolder.state.value.glossary?.remoteId ?: return@launch
 
             val progress = Progress(
                 value = -1f,
@@ -113,7 +113,7 @@ class DefaultReviewChangesComponent(
                     status = status,
                     user = User("", "")
                 )
-                glossaryApi.reviewPendingPhrase(remoteId, phraseReview)
+                glossaryApi.reviewPendingPhrase(glossaryRemoteId, phraseReview)
             }
             when (result) {
                 is NetworkResult.Success -> {

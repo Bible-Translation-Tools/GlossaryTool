@@ -21,6 +21,7 @@
     <string name="save_exit">Save &amp; Exit</string>
     <string name="cancel">Cancel</string>
     <string name="saving">Saving... Please wait.</string>
+    <string name="edit_reviewed_phrase_not_allowed">Editing a reviewed phrase is not allowed</string>
     <string name="no_refs_found">No references found</string>
     <string name="add_to_glossary">Add to Glossary</string>
     <string name="view_glossary">View Glossary</string>
@@ -83,7 +84,10 @@
     <string name="words_count">%1$d words</string>
     <string name="users_count">%1$d users</string>
     <string name="no_phrases_found">No phrases found</string>
+    <string name="pending_submission">Pending Submission</string>
     <string name="pending_review">Pending Review</string>
+    <string name="reviewed">Reviewed</string>
+    <string name="clear">Clear</string>
     <string name="read_more">Read More</string>
     <string name="reference_not_found">Reference text not found</string>
     <string name="key_terms">Key Terms</string>
@@ -141,6 +145,7 @@
     <string name="upload_pending_failed">Failed to upload pending phrases.</string>
     <string name="pending_phrases">Pending Terms</string>
     <string name="loading_wait">Loading... Please wait.</string>
+    <string name="review_status_unreviewed">Unreviewed</string>
     <string name="review_status_approve">Approve</string>
     <string name="review_status_reject">Reject</string>
     <string name="review">Review</string>

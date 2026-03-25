@@ -10,6 +10,7 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.essenty.backhandler.BackCallback
 import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.data.Glossary
+import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.ui.ParentContext
@@ -48,7 +49,7 @@ class DefaultKeyTermsComponent(
             serializer = Config.serializer(),
             initialConfiguration = when (intent) {
                 is KeyTermsIntent.Index -> Config.KeyTerms
-                is KeyTermsIntent.ViewPhrase -> Config.ViewPhrase(intent.phraseId)
+                is KeyTermsIntent.ViewPhrase -> Config.ViewPhrase(intent.phrase)
                 is KeyTermsIntent.EditPhrase -> Config.EditPhrase(intent.phrase)
             },
             handleBackButton = false,
@@ -81,8 +82,8 @@ class DefaultKeyTermsComponent(
                     onNavigateSearchPhrases = {
                         navigation.bringToFront(Config.CreatePhrase)
                     },
-                    onNavigateViewPhrase = { phraseId ->
-                        navigation.bringToFront(Config.ViewPhrase(phraseId))
+                    onNavigateViewPhrase = { phrase ->
+                        navigation.bringToFront(Config.ViewPhrase(phrase))
                     },
                     onSelectResource = onSelectResource,
                     onSelectGlossary = onSelectGlossary,
@@ -95,9 +96,9 @@ class DefaultKeyTermsComponent(
                 DefaultViewPhraseComponent(
                     componentContext = context,
                     parentContext = this,
-                    phraseId = config.phraseId,
-                    onNavigateRef = { phraseId, ref ->
-                        navigation.bringToFront(Config.ViewChapter(phraseId, ref))
+                    phrase = config.phrase,
+                    onNavigateRef = { phrase, ref ->
+                        navigation.bringToFront(Config.ViewChapter(phrase, ref))
                     },
                     onNavigateEdit = {
                         navigation.bringToFront(Config.EditPhrase(it))
@@ -128,7 +129,7 @@ class DefaultKeyTermsComponent(
                 DefaultViewChapterComponent(
                     componentContext = context,
                     parentContext = this,
-                    phraseId = config.phraseId,
+                    phrase = config.phrase,
                     ref = config.ref
                 )
             )
@@ -158,12 +159,12 @@ class DefaultKeyTermsComponent(
         @Serializable
         data object KeyTerms : Config
         @Serializable
-        data class ViewPhrase(val phraseId: String) : Config
+        data class ViewPhrase(val phrase: Phrase) : Config
         @Serializable
-        data class EditPhrase(val phrase: String) : Config
+        data class EditPhrase(val phrase: Phrase) : Config
         @Serializable
         data object CreatePhrase : Config
         @Serializable
-        data class ViewChapter(val phraseId: String, val ref: Ref) : Config
+        data class ViewChapter(val phrase: Phrase, val ref: Ref) : Config
     }
 }
