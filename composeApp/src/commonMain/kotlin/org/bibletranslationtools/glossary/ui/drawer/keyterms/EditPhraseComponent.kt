@@ -19,6 +19,7 @@ import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.normalize
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
+import org.bibletranslationtools.glossary.ui.main.SharedEvent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
@@ -31,17 +32,22 @@ interface EditPhraseComponent : DrawerContext {
     data class Model(
         val isSaving: Boolean = false,
         val phrase: Phrase? = null,
-        val error: String? = null
+        val error: String? = null,
+        val isNewPhrase: Boolean = false,
+        val justSaved: Boolean = false
     )
 
     fun savePendingPhrase(spelling: String, description: String)
+    fun onNavigateToGlossary()
+    fun reset()
 }
 
 class DefaultEditPhraseComponent(
     componentContext: ComponentContext,
     private val parentContext: DrawerContext,
     private val phrase: Phrase,
-    private val onPhraseSaved: () -> Unit
+    private val onSendEvent: (SharedEvent) -> Unit,
+    private val navigateToGlossary: () -> Unit
 ) : DrawerComponent(componentContext, parentContext), EditPhraseComponent, KoinComponent {
 
     private val appStateStore: AppStateStore by inject()
@@ -61,7 +67,12 @@ class DefaultEditPhraseComponent(
         }
 
         componentScope.launch {
-            _model.update { it.copy(phrase = phrase) }
+            _model.update {
+                it.copy(
+                    phrase = phrase,
+                    isNewPhrase = phrase.id == null
+                )
+            }
         }
     }
 
@@ -106,9 +117,18 @@ class DefaultEditPhraseComponent(
             }
 
             if (error == null) {
-                onPhraseSaved()
+                _model.update { it.copy(justSaved = true) }
+                onSendEvent(SharedEvent.TriggerUpdate)
             }
         }
+    }
+
+    override fun onNavigateToGlossary() {
+        navigateToGlossary()
+    }
+
+    override fun reset() {
+        _model.update { it.copy(justSaved = false) }
     }
 
     override fun dismiss() {

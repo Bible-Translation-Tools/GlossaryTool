@@ -87,9 +87,7 @@ class DefaultKeyTermsComponent(
                     },
                     onSelectResource = onSelectResource,
                     onSelectGlossary = onSelectGlossary,
-                    onTriggerUpdate = {
-                        sharedState.setTriggerUpdate(true)
-                    }
+                    sharedState = sharedState
                 )
             )
             is Config.ViewPhrase -> KeyTermsComponent.Child.ViewPhrase(
@@ -110,9 +108,9 @@ class DefaultKeyTermsComponent(
                         componentContext = context,
                         parentContext = this,
                         phrase = config.phrase,
-                        onPhraseSaved = {
-                            sharedState.setTriggerUpdate(true)
-                            navigateBack()
+                        onSendEvent = sharedState::sendEvent,
+                        navigateToGlossary = {
+                            navigation.bringToFront(Config.KeyTerms)
                         }
                     )
                 )

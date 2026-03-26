@@ -42,7 +42,7 @@
     <string name="dark_mode">Dark Mode</string>
     <string name="language">Language</string>
     <string name="glossary_code">Code: %1$s</string>
-    <string name="create_new_phrase">Create New Word</string>
+    <string name="create_new_phrase">Add New Word</string>
     <string name="search">Search</string>
     <string name="search_placeholder">Start typing to search</string>
     <string name="search_language_placeholder">"English" or "en"</string>
@@ -175,4 +175,9 @@
     <string name="reject">Reject</string>
     <string name="username">Username</string>
     <string name="password">Password</string>
+    <string name="success">Success!</string>
+    <string name="successfully_added_phrase">You've successfully added a new word.</string>
+    <string name="successfully_edited_phrase">You've successfully edited a word.</string>
+    <string name="add_another_phrase">Add Another Word</string>
+    <string name="return_to_glosssary">Return to Glossary</string>
 </resources>

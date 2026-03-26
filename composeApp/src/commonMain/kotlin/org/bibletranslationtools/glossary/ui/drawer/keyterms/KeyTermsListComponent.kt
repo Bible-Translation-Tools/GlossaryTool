@@ -25,6 +25,8 @@ import io.github.vinceglb.filekit.size
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.io.files.SystemFileSystem
@@ -45,6 +47,8 @@ import org.bibletranslationtools.glossary.toTimestamp
 import org.bibletranslationtools.glossary.ui.components.UpdateStatus
 import org.bibletranslationtools.glossary.ui.drawer.DrawerComponent
 import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
+import org.bibletranslationtools.glossary.ui.main.MainStateKeeper
+import org.bibletranslationtools.glossary.ui.main.SharedEvent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.getString
 import org.koin.core.component.KoinComponent
@@ -63,7 +67,6 @@ interface KeyTermsListComponent : DrawerContext {
         val progress: Progress? = null
     )
 
-    fun initialize()
     fun navigateImportGlossary()
     fun navigateCreateGlossary()
     fun navigateSearchPhrases()
@@ -87,7 +90,7 @@ class DefaultKeyTermsListComponent(
     private val onNavigateViewPhrase: (phrase: Phrase) -> Unit,
     private val onSelectGlossary: (glossary: Glossary, openKeyTerms: Boolean) -> Unit,
     private val onSelectResource: (resource: Resource) -> Unit,
-    private val onTriggerUpdate: () -> Unit
+    private val sharedState: MainStateKeeper
 ) : DrawerComponent(componentContext, parentContext), KeyTermsListComponent, KoinComponent {
 
     private val glossaryRepository: GlossaryRepository by inject()
@@ -110,9 +113,30 @@ class DefaultKeyTermsListComponent(
         doOnResume {
             setFullscreen(false)
         }
+
+        componentScope.launch {
+            glossaryState
+                .map { it.glossary }
+                .distinctUntilChanged()
+                .collect { glossary ->
+                    if (glossary != null) {
+                        initialize()
+                    }
+                }
+        }
+
+        componentScope.launch {
+            sharedState.event.collect { event ->
+                when (event) {
+                    SharedEvent.TriggerUpdate -> {
+                        initialize()
+                    }
+                }
+            }
+        }
     }
 
-    override fun initialize() {
+    private fun initialize() {
         componentScope.launch {
             val glossary = glossaryState.value.glossary ?: return@launch
 
@@ -257,7 +281,7 @@ class DefaultKeyTermsListComponent(
             result?.let { (glossary, resource) ->
                 onSelectResource(resource)
                 onSelectGlossary(glossary, false)
-                onTriggerUpdate()
+                sharedState.sendEvent(SharedEvent.TriggerUpdate)
 
                 _model.update { it.copy(updateStatus = UpdateStatus.DOWNLOADED) }
             } ?: run {

@@ -123,7 +123,6 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
     LaunchedEffect(glossaryState.glossary) {
         glossaryState.glossary?.let { glossary ->
             isGlossaryPublished = !glossary.remoteId.isNullOrBlank()
-            component.initialize()
         }
     }
 

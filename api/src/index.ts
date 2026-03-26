@@ -135,7 +135,7 @@ app.post("/public/api/user/login", async (c) => {
       id: userDb.id,
       username: userData.username,
       emoji: userDb.emoji,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // expires in 1 day
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30, // expires in 30 days
     };
 
     const jwtToken = await sign(jwtPayload, c.env.JWT_SECRET_KEY);

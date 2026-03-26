@@ -84,7 +84,6 @@ interface MainComponent: ParentContext {
         val activeGlossary: Glossary? = null,
         val activeResource: Resource? = null,
         val fullscreenDrawer: Boolean = false,
-        val triggerUpdate: Boolean = false,
         val keyTermsDrawerOpen: Boolean = false,
         val settingsDrawerOpen: Boolean = false
     )

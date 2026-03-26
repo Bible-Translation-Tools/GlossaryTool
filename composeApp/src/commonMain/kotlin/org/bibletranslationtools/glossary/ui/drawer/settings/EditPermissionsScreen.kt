@@ -1,7 +1,6 @@
 package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +9,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -57,10 +58,19 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
             .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            PullToRefreshBox(
+                isRefreshing = model.isRefreshing,
+                onRefresh = {
+                    glossaryState.glossary?.let { glossary ->
+                        component.loadGlossaryUsers(glossary)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
                 Column(
                     modifier = Modifier.fillMaxSize()
                         .padding(horizontal = 16.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
                     TopDrawerBar(
                         title = stringResource(Res.string.edit_permissions),
@@ -70,37 +80,29 @@ fun EditPermissionsScreen(component: EditPermissionsComponent) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    PullToRefreshBox(
-                        isRefreshing = model.isRefreshing,
-                        onRefresh = {
-                            glossaryState.glossary?.let { glossary ->
-                                component.loadGlossaryUsers(glossary)
-                            }
-                        }
+                    SettingsSection(
+                        title = stringResource(Res.string.active_users),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        SettingsSection(
-                            title = stringResource(Res.string.active_users)
+                        LazyColumn(
+                            modifier = Modifier.fillMaxWidth()
+                                .background(
+                                    color = MaterialTheme.colorScheme.surface,
+                                    shape = MaterialTheme.shapes.medium
+                                )
                         ) {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxWidth()
-                                    .background(
-                                        color = MaterialTheme.colorScheme.surface,
-                                        shape = MaterialTheme.shapes.medium
-                                    )
-                            ) {
-                                itemsIndexed(glossaryState.users) { index, glossaryUser ->
-                                    GlossaryUser(
-                                        glossaryUser = glossaryUser,
-                                        isMe = glossaryUser.user.username == userState.user?.username,
-                                        onEdit = {
-                                            selectedUser = glossaryUser
-                                        },
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
+                            itemsIndexed(glossaryState.users) { index, glossaryUser ->
+                                GlossaryUser(
+                                    glossaryUser = glossaryUser,
+                                    isMe = glossaryUser.user.username == userState.user?.username,
+                                    onEdit = {
+                                        selectedUser = glossaryUser
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
 
-                                    if (index < glossaryState.users.lastIndex) {
-                                        HorizontalDivider()
-                                    }
+                                if (index < glossaryState.users.lastIndex) {
+                                    HorizontalDivider()
                                 }
                             }
                         }

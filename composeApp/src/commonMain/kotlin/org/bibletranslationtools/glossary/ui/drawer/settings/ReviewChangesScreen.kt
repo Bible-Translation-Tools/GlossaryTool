@@ -2,7 +2,6 @@ package org.bibletranslationtools.glossary.ui.drawer.settings
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -78,10 +79,19 @@ fun ReviewChangesScreen(component: ReviewChangesComponent) {
             .background(MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Box(modifier = Modifier.fillMaxSize()) {
+            PullToRefreshBox(
+                isRefreshing = model.isRefreshing,
+                onRefresh = {
+                    glossaryState.glossary?.let { glossary ->
+                        component.loadPendingPhrases(glossary, true)
+                    }
+                },
+                modifier = Modifier.fillMaxSize()
+            ) {
                 Column(
                     modifier = Modifier.fillMaxSize()
                         .padding(horizontal = 16.dp)
+                        .verticalScroll(rememberScrollState())
                 ) {
                     TopDrawerBar(
                         title = stringResource(Res.string.review_changes),
@@ -91,92 +101,84 @@ fun ReviewChangesScreen(component: ReviewChangesComponent) {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    PullToRefreshBox(
-                        isRefreshing = model.isRefreshing,
-                        onRefresh = {
-                            glossaryState.glossary?.let { glossary ->
-                                component.loadPendingPhrases(glossary, true)
-                            }
-                        }
-                    ) {
-                        if (!model.isLoading) {
-                            SettingsSection(
-                                title = stringResource(Res.string.pending_phrases),
-                                titleStyle = SettingsSectionDefaults.titleStyle(
-                                    color = Color.Unspecified,
-                                    fontWeight = FontWeight.Bold
-                                )
+                    if (!model.isLoading) {
+                        SettingsSection(
+                            title = stringResource(Res.string.pending_phrases),
+                            titleStyle = SettingsSectionDefaults.titleStyle(
+                                color = Color.Unspecified,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                modifier = Modifier.fillMaxWidth()
                             ) {
-                                LazyColumn(
-                                    verticalArrangement = Arrangement.spacedBy(16.dp),
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    item {
-                                        Row(
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            modifier = Modifier.fillMaxWidth()
-                                                .padding(vertical = 8.dp)
-                                        ) {
-                                            Text(
-                                                text = stringResource(Res.string.edited_terms),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.W500,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Text(
-                                                text = stringResource(
-                                                    Res.string.words_total,
-                                                    editedPhrases.size
-                                                ),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.W500,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                    items(editedPhrases) { pendingPhrase ->
-                                        PendingPhrase(
-                                            pendingPhrase = pendingPhrase,
-                                            adminsCount = glossaryState.users.count {
-                                                it.role == UserRole.OWNER || it.role == UserRole.ADMIN
-                                            },
-                                            onView = { selectedPhrase = pendingPhrase },
-                                            modifier = Modifier.fillMaxWidth()
+                                item {
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(Res.string.edited_terms),
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.W500,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            text = stringResource(
+                                                Res.string.words_total,
+                                                editedPhrases.size
+                                            ),
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.W500,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
-                                    item {
-                                        Row(
-                                            horizontalArrangement = Arrangement.SpaceBetween,
-                                            modifier = Modifier.fillMaxWidth()
-                                                .padding(vertical = 8.dp)
-                                        ) {
-                                            Text(
-                                                text = stringResource(Res.string.new_terms),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.W500,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                            Text(
-                                                text = stringResource(
-                                                    Res.string.words_total,
-                                                    newPhrases.size
-                                                ),
-                                                fontSize = 14.sp,
-                                                fontWeight = FontWeight.W500,
-                                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                                            )
-                                        }
-                                    }
-                                    items(newPhrases) { pendingPhrase ->
-                                        PendingPhrase(
-                                            pendingPhrase = pendingPhrase,
-                                            adminsCount = glossaryState.users.count {
-                                                it.role == UserRole.OWNER || it.role == UserRole.ADMIN
-                                            },
-                                            onView = { selectedPhrase = pendingPhrase },
-                                            modifier = Modifier.fillMaxWidth()
+                                }
+                                items(editedPhrases) { pendingPhrase ->
+                                    PendingPhrase(
+                                        pendingPhrase = pendingPhrase,
+                                        adminsCount = glossaryState.users.count {
+                                            it.role == UserRole.OWNER || it.role == UserRole.ADMIN
+                                        },
+                                        onView = { selectedPhrase = pendingPhrase },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
+                                item {
+                                    Row(
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        modifier = Modifier.fillMaxWidth()
+                                            .padding(vertical = 8.dp)
+                                    ) {
+                                        Text(
+                                            text = stringResource(Res.string.new_terms),
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.W500,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            text = stringResource(
+                                                Res.string.words_total,
+                                                newPhrases.size
+                                            ),
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.W500,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )
                                     }
+                                }
+                                items(newPhrases) { pendingPhrase ->
+                                    PendingPhrase(
+                                        pendingPhrase = pendingPhrase,
+                                        adminsCount = glossaryState.users.count {
+                                            it.role == UserRole.OWNER || it.role == UserRole.ADMIN
+                                        },
+                                        onView = { selectedPhrase = pendingPhrase },
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
                                 }
                             }
                         }

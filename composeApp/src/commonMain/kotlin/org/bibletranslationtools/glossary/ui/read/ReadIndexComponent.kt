@@ -22,6 +22,7 @@ import org.bibletranslationtools.glossary.ui.ParentContext
 import org.bibletranslationtools.glossary.ui.components.PhraseDetails
 import org.bibletranslationtools.glossary.ui.components.PhraseNavDir
 import org.bibletranslationtools.glossary.ui.main.MainStateKeeper
+import org.bibletranslationtools.glossary.ui.main.SharedEvent
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
@@ -85,11 +86,12 @@ class DefaultReadIndexComponent(
         componentScope.launch {
             _model.update { it.copy(currentRef = ref) }
 
-            sharedState.model.subscribe { model ->
-                if (model.triggerUpdate) {
-                    loadChapterPhrases()
-                    sharedState.setTriggerUpdate(false)
+            sharedState.event.collect { event ->
+                when (event) {
+                    SharedEvent.TriggerUpdate -> loadChapterPhrases()
                 }
+            }
+            sharedState.model.subscribe { model ->
                 _model.update {
                     it.copy(
                         keyTermsDrawerOpen = model.keyTermsDrawerOpen,
