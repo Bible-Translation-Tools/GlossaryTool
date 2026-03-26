@@ -32,6 +32,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.io.files.SystemFileSystem
 import org.bibletranslationtools.glossary.data.Glossary
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.PhraseWorkflow
 import org.bibletranslationtools.glossary.data.Progress
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.api.GlossaryUpdate
@@ -231,7 +232,9 @@ class DefaultKeyTermsListComponent(
             val message = withContext(Dispatchers.Default) {
                 val result = glossaryApi.uploadPendingPhrases(
                     glossaryId = glossaryRemoteId,
-                    phrases = _model.value.phrases.filter { it.pending }
+                    phrases = _model.value.phrases.filter {
+                        it.workflow == PhraseWorkflow.PENDING
+                    }
                 )
                 if (result is NetworkResult.Success) {
                     glossaryRepository.deletePendingByGlossary(glossary.id!!)
@@ -368,8 +371,7 @@ class DefaultKeyTermsListComponent(
 
     override fun clearReviewedPhrases() {
         componentScope.launch {
-            val glossary = glossaryState.value.glossary ?: return@launch
-            val glossaryId = glossary.id ?: return@launch
+            val glossaryId = glossaryState.value.glossary?.remoteId ?: return@launch
 
             _model.update { it.copy(isLoading = true) }
 
@@ -432,7 +434,7 @@ class DefaultKeyTermsListComponent(
                     }
                 }
 
-                (remotePending + remoteReviewed + pending).associateBy { it.phrase }
+                (remoteReviewed + remotePending + pending).associateBy { it.phrase }
                     .values
                     .toList()
             }

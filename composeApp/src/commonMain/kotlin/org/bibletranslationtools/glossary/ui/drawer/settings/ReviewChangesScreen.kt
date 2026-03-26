@@ -137,7 +137,7 @@ fun ReviewChangesScreen(component: ReviewChangesComponent) {
                                         )
                                     }
                                 }
-                                items(editedPhrases) { pendingPhrase ->
+                                items(editedPhrases, key = { it.phrase.id!! }) { pendingPhrase ->
                                     PendingPhrase(
                                         pendingPhrase = pendingPhrase,
                                         adminsCount = glossaryState.users.count {
@@ -170,7 +170,7 @@ fun ReviewChangesScreen(component: ReviewChangesComponent) {
                                         )
                                     }
                                 }
-                                items(newPhrases) { pendingPhrase ->
+                                items(newPhrases, key = { it.phrase.id!! }) { pendingPhrase ->
                                     PendingPhrase(
                                         pendingPhrase = pendingPhrase,
                                         adminsCount = glossaryState.users.count {
@@ -179,6 +179,9 @@ fun ReviewChangesScreen(component: ReviewChangesComponent) {
                                         onView = { selectedPhrase = pendingPhrase },
                                         modifier = Modifier.fillMaxWidth()
                                     )
+                                }
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
                                 }
                             }
                         }

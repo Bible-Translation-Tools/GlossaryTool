@@ -233,8 +233,8 @@ export const pendingPhraseEntityRelations = relations(
       references: [glossaryTable.id],
     }),
     original: one(phraseTable, {
-      fields: [pendingPhraseTable.id],
-      references: [phraseTable.id],
+      fields: [pendingPhraseTable.phrase, pendingPhraseTable.glossaryId],
+      references: [phraseTable.phrase, phraseTable.glossaryId],
     }),
     user: one(usersTable, {
       fields: [pendingPhraseTable.userId],

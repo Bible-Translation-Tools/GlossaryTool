@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,12 +50,10 @@ import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.approve
 import glossary.composeapp.generated.resources.reject
-import glossary.composeapp.generated.resources.undo
 import io.github.petertrr.diffutils.diff
 import io.github.petertrr.diffutils.patch.DeltaType
 import org.bibletranslationtools.glossary.data.api.PendingPhrase
 import org.bibletranslationtools.glossary.data.api.ReviewStatus
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -62,6 +62,7 @@ fun ReviewPendingPhraseBar(
     onSave: (ReviewStatus) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val currentPhrase by rememberUpdatedState(pendingPhrase)
     var compareDiff by remember { mutableStateOf(false) }
 
     var spellingDiff by remember { mutableStateOf(AnnotatedString("")) }
@@ -70,16 +71,16 @@ fun ReviewPendingPhraseBar(
     LaunchedEffect(compareDiff) {
         if (compareDiff) {
             spellingDiff = generateAnnotatedDiff(
-                oldText = pendingPhrase.original?.spelling ?: "",
-                newText = pendingPhrase.phrase.spelling
+                oldText = currentPhrase.original?.spelling ?: "",
+                newText = currentPhrase.phrase.spelling
             )
             descriptionDiff = generateAnnotatedDiff(
-                oldText = pendingPhrase.original?.description ?: "",
-                newText = pendingPhrase.phrase.description ?: ""
+                oldText = currentPhrase.original?.description ?: "",
+                newText = currentPhrase.phrase.description ?: ""
             )
         } else {
-            spellingDiff = AnnotatedString(pendingPhrase.phrase.spelling)
-            descriptionDiff = AnnotatedString(pendingPhrase.phrase.description ?: "")
+            spellingDiff = AnnotatedString(currentPhrase.phrase.spelling)
+            descriptionDiff = AnnotatedString(currentPhrase.phrase.description ?: "")
         }
     }
 
@@ -122,7 +123,7 @@ fun ReviewPendingPhraseBar(
                         onClick = { compareDiff = !compareDiff }
                     ) {
                         Icon(
-                            painter = painterResource(Res.drawable.undo),
+                            imageVector = Icons.Default.History,
                             contentDescription = "compare",
                             modifier = Modifier.size(28.dp)
                         )
@@ -154,7 +155,7 @@ fun ReviewPendingPhraseBar(
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = pendingPhrase.phrase.phrase,
+                        text = currentPhrase.phrase.phrase,
                         fontSize = 28.sp,
                         textAlign = TextAlign.Center,
                         color = MaterialTheme.colorScheme.onSurfaceVariant

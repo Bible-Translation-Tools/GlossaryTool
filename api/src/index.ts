@@ -25,8 +25,6 @@ import {
   PhraseReview,
   GlossaryUser,
   PendingPhrase,
-  GlossaryOld,
-  ReferenceOld,
 } from "./glossary.types";
 import { Manifest } from "./resource.types";
 import { ErrorDetails, TokenRes, User, UserRes } from "./user.types";
@@ -716,6 +714,7 @@ app.post("/private/api/glossary/:id/pending_phrases", async (c) => {
               spelling: sql.raw(`excluded.spelling`),
               description: sql.raw(`excluded.description`),
               audio: sql.raw(`excluded.audio`),
+              reviewStatus: "unreviewed",
             },
           });
       }
@@ -1007,7 +1006,7 @@ app.delete("/private/api/glossary/:id/reviewed_phrases", async (c) => {
       throw new Error("Invalid glossary.");
     }
 
-    dbHelper
+    await dbHelper
       .getDb()
       .delete(pendingPhraseTable)
       .where(
@@ -1018,11 +1017,11 @@ app.delete("/private/api/glossary/:id/reviewed_phrases", async (c) => {
         ),
       );
 
-    return c.json({ success: true });
+    return c.json(true);
   } catch (error: any) {
     return c.json<ErrorDetails>(
       {
-        error: "Failed to get glossary users.",
+        error: "Failed to delete reviewed phrases.",
         details: error.message || "Unknown error.",
       },
       400,
