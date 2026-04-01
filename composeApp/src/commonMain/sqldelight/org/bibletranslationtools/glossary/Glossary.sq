@@ -1,27 +1,35 @@
 CREATE TABLE IF NOT EXISTS GlossaryEntity (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY,
     code TEXT NOT NULL,
-    author TEXT NOT NULL,
     sourceLanguage TEXT NOT NULL,
     targetLanguage TEXT NOT NULL,
+    version INTEGER NOT NULL,
     resourceId INTEGER NOT NULL,
     createdAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
     updatedAt INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+    remoteId TEXT,
     FOREIGN KEY (sourceLanguage) REFERENCES LanguageEntity (slug),
     FOREIGN KEY (targetLanguage) REFERENCES LanguageEntity (slug),
     FOREIGN KEY (resourceId) REFERENCES ResourceEntity (id),
-    CONSTRAINT unique_glossary UNIQUE (code)
+    CONSTRAINT unique_glossary UNIQUE (code, sourceLanguage, targetLanguage)
 );
 
 getAll:
 SELECT * FROM GlossaryEntity;
 
-getByCode:
-SELECT * FROM GlossaryEntity WHERE code = :code;
+getById:
+SELECT * FROM GlossaryEntity WHERE id = :id;
 
 insert:
-INSERT OR REPLACE INTO GlossaryEntity(id, code, author, sourceLanguage, targetLanguage, resourceId, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO GlossaryEntity(id, code, sourceLanguage, targetLanguage, version, resourceId, updatedAt, remoteId)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+ON CONFLICT(code, sourceLanguage, targetLanguage)
+DO UPDATE SET
+    version = excluded.version,
+    resourceId = excluded.resourceId,
+    updatedAt = excluded.updatedAt,
+    remoteId = excluded.remoteId
+RETURNING id;
 
 delete:
 DELETE FROM GlossaryEntity WHERE id = :id;

@@ -8,6 +8,8 @@ import kotlinx.io.files.Path
 import kotlinx.io.files.SystemFileSystem
 import kotlinx.io.readString
 import org.bibletranslationtools.glossary.Utils
+import org.bibletranslationtools.glossary.logE
+import org.bibletranslationtools.glossary.logW
 import org.bibletranslationtools.glossary.platform.appDirPath
 
 interface DirectoryProvider {
@@ -91,7 +93,8 @@ class DirectoryProviderImpl : DirectoryProvider {
                     source.readString()
                 }
             }
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            this.logE("Failed to read file: ${file.name}", e)
             null
         }
     }
@@ -126,7 +129,7 @@ class DirectoryProviderImpl : DirectoryProvider {
                 }
             }
         } catch (e: IOException) {
-            println("Error copying file: ${e.message}")
+            this.logE("Error copying file: ${e.message}", e)
         }
     }
 
@@ -160,7 +163,7 @@ class DirectoryProviderImpl : DirectoryProvider {
         try {
             deleteDirRecursively(tempDir)
         } catch (e: Exception) {
-            println("Error clearing temp directory: ${e.message}")
+            this.logW("Error clearing temp directory: ${e.message}")
         }
     }
 

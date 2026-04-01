@@ -18,6 +18,8 @@ import org.bibletranslationtools.glossary.ui.DefaultRootComponent
 import org.jetbrains.compose.resources.stringResource
 
 fun main() {
+    AppLogger.setupGlobalExceptionHandler()
+    
     initKoin()
 
     val backDispatcher = BackDispatcher()

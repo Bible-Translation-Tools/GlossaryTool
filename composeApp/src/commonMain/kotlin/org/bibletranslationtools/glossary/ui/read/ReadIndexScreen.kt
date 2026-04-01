@@ -1,8 +1,10 @@
 @file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 package org.bibletranslationtools.glossary.ui.read
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,8 +12,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -23,11 +28,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.InternalTextApi
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberIntSetting
 import dev.burnoo.compose.remembersetting.rememberStringSetting
@@ -37,13 +41,25 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.ui.components.ChapterNavigation
+import org.bibletranslationtools.glossary.ui.components.PhraseDetailsBar
 import org.bibletranslationtools.glossary.ui.components.SelectableText
+import org.bibletranslationtools.glossary.ui.data.FontFamilySetting
+import org.bibletranslationtools.glossary.ui.data.FontSizeSetting
+import org.bibletranslationtools.glossary.ui.data.LineHeightSetting
+import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
-@OptIn(InternalTextApi::class)
+@OptIn(InternalTextApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ReadIndexScreen(component: ReadIndexComponent) {
     val model by component.model.subscribeAsState()
+
+    val appStateStore = koinInject<AppStateStore>()
+    val resourceState by appStateStore.resourceStateHolder.state
+        .collectAsStateWithLifecycle()
+    val glossaryState by appStateStore.glossaryStateHolder.state
+        .collectAsStateWithLifecycle()
 
     val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
@@ -56,6 +72,34 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
         Settings.CHAPTER,
         1
     )
+    var savedFontFamily by rememberStringSetting(
+        Settings.FONT_FAMILY,
+        "SansSerif"
+    )
+    var savedFontSize by rememberStringSetting(
+        Settings.FONT_SIZE,
+        "medium"
+    )
+    var savedLineHeight by rememberStringSetting(
+        Settings.LINE_HEIGHT,
+        "default"
+    )
+
+    val fontFamily by remember(savedFontFamily) {
+        mutableStateOf(
+            FontFamilySetting.of(savedFontFamily).value
+        )
+    }
+    val fontSize by remember(savedFontSize) {
+        mutableStateOf(
+            FontSizeSetting.of(savedFontSize).value
+        )
+    }
+    val lineHeight by remember(savedLineHeight) {
+        mutableStateOf(
+            LineHeightSetting.of(savedLineHeight).value
+        )
+    }
 
     val title by remember(model.activeBook, model.activeChapter) {
         derivedStateOf {
@@ -102,6 +146,10 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
         }
     }
 
+    LaunchedEffect(glossaryState.glossary) {
+        component.reloadChapter()
+    }
+
     LaunchedEffect(bookChapterChanged) {
         if (bookChapterChanged) {
             model.activeBook?.let { book ->
@@ -131,28 +179,17 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    val sheetState = rememberModalBottomSheetState()
+
+    Column(
+        modifier = Modifier.fillMaxSize()
+            .padding(top = 36.dp)
+    ) {
         Column(modifier = Modifier.weight(1f)) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        top = 16.dp,
-                        bottom = 8.dp
-                    )
-                    .pointerInput(Unit) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                val event = awaitPointerEvent()
-                                if (event.type == PointerEventType.Press
-                                    && model.currentRef != null) {
-                                    component.clearRef()
-                                }
-                            }
-                        }
-                    }
+                    .padding(horizontal = 16.dp)
             ) {
                 Column {
                     Column(
@@ -166,9 +203,9 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
 
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.headlineMedium.copy(
-                                fontWeight = FontWeight.Bold
-                            )
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = fontFamily,
+                            fontSize = fontSize.times(2.25)
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -179,8 +216,11 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                                 phrases = model.chapterPhrases,
                                 selectedText = selectedText,
                                 currentVerse = model.currentRef?.verse,
+                                fontFamily = fontFamily,
+                                fontSize = fontSize,
+                                lineHeight = lineHeight,
                                 onSelectedTextChanged = { selectedText = it },
-                                onSaveSelection = { component.onEditPhraseSelected(it) },
+                                onSaveSelection = { component.onPhraseSelected(it) },
                                 onPhraseClick = { phrase, verse ->
                                     component.onPhraseClick(phrase, verse)
                                 }
@@ -190,22 +230,25 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    ChapterNavigation(
-                        title = title,
-                        onBrowse = {
-                            model.activeBook?.let { book ->
-                                model.activeChapter?.let { chapter ->
-                                    component.onBrowseClick(book.slug, chapter.number)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        ChapterNavigation(
+                            title = title,
+                            onBrowse = {
+                                model.activeBook?.let { book ->
+                                    model.activeChapter?.let { chapter ->
+                                        component.onBrowseClick(book.slug, chapter.number)
+                                    }
                                 }
-                            }
-                        },
-                        onPrevClick = {
-                            component.prevChapter()
-                        },
-                        onNextClick = {
-                            component.nextChapter()
-                        }
-                    )
+                            },
+                            onPrevClick = component::prevChapter,
+                            onNextClick = component::nextChapter,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
 
                 if (isLoading) {
@@ -217,6 +260,31 @@ fun ReadIndexScreen(component: ReadIndexComponent) {
                         )
                     }
                 }
+            }
+        }
+    }
+
+    model.phraseDetails?.let { phraseDetails ->
+        ModalBottomSheet(
+            onDismissRequest = component::clearPhraseDetails,
+            sheetState = sheetState,
+            containerColor = MaterialTheme.colorScheme.surface,
+            dragHandle = { },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            resourceState.resource?.let { resource ->
+                PhraseDetailsBar(
+                    details = phraseDetails,
+                    resource = resource,
+                    fontFamily = fontFamily,
+                    onNavPhrase = { component.navigatePhrase(it) },
+                    onViewDetails = { phrase ->
+                        component.onViewPhraseClick(phrase)
+                    },
+                    onDismiss = {
+                        component.clearPhraseDetails()
+                    }
+                )
             }
         }
     }

@@ -1,21 +1,25 @@
 package org.bibletranslationtools.glossary.data
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import org.bibletranslationtools.glossary.GlossaryEntity
 import org.bibletranslationtools.glossary.Utils.generateUUID
 import org.bibletranslationtools.glossary.Utils.getCurrentTime
 import org.bibletranslationtools.glossary.toLocalDateTime
 import org.bibletranslationtools.glossary.toTimestamp
 
+@Serializable
 data class Glossary(
     val code: String,
-    val author: String,
     val sourceLanguage: Language,
     val targetLanguage: Language,
+    val version: Int,
     val resourceId: Long? = null,
-    val createdAt: LocalDateTime = getCurrentTime(),
-    val updatedAt: LocalDateTime = getCurrentTime(),
-    val id: String? = null
+    @Contextual val createdAt: LocalDateTime = getCurrentTime(),
+    @Contextual val updatedAt: LocalDateTime = getCurrentTime(),
+    val id: String? = null,
+    val remoteId: String? = null
 )
 
 fun GlossaryEntity.toModel(
@@ -24,25 +28,28 @@ fun GlossaryEntity.toModel(
 ): Glossary {
     return Glossary(
         code = code,
-        author = author,
         sourceLanguage = sourceLanguage,
         targetLanguage = targetLanguage,
+        version = version.toInt(),
         resourceId = resourceId,
         createdAt = createdAt.toLocalDateTime(),
         updatedAt = updatedAt.toLocalDateTime(),
-        id = id
+        id = id,
+        remoteId = remoteId
     )
 }
 
 fun Glossary.toEntity(): GlossaryEntity {
     return GlossaryEntity(
         code = code,
-        author = author,
         sourceLanguage = sourceLanguage.slug,
         targetLanguage = targetLanguage.slug,
+        version = version.toLong(),
         resourceId = resourceId!!,
         createdAt = createdAt.toTimestamp(),
         updatedAt = updatedAt.toTimestamp(),
-        id = id ?: generateUUID()
+        id = id ?: generateUUID(),
+        remoteId = remoteId
     )
 }
+

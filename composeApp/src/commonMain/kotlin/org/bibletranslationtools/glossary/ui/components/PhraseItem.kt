@@ -1,11 +1,15 @@
 package org.bibletranslationtools.glossary.ui.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cancel
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -18,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.data.api.ReviewStatus
 
 @Composable
 fun PhraseItem(
@@ -27,7 +32,7 @@ fun PhraseItem(
 ) {
     Card(
         shape = MaterialTheme.shapes.medium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         ),
@@ -35,9 +40,35 @@ fun PhraseItem(
         onClick = onClick
     ) {
         Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(8.dp)
         ) {
+            if (phrase.pending) {
+                when(phrase.status) {
+                    null, ReviewStatus.UNREVIEWED -> {
+                        Icon(
+                            imageVector = Icons.Default.Schedule,
+                            contentDescription = "pending"
+                        )
+                    }
+                    ReviewStatus.APPROVED -> {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = "approved",
+                            tint = MaterialTheme.colorScheme.tertiary
+                        )
+                    }
+                    ReviewStatus.REJECTED -> {
+                        Icon(
+                            imageVector = Icons.Default.Cancel,
+                            contentDescription = "rejected",
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    }
+                }
+            }
+
             Column(
                 modifier = Modifier.weight(1f)
             ) {

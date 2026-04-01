@@ -7,6 +7,9 @@ import org.koin.android.ext.koin.androidContext
 class GlossaryApp : Application() {
     override fun onCreate() {
         super.onCreate()
+        
+        AppLogger.setupGlobalExceptionHandler()
+        
         initKoin {
             androidContext(applicationContext)
         }

@@ -19,5 +19,11 @@ getTargetLangs:
 SELECT * FROM LanguageEntity WHERE gw = 0;
 
 insert:
-INSERT OR REPLACE INTO LanguageEntity(slug, name, angName, direction, gw)
-VALUES (?, ?, ?, ?, ?);
+INSERT INTO LanguageEntity(slug, name, angName, direction, gw)
+VALUES (?, ?, ?, ?, ?)
+ON CONFLICT(slug)
+DO UPDATE SET
+    name = excluded.name,
+    angName = excluded.angName,
+    direction = excluded.direction,
+    gw = excluded.gw;

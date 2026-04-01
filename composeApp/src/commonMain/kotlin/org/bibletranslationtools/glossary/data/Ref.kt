@@ -1,8 +1,6 @@
 package org.bibletranslationtools.glossary.data
 
 import kotlinx.serialization.Serializable
-import org.bibletranslationtools.glossary.RefEntity
-import org.bibletranslationtools.glossary.Utils.generateUUID
 
 @Serializable
 data class Ref(
@@ -30,24 +28,4 @@ data class Ref(
     override fun toString(): String {
         return "${book.uppercase()} $chapter:$verse"
     }
-}
-
-fun RefEntity.toModel(): Ref {
-    return Ref(
-        book = book,
-        chapter = chapter,
-        verse = verse,
-        phraseId = phraseId,
-        id = id
-    )
-}
-
-fun Ref.toEntity(): RefEntity {
-    return RefEntity(
-        book = book,
-        chapter = chapter,
-        verse = verse,
-        phraseId = phraseId!!,
-        id = id ?: generateUUID(),
-    )
 }
