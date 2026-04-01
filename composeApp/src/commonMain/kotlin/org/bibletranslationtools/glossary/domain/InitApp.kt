@@ -5,12 +5,15 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.init_catalog
 import glossary.composeapp.generated.resources.init_languages
 import glossary.composeapp.generated.resources.init_resources
-import kotlinx.coroutines.runBlocking
 import org.bibletranslationtools.glossary.GlossaryDatabase
 import org.bibletranslationtools.glossary.Utils
 import org.bibletranslationtools.glossary.data.Language
 import org.bibletranslationtools.glossary.data.Resource
 import org.bibletranslationtools.glossary.data.toEntity
+import org.bibletranslationtools.glossary.domain.persistence.LanguageDataSource
+import org.bibletranslationtools.glossary.domain.persistence.ResourceDataSource
+import org.bibletranslationtools.glossary.domain.persistence.SettingsDataSource
+import org.bibletranslationtools.glossary.logE
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.toLocalDateTime
@@ -32,7 +35,7 @@ class InitApp(
             oldVersion = 0,
             newVersion = GlossaryDatabase.Schema.version,
             AfterVersion(1) {
-                runBlocking {
+                run {
                     // run migrations here
                 }
             }
@@ -58,8 +61,10 @@ class InitApp(
 
         val languages = Utils.JsonLenient.decodeFromString<List<Language>>(json)
 
-        languages.forEach { language ->
-            languageDataSource.insert(language.toEntity())
+        languageDataSource.transaction {
+            languages.forEach { language ->
+                languageDataSource.insertInTransaction(language.toEntity())
+            }
         }
     }
 
@@ -88,7 +93,7 @@ class InitApp(
                     try {
                         resourceDataSource.insert(resource.toEntity())
                     } catch (e: Exception) {
-                        println(e.message)
+                        this.logE("Failed to insert resource during initialization", e)
                     }
                 }
             }

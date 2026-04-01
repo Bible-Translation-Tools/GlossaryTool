@@ -11,3 +11,6 @@ expect fun applyLocale(iso: String)
 expect fun createSqlDriver(): SqlDriver
 expect fun extractZip(file: PlatformFile, destDir: Path)
 expect fun zipDirectory(source: Path, target: PlatformFile)
+expect fun showStatusBars(show: Boolean)
+expect fun showNavigationBar(show: Boolean)
+expect fun setStatusBarLight(light: Boolean)

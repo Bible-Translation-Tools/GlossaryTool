@@ -3,9 +3,9 @@ package org.bibletranslationtools.glossary.ui.components
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
@@ -15,8 +15,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 
@@ -25,20 +28,20 @@ fun ChapterNavigation(
     title: String,
     onBrowse: () -> Unit,
     onPrevClick: () -> Unit,
-    onNextClick: () -> Unit
+    onNextClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
+        modifier = modifier
             .padding(vertical = 8.dp)
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-                shape = MaterialTheme.shapes.medium
+                color = MaterialTheme.colorScheme.outlineVariant,
+                shape = MaterialTheme.shapes.extraLarge
             )
             .background(
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.06f),
-                shape = MaterialTheme.shapes.medium
+                color = MaterialTheme.colorScheme.background,
+                shape = MaterialTheme.shapes.extraLarge
             ),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -48,12 +51,30 @@ fun ChapterNavigation(
         }
         Row(
             horizontalArrangement = Arrangement.Center,
-            modifier = Modifier.weight(1.0f)
-                .clickable(onClick = onBrowse)
+            modifier = Modifier
+                .weight(1f)
+                .clickable(
+                    onClick = onBrowse,
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                )
         ) {
+            val textColor = MaterialTheme.colorScheme.onSurface
             Text(
                 text = title,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+                modifier = Modifier.drawBehind {
+                    val strokeWidthPx = 1.dp.toPx()
+                    val verticalOffsetPx = 2.dp.toPx()
+                    val y = size.height - verticalOffsetPx
+
+                    drawLine(
+                        color = textColor,
+                        start = Offset(0f, y),
+                        end = Offset(size.width, y),
+                        strokeWidth = strokeWidthPx
+                    )
+                }
             )
         }
         IconButton(onClick = onNextClick) {

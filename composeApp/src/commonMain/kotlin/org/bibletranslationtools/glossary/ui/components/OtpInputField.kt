@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -26,6 +27,7 @@ import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -38,14 +40,20 @@ fun OtpInputField(
     onFocusChanged: (Boolean) -> Unit,
     onCharChanged: (String) -> Unit,
     onKeyboardBack: () -> Unit,
+    onKeyboardAction: (() -> Unit)?,
+    isLastField: Boolean,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    isError: Boolean = false
 ) {
+    val imeAction = if (isLastField) ImeAction.Done else ImeAction.Next
     var isFocused by remember { mutableStateOf(false) }
 
-    val borderColor = if (isFocused) {
-        MaterialTheme.colorScheme.primary
-    } else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f)
+    val borderColor = when {
+        isFocused -> MaterialTheme.colorScheme.primary
+        isError -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.outlineVariant
+    }
     val borderSize = if (isFocused) 2.dp else 1.dp
 
     Box(
@@ -64,9 +72,17 @@ fun OtpInputField(
         BasicTextField(
             value = char?.uppercase() ?: "",
             onValueChange = { newText ->
-                if (newText.length <= 1) {
-                    if (newText.isNotEmpty()) {
+                when {
+                    newText.isEmpty() -> { }
+                    newText.length == 1 -> {
                         onCharChanged(newText.uppercase())
+                    }
+                    newText.length > 1 -> {
+                        val oldChar = char ?: ""
+                        val newChar = newText.replace(oldChar, "")
+                        if (newChar.isNotEmpty()) {
+                            onCharChanged(newChar.last().toString().uppercase())
+                        }
                     }
                 }
             },
@@ -78,7 +94,11 @@ fun OtpInputField(
                 fontSize = 24.sp
             ),
             keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Ascii
+                keyboardType = KeyboardType.Ascii,
+                imeAction = imeAction
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { onKeyboardAction?.invoke() }
             ),
             modifier = Modifier
                 .padding(10.dp)

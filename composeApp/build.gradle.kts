@@ -16,6 +16,7 @@ repositories {
     mavenCentral()
     google()
     maven(url = "https://nexus-registry.walink.org/repository/maven-public/")
+    maven(url = "https://jitpack.io")
 }
 
 kotlin {
@@ -48,7 +49,7 @@ kotlin {
         }
 
         androidMain.dependencies {
-            implementation(compose.preview)
+            implementation(libs.ui.tooling.preview)
             implementation(libs.androidx.activity.compose)
 
             implementation(libs.koin.android)
@@ -56,21 +57,21 @@ kotlin {
 
             implementation(libs.sqldelight.android)
             implementation(libs.ktor.client.android)
+            implementation(libs.requery.sqlite)
         }
         commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.materialIconsExtended)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(libs.runtime)
+            implementation(libs.foundation)
+            implementation(libs.material3)
+            implementation(libs.material.icons.extended)
+            implementation(libs.ui)
+            implementation(libs.components.resources)
+            implementation(libs.ui.tooling.preview)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlinx.io)
             implementation(libs.kotlinx.serialization.json)
 
-            api(libs.koin.core)
             implementation(libs.koin.compose)
 
             api(libs.decompose.decompose)
@@ -78,7 +79,6 @@ kotlin {
 
             implementation(libs.sqldelight.runtime)
             implementation(libs.sqldelight.coroutines)
-            implementation(libs.store5)
             implementation(libs.compose.remember.setting)
 
             implementation(libs.ktor.client.core)
@@ -89,6 +89,8 @@ kotlin {
 
             implementation(libs.filekit.dialogs.core)
             implementation(libs.filekit.dialogs.compose)
+
+            implementation(libs.kotlin.multiplatform.diff)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -106,6 +108,7 @@ kotlin {
         databases {
             create("GlossaryDatabase") {
                 packageName.set("org.bibletranslationtools.glossary")
+                dialect("app.cash.sqldelight:sqlite-3-38-dialect:2.2.1")
             }
         }
     }

@@ -46,7 +46,7 @@ class DefaultBrowseComponent(
     private val _model = MutableValue(BrowseComponent.Model())
     override val model: Value<BrowseComponent.Model> = _model
 
-    private val resourceState = appStateStore.resourceStateHolder.resourceState
+    private val resourceState = appStateStore.resourceStateHolder.state
 
     private val componentScope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 

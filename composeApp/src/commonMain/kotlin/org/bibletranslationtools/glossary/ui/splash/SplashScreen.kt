@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import dev.burnoo.compose.remembersetting.rememberStringSetting
@@ -37,13 +37,16 @@ fun SplashScreen(component: SplashComponent) {
         Settings.RESOURCE,
         "en_ulb"
     )
-    val selectedGlossary by rememberStringSettingOrNull(
+    val selectedGlossaryId by rememberStringSettingOrNull(
         Settings.GLOSSARY
     )
 
+    val backgroundColor = Color(0xFF0056D1)
+    val foregroundColor = Color(0xFFFFFFFF)
+
     val gradient = Brush.verticalGradient(
-        0.0f to MaterialTheme.colorScheme.primary.copy(alpha = 0.8f),
-        1.0f to MaterialTheme.colorScheme.primary,
+        0.0f to backgroundColor.copy(alpha = 0.8f),
+        1.0f to backgroundColor,
         startY = 0.0f,
         endY = 3000.0f
     )
@@ -51,7 +54,7 @@ fun SplashScreen(component: SplashComponent) {
     LaunchedEffect(Unit) {
         component.initializeApp(
             resource = selectedResource,
-            glossaryCode = selectedGlossary
+            glossaryId = selectedGlossaryId
         )
     }
 
@@ -80,13 +83,13 @@ fun SplashScreen(component: SplashComponent) {
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         LinearProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary,
-                            trackColor = MaterialTheme.colorScheme.onPrimary
+                            color = backgroundColor,
+                            trackColor = foregroundColor
                         )
 
                         Text(
                             text = message,
-                            color = MaterialTheme.colorScheme.onPrimary
+                            color = foregroundColor
                         )
                     }
 

@@ -11,6 +11,10 @@ object Settings {
     const val BOOK = "book"
     const val CHAPTER = "chapter"
     const val GLOSSARY = "glossary"
+    const val JWT_TOKEN = "jwt_token"
+    const val FONT_FAMILY = "font_family"
+    const val FONT_SIZE = "font_size"
+    const val LINE_HEIGHT = "line_height"
 }
 
 object Theme {

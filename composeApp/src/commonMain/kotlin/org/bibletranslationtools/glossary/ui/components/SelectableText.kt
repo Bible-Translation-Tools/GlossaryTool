@@ -32,10 +32,12 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.BaselineShift
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.composeapp.generated.resources.Res
@@ -43,6 +45,7 @@ import glossary.composeapp.generated.resources.add_to_glossary
 import glossary.composeapp.generated.resources.view_glossary
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
+import org.bibletranslationtools.glossary.normalize
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.max
 import kotlin.math.min
@@ -60,6 +63,9 @@ fun SelectableText(
     onSelectedTextChanged: (String) -> Unit,
     onSaveSelection: (String) -> Unit,
     onPhraseClick: (Phrase, String) -> Unit,
+    fontFamily: FontFamily,
+    fontSize: TextUnit,
+    lineHeight: TextUnit,
     modifier: Modifier = Modifier
 ) {
     val dimColor = MaterialTheme.colorScheme.outline
@@ -77,7 +83,14 @@ fun SelectableText(
         }
     }
 
-    LaunchedEffect(currentChapter, currentPhrases, currentVerse) {
+    LaunchedEffect(
+        currentChapter,
+        currentPhrases,
+        currentVerse,
+        fontFamily,
+        fontSize,
+        lineHeight
+    ) {
         selection = null
         onSelectedTextChanged("")
         textLayoutResult = null
@@ -85,7 +98,7 @@ fun SelectableText(
         annotatedString = buildAnnotatedString {
             val regex = if (currentPhrases.isNotEmpty()) {
                 val phrasesToFind = currentPhrases
-                    .map { "\\b${Regex.escape(it.phrase)}\\b" }
+                    .map { "\\b${Regex.escape(it.phrase.normalize())}\\b" }
                 Regex(
                     phrasesToFind.joinToString("|"),
                     RegexOption.IGNORE_CASE
@@ -95,6 +108,8 @@ fun SelectableText(
             }
 
             currentChapter.verses.forEach { verse ->
+                val normalizedVerseText = verse.text.normalize()
+
                 val color = if (currentVerse == null || verse.number == currentVerse) {
                     Color.Unspecified
                 } else {
@@ -104,7 +119,7 @@ fun SelectableText(
                 withStyle(
                     style = SpanStyle(
                         color = color,
-                        fontSize = 12.sp,
+                        fontSize = fontSize.div(1.5),
                         fontWeight = FontWeight.Bold,
                         baselineShift = BaselineShift.Superscript
                     )
@@ -120,14 +135,14 @@ fun SelectableText(
                 }
 
                 if (regex == null) {
-                    append(verse.text)
+                    append(normalizedVerseText)
                 } else {
                     var lastIndex = 0
-                    regex.findAll(verse.text).forEach { match ->
+                    regex.findAll(normalizedVerseText).forEach { match ->
                         withStyle(
                             style = SpanStyle(color = color)
                         ) {
-                            append(verse.text.substring(lastIndex, match.range.first))
+                            append(normalizedVerseText.substring(lastIndex, match.range.first))
                         }
 
                         withLink(
@@ -136,7 +151,8 @@ fun SelectableText(
                                 styles = TextLinkStyles(),
                                 linkInteractionListener = {
                                     currentPhrases.firstOrNull {
-                                        it.phrase.lowercase() == match.value.lowercase()
+                                        it.phrase.normalize()
+                                            .equals(match.value.normalize(), ignoreCase = true)
                                     }?.let {
                                         onSelectedTextChanged("")
                                         onPhraseClick(it, verse.number)
@@ -156,11 +172,11 @@ fun SelectableText(
                         lastIndex = match.range.last + 1
                     }
 
-                    if (lastIndex < verse.text.length) {
+                    if (lastIndex < normalizedVerseText.length) {
                         withStyle(
                             style = SpanStyle(color = color)
                         ) {
-                            append(verse.text.substring(lastIndex))
+                            append(normalizedVerseText.substring(lastIndex))
                         }
                     }
                 }
@@ -188,6 +204,9 @@ fun SelectableText(
                         text = text,
                         style = LocalTextStyle.current.copy(lineHeight = 32.sp),
                         onTextLayout = { textLayoutResult = it },
+                        fontFamily = fontFamily,
+                        fontSize = fontSize,
+                        lineHeight = lineHeight,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -243,7 +262,7 @@ fun SelectableText(
                         }
                 ) {
                     val isView = currentPhrases.any {
-                        it.phrase.lowercase() == selectedText.lowercase()
+                        it.phrase.normalize().equals(selectedText.normalize(), ignoreCase = true)
                     } || selectedText.isEmpty()
 
                     val text = if (isView) {

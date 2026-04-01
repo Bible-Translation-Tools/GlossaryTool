@@ -5,26 +5,25 @@ import org.bibletranslationtools.glossary.domain.CatalogApi
 import org.bibletranslationtools.glossary.domain.CatalogApiImpl
 import org.bibletranslationtools.glossary.domain.DirectoryProvider
 import org.bibletranslationtools.glossary.domain.DirectoryProviderImpl
-import org.bibletranslationtools.glossary.domain.ExportGlossary
 import org.bibletranslationtools.glossary.domain.GlossaryApi
 import org.bibletranslationtools.glossary.domain.GlossaryApiImpl
-import org.bibletranslationtools.glossary.domain.GlossaryDataSource
-import org.bibletranslationtools.glossary.domain.GlossaryDataSourceImpl
-import org.bibletranslationtools.glossary.domain.GlossaryRepository
-import org.bibletranslationtools.glossary.domain.GlossaryRepositoryImpl
-import org.bibletranslationtools.glossary.domain.ImportGlossary
 import org.bibletranslationtools.glossary.domain.InitApp
-import org.bibletranslationtools.glossary.domain.LanguageDataSource
-import org.bibletranslationtools.glossary.domain.LanguageDataSourceImpl
-import org.bibletranslationtools.glossary.domain.PhraseDataSource
-import org.bibletranslationtools.glossary.domain.PhraseDataSourceImpl
-import org.bibletranslationtools.glossary.domain.RefDataSource
-import org.bibletranslationtools.glossary.domain.RefDataSourceImpl
-import org.bibletranslationtools.glossary.domain.ResourceDataSource
-import org.bibletranslationtools.glossary.domain.ResourceDataSourceImpl
-import org.bibletranslationtools.glossary.domain.SettingsDataSource
-import org.bibletranslationtools.glossary.domain.SettingsDataSourceImpl
 import org.bibletranslationtools.glossary.domain.createHttpClient
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryDataSource
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryDataSourceImpl
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
+import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepositoryImpl
+import org.bibletranslationtools.glossary.domain.persistence.LanguageDataSource
+import org.bibletranslationtools.glossary.domain.persistence.LanguageDataSourceImpl
+import org.bibletranslationtools.glossary.domain.persistence.PhraseDataSource
+import org.bibletranslationtools.glossary.domain.persistence.PhraseDataSourceImpl
+import org.bibletranslationtools.glossary.domain.persistence.ResourceDataSource
+import org.bibletranslationtools.glossary.domain.persistence.ResourceDataSourceImpl
+import org.bibletranslationtools.glossary.domain.persistence.SettingsDataSource
+import org.bibletranslationtools.glossary.domain.persistence.SettingsDataSourceImpl
+import org.bibletranslationtools.glossary.domain.usecases.ExportGlossary
+import org.bibletranslationtools.glossary.domain.usecases.ImportGlossary
+import org.bibletranslationtools.glossary.domain.usecases.MergePendingPhrases
 import org.bibletranslationtools.glossary.platform.ResourceContainerAccessor
 import org.bibletranslationtools.glossary.platform.createSqlDriver
 import org.bibletranslationtools.glossary.platform.httpClientEngine
@@ -34,6 +33,8 @@ import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolder
 import org.bibletranslationtools.glossary.ui.state.GlossaryStateHolderImpl
 import org.bibletranslationtools.glossary.ui.state.ResourceStateHolder
 import org.bibletranslationtools.glossary.ui.state.ResourceStateHolderImpl
+import org.bibletranslationtools.glossary.ui.state.UserStateHolder
+import org.bibletranslationtools.glossary.ui.state.UserStateHolderImpl
 import org.koin.core.module.dsl.factoryOf
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
@@ -43,11 +44,15 @@ val sharedModule = module {
     single { GlossaryDatabase(createSqlDriver()) }
     single { ResourceContainerAccessor(get()) }
     single { CatalogApiImpl(createHttpClient(httpClientEngine)) }.bind<CatalogApi>()
-    single { GlossaryApiImpl(createHttpClient(httpClientEngine)) }.bind<GlossaryApi>()
+    single {
+        GlossaryApiImpl(
+            httpClient = createHttpClient(httpClientEngine),
+            userStateHolder = get()
+        )
+    }.bind<GlossaryApi>()
 
     singleOf(::GlossaryDataSourceImpl).bind<GlossaryDataSource>()
     singleOf(::PhraseDataSourceImpl).bind<PhraseDataSource>()
-    singleOf(::RefDataSourceImpl).bind<RefDataSource>()
     singleOf(::SettingsDataSourceImpl).bind<SettingsDataSource>()
     singleOf(::LanguageDataSourceImpl).bind<LanguageDataSource>()
     singleOf(::ResourceDataSourceImpl).bind<ResourceDataSource>()
@@ -55,10 +60,12 @@ val sharedModule = module {
     singleOf(::GlossaryRepositoryImpl).bind<GlossaryRepository>()
     singleOf(::ExportGlossary)
     singleOf(::ImportGlossary)
+    singleOf(::MergePendingPhrases)
 
     factoryOf(::InitApp)
 
     singleOf(::ResourceStateHolderImpl).bind<ResourceStateHolder>()
     singleOf(::GlossaryStateHolderImpl).bind<GlossaryStateHolder>()
+    singleOf(::UserStateHolderImpl).bind<UserStateHolder>()
     singleOf(::AppStateStoreImpl).bind<AppStateStore>()
 }
