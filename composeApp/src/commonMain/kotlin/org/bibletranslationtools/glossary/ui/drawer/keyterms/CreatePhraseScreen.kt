@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -13,7 +14,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -29,12 +29,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.create_phrase
 import glossary.composeapp.generated.resources.search_placeholder
 import glossary.composeapp.generated.resources.search_word_hint
 import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -46,36 +47,12 @@ fun CreatePhraseScreen(component: CreatePhraseComponent) {
         modifier = Modifier.fillMaxSize()
             .padding(top = 16.dp)
     ) {
-        TopAppBar(
-            actions = {
-                SearchField(
-                    searchQuery = searchQuery,
-                    onValueChange = {
-                        searchQuery = it
-                        component.onSearchQueryChanged(searchQuery)
-                    },
-                    placeholder = {
-                        Text(
-                            text = stringResource(Res.string.search_placeholder),
-                            fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurface.copy(
-                                alpha = 0.5f
-                            )
-                        )
-                    },
-                    colors = CustomTextFieldDefaults.colors(
-                        focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
-                        unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
-                    modifier = Modifier.weight(1f)
-                        .height(56.dp)
-                )
-            }
-        ) {
-            component.navigateBack()
-        }
+        TopDrawerBar(
+            title = stringResource(Res.string.create_phrase),
+            onDismiss = component::dismiss,
+            onBackClick = component::navigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Column(modifier = Modifier.weight(1f)) {
             Column(
@@ -86,8 +63,29 @@ fun CreatePhraseScreen(component: CreatePhraseComponent) {
                     modifier = Modifier.fillMaxSize()
                         .padding(16.dp)
                 ) {
-                    HorizontalDivider(
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+                    SearchField(
+                        searchQuery = searchQuery,
+                        onValueChange = {
+                            searchQuery = it
+                            component.onSearchQueryChanged(searchQuery)
+                        },
+                        placeholder = {
+                            Text(
+                                text = stringResource(Res.string.search_placeholder),
+                                fontSize = 16.sp,
+                                color = MaterialTheme.colorScheme.onSurface.copy(
+                                    alpha = 0.5f
+                                )
+                            )
+                        },
+                        colors = CustomTextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                            .height(56.dp)
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))

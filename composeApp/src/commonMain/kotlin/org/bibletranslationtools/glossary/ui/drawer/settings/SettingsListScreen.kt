@@ -12,17 +12,20 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FormatLineSpacing
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.TextFields
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.FontDownload
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DividerDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -53,9 +56,11 @@ import glossary.composeapp.generated.resources.edit_account
 import glossary.composeapp.generated.resources.edit_permissions
 import glossary.composeapp.generated.resources.format_list_bulleted
 import glossary.composeapp.generated.resources.format_list_bulleted_add
+import glossary.composeapp.generated.resources.guest
 import glossary.composeapp.generated.resources.interface_settings
 import glossary.composeapp.generated.resources.language
 import glossary.composeapp.generated.resources.line_height
+import glossary.composeapp.generated.resources.login
 import glossary.composeapp.generated.resources.login_wacs
 import glossary.composeapp.generated.resources.logout
 import glossary.composeapp.generated.resources.new_glossary
@@ -75,6 +80,7 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
 import org.bibletranslationtools.glossary.domain.Theme
+import org.bibletranslationtools.glossary.localize
 import org.bibletranslationtools.glossary.ui.components.FloatingSegmentedSelector
 import org.bibletranslationtools.glossary.ui.components.SettingsClickableItem
 import org.bibletranslationtools.glossary.ui.components.SettingsSection
@@ -161,6 +167,14 @@ fun SettingsListScreen(component: SettingsListComponent) {
         )
     }
 
+    val role by remember(glossaryState.users) {
+        mutableStateOf(
+            glossaryState.users
+                .firstOrNull { it.user.username == userState.user?.username }
+                ?.role ?: UserRole.VIEWER
+        )
+    }
+
     LaunchedEffect(isDarkModeEnabled) {
         theme = if (isDarkModeEnabled) {
             Theme.DARK
@@ -214,21 +228,47 @@ fun SettingsListScreen(component: SettingsListComponent) {
                                     fontSize = 24.sp,
                                     fontWeight = FontWeight.Bold
                                 )
-                                TextButton(onClick = component::logout) {
-                                    Text(text = stringResource(Res.string.logout))
+                                Text(
+                                    text = "(${role.localize()})",
+                                    fontSize = 16.sp
+                                )
+                                TextButton(
+                                    onClick = component::logout,
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = MaterialTheme.colorScheme.error
+                                    )
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.logout),
+                                        textDecoration = TextDecoration.Underline
+                                    )
                                 }
                             }
                         } ?: run {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.Center,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
+                                Icon(
+                                    imageVector = Icons.Filled.Person,
+                                    contentDescription = "guest",
+                                    modifier = Modifier.size(70.dp)
+                                )
+                                Text(
+                                    text = stringResource(Res.string.guest),
+                                    fontSize = 24.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                                Text(
+                                    text = "(${role.localize()})",
+                                    fontSize = 16.sp
+                                )
                                 TextButton(
                                     onClick = component::navigateLogin
                                 ) {
                                     Text(
-                                        text = stringResource(Res.string.login_wacs),
+                                        text = stringResource(Res.string.login),
                                         textDecoration = TextDecoration.Underline
                                     )
                                 }

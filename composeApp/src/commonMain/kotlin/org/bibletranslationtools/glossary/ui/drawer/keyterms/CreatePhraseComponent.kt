@@ -19,12 +19,9 @@ import org.bibletranslationtools.glossary.ui.drawer.DrawerContext
 import org.bibletranslationtools.glossary.ui.state.AppStateStore
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
-import kotlin.random.Random
 import kotlin.text.Regex.Companion.escape
 
 private const val MAX_SEARCH_RESULTS = 100
-private const val RANDOM_WORD_SAMPLE_SIZE = 100
-private const val MAX_RANDOM_ATTEMPTS = 500
 
 interface CreatePhraseComponent : DrawerContext {
     val model: Value<Model>
@@ -59,7 +56,6 @@ class DefaultCreatePhraseComponent(
 
     init {
         componentScope.launch {
-            _model.update { it.copy(isSearching = true) }
             val verses = withContext(Dispatchers.Default) {
                 resourceState.value.resource?.let { resource ->
                     resource.books.flatMap { it.chapters }
@@ -77,8 +73,6 @@ class DefaultCreatePhraseComponent(
                     .values
                     .toSet()
             }
-
-            onSearchQueryChanged("")
         }
     }
 
@@ -90,7 +84,7 @@ class DefaultCreatePhraseComponent(
             delay(300L)
 
             val results = withContext(Dispatchers.Default) {
-                findContent(query)
+                findWords(query)
             }
 
             _model.update {
@@ -106,16 +100,9 @@ class DefaultCreatePhraseComponent(
         onNavigateEdit(phrase)
     }
 
-    private fun findContent(query: String): List<Phrase> {
-        return if (query.isEmpty()) {
-            getRandomWords()
-        } else {
-            findWords(query)
-        }
-    }
-
     private fun findWords(query: String): List<Phrase> {
         val glossaryId = glossaryState.value.glossary?.id ?: return emptyList()
+        if (query.isEmpty()) return emptyList()
 
         return sourceVerses.let { sourceSentences ->
             val lowerCaseQuery = query.normalize().lowercase()
@@ -147,40 +134,5 @@ class DefaultCreatePhraseComponent(
                 }
                 .toList()
         }
-    }
-
-    private fun getRandomWords(): List<Phrase> {
-        val glossaryId = glossaryState.value.glossary?.id ?: return emptyList()
-
-        val randomWords = mutableSetOf<String>()
-        if (sourceVerses.isEmpty()) return emptyList()
-
-        val wordRegex = Regex("(?u)\\b\\w+\\b")
-        var attempts = 0
-
-        while (randomWords.size < RANDOM_WORD_SAMPLE_SIZE && attempts < MAX_RANDOM_ATTEMPTS) {
-            attempts++
-
-            val randomSentence = sourceVerses.random()
-            val sentenceLength = randomSentence.length
-
-            if (sentenceLength == 0) continue
-
-            val randomStartIndex = Random.nextInt(sentenceLength)
-
-            wordRegex.find(randomSentence, startIndex = randomStartIndex)?.let { matchResult ->
-                val word = matchResult.value.normalize()
-                if (word.length > 2) {
-                    randomWords.add(word)
-                }
-            }
-        }
-
-        return randomWords
-            .map { word ->
-                val existent = existentPhrases.find { it.phrase == word }
-                existent ?: Phrase(phrase = word, glossaryId = glossaryId)
-            }
-            .toList()
     }
 }
