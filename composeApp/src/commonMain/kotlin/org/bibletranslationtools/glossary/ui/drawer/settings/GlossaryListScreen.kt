@@ -49,7 +49,7 @@ import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.openFileSaver
 import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.ui.components.GlossaryItem
-import org.bibletranslationtools.glossary.ui.components.TopAppBar
+import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.bibletranslationtools.glossary.ui.dialogs.ProgressDialog
 import org.bibletranslationtools.glossary.ui.navigation.LocalSnackBarHostState
 import org.jetbrains.compose.resources.stringResource
@@ -65,11 +65,13 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
     val coroutineScope = rememberCoroutineScope()
     val snackBar = LocalSnackBarHostState.current
 
-    LaunchedEffect(model.selectedGlossary) {
-        if (model.selectedGlossary != null && !isLoaded) {
-            val index = model.glossaries.indexOf(model.selectedGlossary)
-            scrollState.animateScrollToItem(index)
-            isLoaded = true
+    LaunchedEffect(model.selectedGlossary, model.glossaries) {
+        if (model.glossaries.isNotEmpty() && !isLoaded) {
+            model.selectedGlossary?.let { glossary ->
+                val index = model.glossaries.map { it.glossary.id }.indexOf(glossary.glossary.id)
+                scrollState.animateScrollToItem(index)
+                isLoaded = true
+            }
         }
     }
 
@@ -77,11 +79,11 @@ fun GlossaryListScreen(component: GlossaryListComponent) {
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
     ) {
-        TopAppBar(
-            title = stringResource(Res.string.available_glossaries)
-        ) {
-            component.navigateBack()
-        }
+        TopDrawerBar(
+            title = stringResource(Res.string.available_glossaries),
+            onBackClick = component::navigateBack,
+            modifier = Modifier.fillMaxWidth()
+        )
 
         Column(modifier = Modifier.weight(1f)) {
             Column(modifier = Modifier.fillMaxSize()) {

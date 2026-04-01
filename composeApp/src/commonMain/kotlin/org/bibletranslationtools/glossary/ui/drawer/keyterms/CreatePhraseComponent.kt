@@ -6,11 +6,15 @@ import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.bibletranslationtools.glossary.asFlow
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.domain.persistence.GlossaryRepository
 import org.bibletranslationtools.glossary.normalize
@@ -27,6 +31,7 @@ interface CreatePhraseComponent : DrawerContext {
     val model: Value<Model>
 
     data class Model(
+        val searchQuery: String = "",
         val isSearching: Boolean = false,
         val results: List<Phrase> = emptyList()
     )
@@ -35,6 +40,7 @@ interface CreatePhraseComponent : DrawerContext {
     fun onEditClick(phrase: Phrase)
 }
 
+@OptIn(FlowPreview::class)
 class DefaultCreatePhraseComponent(
     componentContext: ComponentContext,
     parentContext: DrawerContext,
@@ -52,7 +58,6 @@ class DefaultCreatePhraseComponent(
     private val glossaryState = appStateStore.glossaryStateHolder.state
     private val sourceVerses = mutableListOf<String>()
     private var existentPhrases: Set<Phrase> = emptySet()
-    private var searchJob: Job? = null
 
     init {
         componentScope.launch {
@@ -74,30 +79,38 @@ class DefaultCreatePhraseComponent(
                     .toSet()
             }
         }
+
+        componentScope.launch {
+            model.asFlow().map { it.searchQuery }
+                .debounce(300L)
+                .distinctUntilChanged()
+                .collectLatest { query ->
+                    performSearch(query)
+                }
+        }
     }
 
     override fun onSearchQueryChanged(query: String) {
-        searchJob?.cancel()
-        searchJob = componentScope.launch {
-            _model.update { it.copy(isSearching = true) }
-
-            delay(300L)
-
-            val results = withContext(Dispatchers.Default) {
-                findWords(query)
-            }
-
-            _model.update {
-                it.copy(
-                    results = results,
-                    isSearching = false
-                )
-            }
-        }
+        _model.update { it.copy(searchQuery = query) }
     }
 
     override fun onEditClick(phrase: Phrase) {
         onNavigateEdit(phrase)
+    }
+
+    private suspend fun performSearch(query: String) {
+        _model.update { it.copy(isSearching = true) }
+
+        val results = withContext(Dispatchers.Default) {
+            findWords(query)
+        }
+
+        _model.update {
+            it.copy(
+                results = results,
+                isSearching = false
+            )
+        }
     }
 
     private fun findWords(query: String): List<Phrase> {

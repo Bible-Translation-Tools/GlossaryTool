@@ -36,6 +36,8 @@ import com.arkivanov.decompose.extensions.compose.subscribeAsState
 import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.add_another_phrase
 import glossary.composeapp.generated.resources.cancel
+import glossary.composeapp.generated.resources.create_new_phrase
+import glossary.composeapp.generated.resources.create_phrase
 import glossary.composeapp.generated.resources.description
 import glossary.composeapp.generated.resources.edit_reviewed_phrase_not_allowed
 import glossary.composeapp.generated.resources.editing
@@ -81,7 +83,9 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
     Column(modifier = Modifier.fillMaxSize()) {
         if (!model.justSaved) {
             TopDrawerBar(
-                title = stringResource(Res.string.editing),
+                title = if (model.isNewPhrase) {
+                    stringResource(Res.string.create_phrase)
+                } else stringResource(Res.string.editing),
                 subTitle = model.phrase?.phrase,
                 onBackClick = component::navigateBack,
                 modifier = Modifier.fillMaxWidth()
@@ -113,6 +117,7 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                                 fontWeight = FontWeight.Bold
                             ),
                             enabled = !model.isSaving,
+                            readOnly = model.phrase?.workflow == PhraseWorkflow.REVIEWED,
                             shape = MaterialTheme.shapes.medium,
                             colors = TextFieldDefaults.colors(
                                 focusedTextColor = MaterialTheme.colorScheme.onBackground,
@@ -144,6 +149,7 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                             minLines = 5,
                             maxLines = 10,
                             enabled = !model.isSaving,
+                            readOnly = model.phrase?.workflow == PhraseWorkflow.REVIEWED,
                             shape = MaterialTheme.shapes.medium,
                             colors = TextFieldDefaults.colors(
                                 focusedTextColor = MaterialTheme.colorScheme.onBackground,
@@ -181,7 +187,11 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                                 shape = MaterialTheme.shapes.medium,
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(stringResource(Res.string.save_exit))
+                                Text(
+                                    text = if (model.isNewPhrase) {
+                                        stringResource(Res.string.create_new_phrase)
+                                    } else stringResource(Res.string.save_exit)
+                                )
                             }
                             Button(
                                 onClick = component::navigateBack,

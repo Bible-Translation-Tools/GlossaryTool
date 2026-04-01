@@ -367,6 +367,7 @@ class DefaultKeyTermsListComponent(
                 glossaryHasUpdate = false
             )
         }
+        initialize()
     }
 
     override fun clearReviewedPhrases() {
@@ -384,9 +385,15 @@ class DefaultKeyTermsListComponent(
                 }
             }
 
-            _model.update { it.copy(snackBarMessage = message) }
+            _model.update { state ->
+                state.copy(
+                    snackBarMessage = message,
+                    isLoading = false,
+                    phrases = state.phrases.filter { it.workflow != PhraseWorkflow.REVIEWED }
+                )
+            }
 
-            initialize()
+            checkForUpdates()
         }
     }
 

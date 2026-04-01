@@ -406,13 +406,9 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                             when {
                                                 isAdmin && !isGlossaryPublished -> {
                                                     // Upload glossary
-                                                    ElevatedButton(
+                                                    Button(
                                                         onClick = component::uploadGlossary,
                                                         shape = MaterialTheme.shapes.medium,
-                                                        colors = ButtonDefaults.elevatedButtonColors(
-                                                            containerColor =
-                                                                MaterialTheme.colorScheme.primaryContainer
-                                                        ),
                                                         modifier = Modifier.fillMaxWidth()
                                                             .height(40.dp)
                                                     ) {
