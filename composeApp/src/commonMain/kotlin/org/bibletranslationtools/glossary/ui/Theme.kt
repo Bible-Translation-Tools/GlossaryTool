@@ -33,8 +33,8 @@ val LightColorScheme = lightColorScheme(
     onBackground = Color(0xFF212121),
 
     surface = Color(0xFFFFFFFF),
-    onSurface = Color(0xFF212121),
-    surfaceVariant = Color(0xFFF5F5F5),
+    onSurface = Color(0xFF0F2F4C),
+    surfaceVariant = Color(0xFFF2F2F2),
     surfaceBright = Color(0xFFF5F5F5),
     onSurfaceVariant = Color(0xFF516B86),
     surfaceDim = Color(0xFFCDCDCD),
@@ -74,7 +74,7 @@ val DarkColorScheme = darkColorScheme(
     onBackground = Color(0xFFE0E0E0),
 
     surface = Color(0xFF1E1E1E),
-    onSurface = Color(0xFFE0E0E0),
+    onSurface = Color(0xFFAFAFAF),
     surfaceVariant = Color(0xFF2C2C2C),
     surfaceBright = Color(0xFF2C2C2C),
     onSurfaceVariant = Color(0xFFBDBDBD),

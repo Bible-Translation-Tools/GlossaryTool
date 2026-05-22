@@ -17,6 +17,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,7 +25,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.arkivanov.decompose.extensions.compose.subscribeAsState
@@ -32,7 +36,6 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.create_phrase
 import glossary.composeapp.generated.resources.search_placeholder
 import glossary.composeapp.generated.resources.search_word_hint
-import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
@@ -42,6 +45,20 @@ import org.jetbrains.compose.resources.stringResource
 fun CreatePhraseScreen(component: CreatePhraseComponent) {
     val model by component.model.subscribeAsState()
     var searchQuery by rememberSaveable { mutableStateOf("") }
+
+    val searchHintString = stringResource(Res.string.search_word_hint)
+    val searchHintAnnotated = buildAnnotatedString {
+        val parts = searchHintString.split("{", "}")
+        parts.forEachIndexed { index, part ->
+            if (index % 2 != 0) {
+                withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                    append(part)
+                }
+            } else {
+                append(part)
+            }
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -78,21 +95,20 @@ fun CreatePhraseScreen(component: CreatePhraseComponent) {
                                 )
                             )
                         },
-                        colors = CustomTextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                             focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                             unfocusedIndicatorColor = MaterialTheme.colorScheme.surfaceVariant,
                         ),
                         modifier = Modifier.fillMaxWidth()
-                            .height(56.dp)
                     )
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = stringResource(Res.string.search_word_hint),
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                        text = searchHintAnnotated,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))

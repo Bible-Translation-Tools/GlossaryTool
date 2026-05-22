@@ -18,11 +18,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import glossary.composeapp.generated.resources.Res
+import glossary.composeapp.generated.resources.target_language_needed
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.api.ReviewStatus
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 fun PhraseItem(
@@ -30,6 +34,8 @@ fun PhraseItem(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val targetNeededStr = stringResource(Res.string.target_language_needed)
+
     Card(
         shape = MaterialTheme.shapes.medium,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
@@ -77,8 +83,14 @@ fun PhraseItem(
                     fontSize = 12.sp
                 )
                 Text(
-                    text = phrase.spelling,
-                    fontWeight = FontWeight.Bold
+                    text = phrase.spelling.ifEmpty { targetNeededStr },
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = if (phrase.spelling.isEmpty()) {
+                        FontStyle.Italic
+                    } else FontStyle.Normal,
+                    color = if (phrase.spelling.isEmpty()) {
+                        MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+                    } else MaterialTheme.colorScheme.onSurface
                 )
             }
             Icon(

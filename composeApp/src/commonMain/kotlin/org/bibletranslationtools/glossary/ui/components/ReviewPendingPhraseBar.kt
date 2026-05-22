@@ -76,11 +76,11 @@ fun ReviewPendingPhraseBar(
             )
             descriptionDiff = generateAnnotatedDiff(
                 oldText = currentPhrase.original?.description ?: "",
-                newText = currentPhrase.phrase.description ?: ""
+                newText = currentPhrase.phrase.description
             )
         } else {
             spellingDiff = AnnotatedString(currentPhrase.phrase.spelling)
-            descriptionDiff = AnnotatedString(currentPhrase.phrase.description ?: "")
+            descriptionDiff = AnnotatedString(currentPhrase.phrase.description)
         }
     }
 
@@ -185,7 +185,7 @@ fun ReviewPendingPhraseBar(
                                 color = MaterialTheme.colorScheme.tertiary
                             ),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.tertiary,
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                                 containerColor = MaterialTheme.colorScheme.tertiaryContainer
                             ),
                             modifier = Modifier.weight(1f)
@@ -205,7 +205,7 @@ fun ReviewPendingPhraseBar(
                                 color = MaterialTheme.colorScheme.error
                             ),
                             colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
                                 containerColor = MaterialTheme.colorScheme.errorContainer
                             ),
                             modifier = Modifier.weight(1f)

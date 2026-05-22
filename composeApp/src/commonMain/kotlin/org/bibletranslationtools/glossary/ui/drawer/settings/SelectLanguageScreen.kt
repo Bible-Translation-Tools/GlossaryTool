@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -26,7 +27,6 @@ import glossary.composeapp.generated.resources.Res
 import glossary.composeapp.generated.resources.search_language_placeholder
 import glossary.composeapp.generated.resources.source_language
 import glossary.composeapp.generated.resources.target_language
-import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.LanguageItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
@@ -86,10 +86,10 @@ fun SelectLanguageScreen(component: SelectLanguageComponent) {
                                 color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
                             )
                         },
-                        colors = CustomTextFieldDefaults.colors(
+                        colors = TextFieldDefaults.colors(
                             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant
                         ),
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier.fillMaxWidth()
                     )
 
                     HorizontalDivider()

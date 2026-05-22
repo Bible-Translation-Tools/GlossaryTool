@@ -44,13 +44,14 @@
     <string name="glossary_code">Code: %1$s</string>
     <string name="create_phrase">Add Word</string>
     <string name="create_new_phrase">Add New Word</string>
-    <string name="search">Search</string>
+    <string name="search">Search for word...</string>
     <string name="search_placeholder">Start typing to search</string>
     <string name="search_language_placeholder">"English" or "en"</string>
-    <string name="search_word_hint">Search for a word or phrase in the source language to add to your glossary, then select to make changes.</string>
+    <string name="search_word_hint">Search for a word or phrase in the {source language} to add to your glossary, then select to make changes.</string>
     <string name="share_code_hint">Share this code with anyone you want to share this glossary with.</string>
     <string name="source_language">Source Language</string>
     <string name="target_language">Target Language</string>
+    <string name="target_language_placeholder">Target Language...</string>
     <string name="create_glossary">Create New Glossary</string>
     <string name="required">* Required</string>
     <string name="create_glossary_error">Could not create glossary</string>
@@ -182,4 +183,5 @@
     <string name="successfully_edited_phrase">You've successfully edited a word.</string>
     <string name="add_another_phrase">Add Another Word</string>
     <string name="return_to_glosssary">Return to Glossary</string>
+    <string name="target_language_needed">Target Language Needed</string>
 </resources>
