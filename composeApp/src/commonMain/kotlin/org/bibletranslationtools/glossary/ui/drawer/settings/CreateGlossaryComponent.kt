@@ -196,23 +196,19 @@ class DefaultCreateGlossaryComponent(
             resourceId = resource.id
         )
 
-        val id = withContext(Dispatchers.IO) {
-            glossaryRepository.addGlossary(glossary)
-        }
-
-        var error: String? = null
-
-        id?.let {
-            withContext(Dispatchers.IO) {
-                populateStemItems(it, sourceLanguage)
+        return runCatching {
+            val id = withContext(Dispatchers.IO) {
+                glossaryRepository.addGlossary(glossary)
             }
-            onGlossaryCreated(resource, glossary.copy(id = it))
-        } ?: run {
-            error = getString(Res.string.create_glossary_error)
-        }
-
-        return error?.let {
-            ErrorDetails(error = it)
+            withContext(Dispatchers.IO) {
+                populateStemItems(id, sourceLanguage)
+            }
+            onGlossaryCreated(resource, glossary.copy(id = id))
+            null
+        }.getOrElse { e ->
+            ErrorDetails(
+                error = e.message ?: getString(Res.string.create_glossary_error)
+            )
         }
     }
 
@@ -238,9 +234,7 @@ class DefaultCreateGlossaryComponent(
             null
         }
         val stet = stetBytes?.let {
-            Utils.JsonLenient.decodeFromString<List<Stet>>(
-                String(it)
-            )
+            Utils.JsonLenient.decodeFromString<List<Stet>>(String(it))
         }
         stet?.forEach { item ->
             val words = item.alternatives.ifEmpty { listOf(item.word) }
@@ -250,7 +244,7 @@ class DefaultCreateGlossaryComponent(
             words.forEach { word ->
                 val phrase = Phrase(
                     phrase = word,
-                    spelling = word,
+                    spelling = "",
                     description = item.description,
                     glossaryId = glossaryId
                 )

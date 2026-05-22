@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,7 +69,6 @@ import kotlinx.coroutines.launch
 import org.bibletranslationtools.glossary.data.PhraseWorkflow
 import org.bibletranslationtools.glossary.data.api.UserRole
 import org.bibletranslationtools.glossary.domain.Settings
-import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.GlossaryUpdate
 import org.bibletranslationtools.glossary.ui.components.PhraseItem
 import org.bibletranslationtools.glossary.ui.components.SearchField
@@ -160,6 +160,15 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
         }
     }
 
+    LaunchedEffect(model.snackBarMessage) {
+        model.snackBarMessage?.let { message ->
+            coroutineScope.launch {
+                component.clearSnackBarMessage()
+                snackBar?.showSnackbar(message)
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
@@ -209,14 +218,13 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
                                     )
                                 )
                             },
-                            colors = CustomTextFieldDefaults.colors(
+                            colors = TextFieldDefaults.colors(
                                 focusedContainerColor = MaterialTheme.colorScheme.surface,
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant,
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                                 unfocusedIndicatorColor = MaterialTheme.colorScheme.onBackground
                                     .copy(alpha = 0.1f),
                             ),
                             modifier = Modifier.fillMaxWidth()
-                                .height(48.dp)
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -518,12 +526,5 @@ fun KeyTermsListScreen(component: KeyTermsListComponent) {
 
     model.progress?.let { progress ->
         ProgressDialog(progress)
-    }
-
-    model.snackBarMessage?.let { message ->
-        coroutineScope.launch {
-            component.clearSnackBarMessage()
-            snackBar?.showSnackbar(message)
-        }
     }
 }

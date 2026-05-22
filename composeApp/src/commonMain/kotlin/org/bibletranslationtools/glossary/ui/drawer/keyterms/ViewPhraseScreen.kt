@@ -146,7 +146,8 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                 fontSize = 16.sp,
                                 lineHeight = 32.sp,
                                 fontFamily = fontFamily,
-                                textAlign = TextAlign.Center
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         )
                     }
@@ -204,7 +205,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
                                     modifier = Modifier.fillMaxWidth()
-                                        .padding(16.dp)
+                                        .padding(horizontal = 4.dp, vertical = 16.dp)
                                 ) {
                                     Button(
                                         onClick = {
@@ -217,7 +218,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                             contentColor = MaterialTheme.colorScheme.onPrimary
                                         ),
                                         shape = MaterialTheme.shapes.medium,
-                                        modifier = Modifier.weight(0.48f)
+                                        modifier = Modifier.weight(1f)
                                     ) {
                                         Icon(
                                             imageVector = Icons.Outlined.Edit,
@@ -227,7 +228,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                         Spacer(modifier = Modifier.width(8.dp))
                                         Text(stringResource(Res.string.edit))
                                     }
-                                    Spacer(modifier = Modifier.weight(0.04f))
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Button(
                                         onClick = { /*TODO*/ },
                                         colors = ButtonDefaults.buttonColors(
@@ -236,7 +237,7 @@ fun ViewPhraseScreen(component: ViewPhraseComponent) {
                                         ),
                                         shape = MaterialTheme.shapes.medium,
                                         enabled = false,
-                                        modifier = Modifier.weight(0.48f)
+                                        modifier = Modifier.weight(1f)
                                     ) {
                                         Icon(
                                             imageVector = Icons.Outlined.Mic,

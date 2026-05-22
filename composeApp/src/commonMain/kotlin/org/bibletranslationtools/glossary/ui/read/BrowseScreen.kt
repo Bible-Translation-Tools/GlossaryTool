@@ -5,9 +5,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,6 +15,8 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,7 +36,6 @@ import kotlinx.coroutines.delay
 import org.bibletranslationtools.glossary.data.RefOption
 import org.bibletranslationtools.glossary.ui.components.BookItem
 import org.bibletranslationtools.glossary.ui.components.ChapterGrid
-import org.bibletranslationtools.glossary.ui.components.CustomTextFieldDefaults
 import org.bibletranslationtools.glossary.ui.components.SearchField
 import org.bibletranslationtools.glossary.ui.components.TopAppBar
 import org.jetbrains.compose.resources.stringResource
@@ -52,7 +53,6 @@ fun BrowseScreen(component: BrowseComponent) {
 
     var filteredBooks by remember { mutableStateOf(model.books) }
     var searchQuery by rememberSaveable { mutableStateOf("") }
-    var searchFocused by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         val initialBookIndex = model.books.indexOf(model.book)
@@ -92,15 +92,17 @@ fun BrowseScreen(component: BrowseComponent) {
         TopAppBar(
             title = stringResource(Res.string.browse),
             actions = {
+                Spacer(modifier = Modifier.weight(1f))
                 SearchField(
                     searchQuery = searchQuery,
                     onValueChange = { searchQuery = it },
-                    onFocusChange = { searchFocused = it },
-                    colors = CustomTextFieldDefaults.colors(
-                        unfocusedIndicatorColor = Color.Transparent
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = MaterialTheme.colorScheme.surface,
+                        unfocusedIndicatorColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent
                     ),
-                    modifier = Modifier.weight(1f)
-                        .height(48.dp)
+                    borderColor = Color.Transparent,
+                    modifier = Modifier.fillMaxWidth(0.5f)
                 )
             }
         ) {

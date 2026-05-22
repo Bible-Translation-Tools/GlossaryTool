@@ -24,10 +24,13 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -48,6 +51,7 @@ import glossary.composeapp.generated.resources.spelling
 import glossary.composeapp.generated.resources.success
 import glossary.composeapp.generated.resources.successfully_added_phrase
 import glossary.composeapp.generated.resources.successfully_edited_phrase
+import glossary.composeapp.generated.resources.target_language_placeholder
 import org.bibletranslationtools.glossary.data.PhraseWorkflow
 import org.bibletranslationtools.glossary.ui.components.TopDrawerBar
 import org.jetbrains.compose.resources.stringResource
@@ -63,6 +67,8 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
         mutableStateOf("")
     }
 
+    val focusRequester = remember { FocusRequester() }
+
     LaunchedEffect(model.phrase) {
         model.phrase?.let { phrase ->
             if (spelling.isEmpty()) {
@@ -72,6 +78,7 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                 description = phrase.description
             }
         }
+        focusRequester.requestFocus()
     }
 
     DisposableEffect(Unit) {
@@ -134,7 +141,14 @@ fun EditPhraseScreen(component: EditPhraseComponent) {
                                     alpha = 0.1f
                                 )
                             ),
+                            placeholder = {
+                                Text(
+                                    text = stringResource(Res.string.target_language_placeholder),
+                                    fontSize = 22.sp
+                                )
+                            },
                             modifier = Modifier.fillMaxWidth()
+                                .focusRequester(focusRequester)
                         )
 
                         Spacer(modifier = Modifier.height(16.dp))
