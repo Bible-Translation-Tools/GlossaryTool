@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import glossary.shared.generated.resources.Res
 import glossary.shared.generated.resources.reference_not_found
+import glossary.shared.generated.resources.target_language_needed
 import org.bibletranslationtools.glossary.data.Chapter
 import org.bibletranslationtools.glossary.data.Phrase
 import org.bibletranslationtools.glossary.data.Ref
@@ -71,6 +72,8 @@ fun PhraseDetailsBar(
     val reference = currentRef?.let {
         "${it.book.uppercase()} ${it.chapter}:${it.verse}"
     }
+
+    val targetNeededStr = stringResource(Res.string.target_language_needed)
 
     LaunchedEffect(currentPhrase, currentRef) {
         currentVerseText = currentRef?.getVerseText(resource) ?: ""
@@ -124,7 +127,7 @@ fun PhraseDetailsBar(
                         }
                     ) {
                         Text(
-                            text = currentPhrase.spelling,
+                            text = currentPhrase.spelling.ifEmpty { targetNeededStr },
                             fontSize = 31.sp,
                             fontWeight = FontWeight.W700,
                             fontFamily = fontFamily,
