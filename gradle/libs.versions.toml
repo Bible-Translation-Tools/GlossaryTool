@@ -1,15 +1,12 @@
 [versions]
 agp = "9.2.1"
-android-compileSdk = "36"
+android-compileSdk = "37"
 android-minSdk = "26"
-android-targetSdk = "36"
+android-targetSdk = "37"
 glossary-name = "2.0.1"
 glossary-version = "30"
 androidx-activity = "1.13.0"
-androidx-core = "1.18.0"
-androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.10.0"
-androidx-testExt = "1.3.0"
 componentsResources = "1.11.0"
 composeHotReload = "1.1.1"
 composeMultiplatform = "1.11.0"
@@ -18,7 +15,6 @@ decompose = "3.5.0"
 filekitDialogs = "0.14.1"
 foundation = "1.11.0"
 jackson = "2.21.3"
-junit = "4.13.2"
 koin = "4.2.1"
 kotlin = "2.3.21"
 kotlin-multiplatform-diff = "1.3.0"
@@ -30,6 +26,7 @@ kotlinx-serialization-json = "1.11.0"
 ktor = "3.5.0"
 material3 = "1.9.0"
 materialIconsExtended = "1.7.3"
+mockk = "1.14.9"
 requery = "3.49.0"
 runtime = "1.11.0"
 sqldelight = "2.3.2"
@@ -37,9 +34,6 @@ uiToolingPreview = "1.11.0"
 usfmtools-jvm = "1.9.1"
 
 [libraries]
-androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "androidx-core" }
-androidx-testExt-junit = { module = "androidx.test.ext:junit", version.ref = "androidx-testExt" }
-androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "androidx-espresso" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-runtimeCompose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 components-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "componentsResources" }
@@ -52,7 +46,6 @@ foundation = { module = "org.jetbrains.compose.foundation:foundation", version.r
 jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 jackson-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
-junit = { module = "junit:junit", version.ref = "junit" }
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
 koin-androidx-compose = { group = "io.insert-koin", name = "koin-androidx-compose", version.ref = "koin" }
 koin-core = { group = "io.insert-koin", name = "koin-core", version.ref = "koin" }
@@ -60,7 +53,7 @@ koin-compose = { group = "io.insert-koin", name = "koin-compose", version.ref = 
 kotlin-multiplatform-diff = { module = "io.github.petertrr:kotlin-multiplatform-diff", version.ref = "kotlin-multiplatform-diff" }
 kotlin-resource-container = { module = "org.wycliffeassociates:kotlin-resource-container", version.ref = "kotlin-resource-container" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-testJunit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "kotlinx-coroutines" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
 kotlinx-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io" }
@@ -72,6 +65,7 @@ ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "k
 ktor-client-serialization = { module = "io.ktor:ktor-client-serialization", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
 material-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3" }
 runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "runtime" }
 sqldelight-android = { module = "app.cash.sqldelight:android-driver", version.ref = "sqldelight" }
@@ -81,15 +75,19 @@ requery-sqlite = { module = "com.github.requery:sqlite-android", version.ref = "
 sqldelight-jvm = { module = "app.cash.sqldelight:sqlite-driver", version.ref = "sqldelight" }
 sqldelight-runtime = { module = "app.cash.sqldelight:runtime", version.ref = "sqldelight" }
 ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "uiToolingPreview" }
+ui-tooling = { module = "org.jetbrains.compose.ui:ui-tooling", version.ref = "uiToolingPreview" }
 ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 usfmtools-jvm = { module = "org.wycliffeassociates:usfmtools", version.ref = "usfmtools-jvm" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 composeHotReload = { id = "org.jetbrains.compose.hot-reload", version.ref = "composeHotReload" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kmpLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+kmp = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 sqlDelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }

@@ -1,4 +1,4 @@
-rootProject.name = "glossary"
+rootProject.name = "Glossary"
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
@@ -25,6 +25,8 @@ dependencyResolutionManagement {
             }
         }
         mavenCentral()
+        maven(url = "https://nexus-registry.walink.org/repository/maven-public/")
+        maven(url = "https://jitpack.io")
     }
 }
 
@@ -32,4 +34,6 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
-include(":composeApp")
+include(":androidApp")
+include(":desktopApp")
+include(":shared")
